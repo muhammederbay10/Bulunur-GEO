@@ -1,0 +1,70 @@
+import Link from "next/link";
+import { Suspense } from "react";
+import {
+  History,
+  LayoutDashboard,
+  Package,
+  Settings,
+  Store,
+} from "lucide-react";
+
+import { AuthButton } from "@/features/auth/components/auth-button";
+import { EnvVarWarning } from "@/components/env-var-warning";
+import { hasRequiredPublicEnv } from "@/lib/env/public";
+
+const navItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/products", label: "Products", icon: Package },
+  { href: "/sources", label: "Sources", icon: Store },
+  { href: "/history", label: "History", icon: History },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <main className="industrial-grid min-h-screen bg-background">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[260px_1fr]">
+        <aside className="border-b border-border/70 bg-card/70 p-5 lg:border-b-0 lg:border-r">
+          <Link href="/" className="block">
+            <p className="font-mono text-xs uppercase text-primary">Bulunur</p>
+            <p className="mt-2 text-lg font-semibold">GEO Platform</p>
+          </Link>
+
+          <nav className="mt-8 grid gap-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-3 border border-transparent px-3 py-2 text-sm text-muted-foreground transition hover:border-border hover:bg-background/40 hover:text-foreground"
+              >
+                <item.icon className="h-4 w-4 text-primary" />
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </aside>
+
+        <section className="flex min-w-0 flex-col">
+          <header className="flex min-h-16 items-center justify-between gap-4 border-b border-border/70 bg-background/80 px-5">
+            <div>
+              <p className="font-mono text-xs uppercase text-muted-foreground">
+                Phase 0
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Structure, shell, tokens, and service boundaries
+              </p>
+            </div>
+            {hasRequiredPublicEnv ? (
+              <Suspense>
+                <AuthButton />
+              </Suspense>
+            ) : (
+              <EnvVarWarning />
+            )}
+          </header>
+          <div className="flex-1 px-5 py-6">{children}</div>
+        </section>
+      </div>
+    </main>
+  );
+}
