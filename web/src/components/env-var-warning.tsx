@@ -5,14 +5,14 @@ export function EnvVarWarning() {
   return (
     <div className="flex gap-4 items-center">
       <Badge variant={"outline"} className="font-normal">
-        Supabase environment variables required
+        Supabase ortam değişkenleri gerekli
       </Badge>
       <div className="flex gap-2">
         <Button size="sm" variant={"outline"} disabled>
-          Sign in
+          Giriş yap
         </Button>
         <Button size="sm" variant={"default"} disabled>
-          Sign up
+          Kayıt ol
         </Button>
       </div>
     </div>

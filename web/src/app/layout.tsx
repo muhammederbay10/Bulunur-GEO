@@ -8,9 +8,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Bulunur",
-  description:
-    "AI visibility workflow for Turkish e-commerce product pages.",
+  title: "GEO Platformu",
+  description: "Türkçe e-ticaret ürünleri için AI görünürlük akışı.",
 };
 
 export default function RootLayout({

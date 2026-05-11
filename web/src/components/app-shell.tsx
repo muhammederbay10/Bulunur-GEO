@@ -13,11 +13,11 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { hasRequiredPublicEnv } from "@/lib/env/public";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/sources", label: "Sources", icon: Store },
-  { href: "/history", label: "History", icon: History },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
+  { href: "/products", label: "Ürünler", icon: Package },
+  { href: "/sources", label: "Kaynaklar", icon: Store },
+  { href: "/history", label: "Geçmiş", icon: History },
+  { href: "/settings", label: "Ayarlar", icon: Settings },
 ];
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -26,8 +26,10 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
       <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[260px_1fr]">
         <aside className="border-b border-border/70 bg-card/70 p-5 lg:border-b-0 lg:border-r">
           <Link href="/" className="block">
-            <p className="font-mono text-xs uppercase text-primary">Bulunur</p>
-            <p className="mt-2 text-lg font-semibold">GEO Platform</p>
+            <p className="font-mono text-xs uppercase text-primary">
+              GEO Platformu
+            </p>
+            <p className="mt-2 text-lg font-semibold">AI Görünürlük</p>
           </Link>
 
           <nav className="mt-8 grid gap-1">
@@ -48,10 +50,10 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           <header className="flex min-h-16 items-center justify-between gap-4 border-b border-border/70 bg-background/80 px-5">
             <div>
               <p className="font-mono text-xs uppercase text-muted-foreground">
-                Phase 0
+                Faz 0
               </p>
               <p className="text-sm text-muted-foreground">
-                Structure, shell, tokens, and service boundaries
+                Yapı, kabuk, tokenlar ve servis sınırları
               </p>
             </div>
             {hasRequiredPublicEnv ? (

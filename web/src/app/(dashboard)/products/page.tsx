@@ -6,13 +6,13 @@ export default function ProductsPage() {
   return (
     <PhasePlaceholder
       icon={Package}
-      title="Products route foundation"
-      description="Phase 6 will list Shopify and native products here with analysis and optimization actions."
+      title="Ürünler rota temeli"
+      description="Faz 6'da Shopify ve native ürünler analiz ve optimizasyon aksiyonlarıyla burada listelenecek."
       items={[
-        "Product rows will show image, title, source, price, latest score, and next action.",
-        "Filters will cover all, not analyzed, low score, optimized, Shopify, and native.",
-        "Analysis will run only for the selected product, not the whole catalog.",
-        "Product data must come through ownership-aware database queries.",
+        "Ürün satırları görsel, başlık, kaynak, fiyat, son skor ve sonraki aksiyonu gösterecek.",
+        "Filtreler tüm ürünleri, analiz edilmemişleri, düşük skorluları, optimize edilenleri, Shopify ve native kaynakları kapsayacak.",
+        "Analiz tüm katalog için değil, yalnızca seçilen ürün için çalışacak.",
+        "Ürün verisi sahiplik kontrolü yapan veritabanı sorgularından gelmeli.",
       ]}
     />
   );

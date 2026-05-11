@@ -6,13 +6,13 @@ export default function HistoryPage() {
   return (
     <PhasePlaceholder
       icon={History}
-      title="History route foundation"
-      description="Later phases will show saved analyses, optimization results, export actions, publish jobs, and rollback logs."
+      title="Geçmiş rota temeli"
+      description="Sonraki fazlarda kayıtlı analizler, optimizasyon sonuçları, dışa aktarma aksiyonları, yayın işleri ve geri dönüş kayıtları burada gösterilecek."
       items={[
-        "History records should link back to the owned product and store.",
-        "Saved optimization results should be durable and reloadable.",
-        "Publish logs should show external API errors without exposing secrets.",
-        "Review actions should record approved and rejected fields.",
+        "Geçmiş kayıtları sahip olunan ürün ve mağazaya bağlanmalı.",
+        "Kayıtlı optimizasyon sonuçları kalıcı ve yeniden yüklenebilir olmalı.",
+        "Yayın kayıtları dış API hatalarını gizli bilgileri açığa çıkarmadan göstermeli.",
+        "İnceleme aksiyonları onaylanan ve reddedilen alanları kaydetmeli.",
       ]}
     />
   );

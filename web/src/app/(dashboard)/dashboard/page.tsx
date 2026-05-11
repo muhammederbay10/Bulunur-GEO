@@ -1,10 +1,10 @@
 import { Activity, CircleAlert, Package, Sparkles } from "lucide-react";
 
 const metrics = [
-  { label: "Products", value: "0", note: "Waiting for first source", icon: Package },
-  { label: "Analyzed", value: "0", note: "Phase 7 will connect AI", icon: Activity },
-  { label: "Optimized", value: "0", note: "Approval flow comes later", icon: Sparkles },
-  { label: "Needs attention", value: "0", note: "Low-score view placeholder", icon: CircleAlert },
+  { label: "Ürünler", value: "0", note: "İlk kaynak bekleniyor", icon: Package },
+  { label: "Analiz edilen", value: "0", note: "AI bağlantısı Faz 7'de eklenecek", icon: Activity },
+  { label: "Optimize edilen", value: "0", note: "Onay akışı sonraki fazlarda gelecek", icon: Sparkles },
+  { label: "Dikkat isteyen", value: "0", note: "Düşük skor görünümü için yer tutucu", icon: CircleAlert },
 ];
 
 export default function DashboardPage() {
@@ -12,16 +12,16 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <section className="industrial-panel p-6">
         <p className="font-mono text-xs uppercase text-primary">
-          Catalog command center
+          Katalog kontrol merkezi
         </p>
         <div className="mt-4 max-w-3xl space-y-3">
           <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
-            Dashboard foundation
+            Panel temeli
           </h1>
           <p className="leading-7 text-muted-foreground">
-            This screen is the Phase 0 shell for the catalog overview. Later
-            phases will attach Supabase-owned stores, imported products,
-            analysis results, and optimization history.
+            Bu ekran, katalog özetinin Faz 0 kabuğudur. Sonraki fazlarda
+            Supabase veritabanına bağlı mağazalar, içe aktarılan ürünler, analiz
+            sonuçları ve optimizasyon geçmişi buraya bağlanacak.
           </p>
         </div>
       </section>

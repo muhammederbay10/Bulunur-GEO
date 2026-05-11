@@ -8,13 +8,13 @@ export default function OnboardingPage() {
       <div className="mx-auto max-w-5xl py-10">
         <PhasePlaceholder
           icon={Store}
-          title="Onboarding route foundation"
-          description="Phase 1 will turn this route into the business profile and source-choice flow."
+          title="Onboarding rota temeli"
+          description="Faz 1'de bu rota iş profili ve ürün kaynağı seçimi akışına dönüşecek."
           items={[
-            "Business profile fields will create profile and store context.",
-            "Source choice will branch into Shopify or native import setup.",
-            "Signed-in users will land here before the dashboard when setup is incomplete.",
-            "This placeholder exists so route groups are ready before feature work starts.",
+            "İş profili alanları profil ve mağaza bağlamını oluşturacak.",
+            "Kaynak seçimi Shopify veya native içe aktarma kurulumuna ayrılacak.",
+            "Kurulumu tamamlanmamış giriş yapmış kullanıcılar panelden önce buraya gelecek.",
+            "Bu yer tutucu, özellik geliştirme başlamadan önce rota grupları hazır olsun diye var.",
           ]}
         />
       </div>

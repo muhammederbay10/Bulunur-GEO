@@ -6,13 +6,13 @@ export default function SourcesPage() {
   return (
     <PhasePlaceholder
       icon={Store}
-      title="Sources route foundation"
-      description="Phases 3, 4, and 5 will use this area for Shopify connection and native import."
+      title="Kaynaklar rota temeli"
+      description="Faz 3, 4 ve 5'te bu alan Shopify bağlantısı ve native içe aktarma için kullanılacak."
       items={[
-        "Shopify OAuth will validate shop domain, state, HMAC, scopes, and token storage.",
-        "Native URL import will be bounded, server-side, safe, and preview-first.",
-        "WooCommerce remains future or optional unless the team changes MVP scope.",
-        "Source connection status and manual resync belong here.",
+        "Shopify OAuth; mağaza alan adını, state değerini, HMAC'i, izinleri ve token saklamayı doğrulayacak.",
+        "Native URL içe aktarma sınırlı, sunucu taraflı, güvenli ve önce önizlemeli olacak.",
+        "Takım MVP kapsamını değiştirmedikçe WooCommerce gelecek/opsiyonel kapsamda kalır.",
+        "Kaynak bağlantı durumu ve manuel yeniden senkronizasyon burada yer alır.",
       ]}
     />
   );

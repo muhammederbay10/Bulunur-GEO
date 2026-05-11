@@ -149,20 +149,21 @@ Use the documented product design principle: high-tech appearance, simple busine
 
 Project-specific UI rules:
 
-1. Use a premium industrial noir direction: graphite/dark surfaces, safety orange action color, sharp radii, thin borders, subtle grid texture, and score instrumentation.
-2. Keep the app usable for non-technical sellers.
-3. The dashboard is a catalog/status dashboard, not the product analysis page.
-4. Product analysis and optimization result should live on the product page.
-5. Keep analysis visible while optimization runs.
-6. Show before/after output on the same product page after optimization.
-7. Provide clear loading, empty, error, retry, and partial-success states.
-8. Explain score dimensions in plain language.
-9. Avoid unexplained AI/GEO jargon in primary UI.
-10. Do not expose raw debug payloads as the main user experience.
-11. Show warnings near affected fields.
-12. Make approval/export/publish actions explicit and human-controlled.
-13. Respect responsive layouts and reduced-motion preferences.
-14. Avoid decorative fake charts and nested-card clutter.
+1. The website/application UI must be Turkish by default. Use English only for developer-facing docs, code identifiers, API field names, library terms, or external platform terms that should remain unchanged.
+2. Use a premium industrial noir direction: graphite/dark surfaces, safety orange action color, sharp radii, thin borders, subtle grid texture, and score instrumentation.
+3. Keep the app usable for non-technical sellers.
+4. The dashboard is a catalog/status dashboard, not the product analysis page.
+5. Product analysis and optimization result should live on the product page.
+6. Keep analysis visible while optimization runs.
+7. Show before/after output on the same product page after optimization.
+8. Provide clear loading, empty, error, retry, and partial-success states.
+9. Explain score dimensions in plain Turkish.
+10. Avoid unexplained AI/GEO jargon in primary UI.
+11. Do not expose raw debug payloads as the main user experience.
+12. Show warnings near affected fields.
+13. Make approval/export/publish actions explicit and human-controlled.
+14. Respect responsive layouts and reduced-motion preferences.
+15. Avoid decorative fake charts and nested-card clutter.
 
 ## 10. Auth, Security, And Environment Rules
 
