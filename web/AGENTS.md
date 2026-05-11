@@ -58,7 +58,7 @@ The documented target stack is:
 
 ## 5. Product Summary
 
-Bulunur is a Turkey-focused e-commerce GEO platform. It helps Turkish e-commerce sellers import products, analyze one selected Turkish product page for AI visibility, generate safe Turkish improvements, review before/after output, and copy, export, save, apply, or publish only approved changes.
+This is a Turkey-focused e-commerce GEO platform. The final product name is not decided, so visible app branding should stay generic until the team confirms it. The platform helps Turkish e-commerce sellers import products, analyze one selected Turkish product page for AI visibility, generate safe Turkish improvements, review before/after output, and copy, export, save, apply, or publish only approved changes.
 
 The product is not a generic AI copywriter and must not promise guaranteed ranking in AI answers. It is an AI visibility workflow for e-commerce product pages with human approval.
 
@@ -203,9 +203,11 @@ Rules:
 2. Use JSONB for flexible AI outputs, raw connector payloads, scrape payloads, and snapshots without losing relational ownership.
 3. Keep SQL/Supabase calls out of UI components where possible.
 4. Centralize ownership-aware data access in repository/service functions.
-5. Any schema, table, policy, function, or migration change must be provided as a script/migration in the correct project folder once that folder is established.
-6. Do not silently apply database changes outside the documented workflow.
-7. If the SQL/migration folder is not yet established, create or propose one explicitly before adding schema changes.
+5. The project SQL script folder is `web/.codex/sql/`.
+6. Any schema, table, policy, function, or migration change must be written as a SQL script in `web/.codex/sql/`.
+7. Do not silently apply database changes outside the documented workflow.
+8. Do not run Supabase SQL from the agent environment. The user will run SQL manually from the Supabase SQL Editor.
+9. When adding SQL, tell the user the exact SQL file to run and when it must be run before local testing.
 
 Known conflict:
 

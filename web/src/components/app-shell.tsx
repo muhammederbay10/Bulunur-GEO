@@ -8,8 +8,8 @@ import {
   Store,
 } from "lucide-react";
 
-import { AuthButton } from "@/features/auth/components/auth-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
+import { AuthButton } from "@/features/auth/components/auth-button";
 import { hasRequiredPublicEnv } from "@/lib/env/public";
 
 const navItems = [
@@ -50,10 +50,10 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           <header className="flex min-h-16 items-center justify-between gap-4 border-b border-border/70 bg-background/80 px-5">
             <div>
               <p className="font-mono text-xs uppercase text-muted-foreground">
-                Faz 0
+                Faz 1
               </p>
               <p className="text-sm text-muted-foreground">
-                Yapı, kabuk, tokenlar ve servis sınırları
+                Kimlik, onboarding ve korumalı uygulama alanı
               </p>
             </div>
             {hasRequiredPublicEnv ? (

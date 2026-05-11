@@ -1,22 +1,46 @@
-import { Store } from "lucide-react";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { PhasePlaceholder } from "@/components/phase-placeholder";
+import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
+import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
+
+function OnboardingFallback() {
+  return (
+    <div className="industrial-panel p-6">
+      <p className="font-mono text-xs uppercase text-primary">Faz 1</p>
+      <h1 className="mt-3 text-2xl font-semibold">Onboarding hazırlanıyor</h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        Supabase oturumu ve mevcut profil bilgileri kontrol ediliyor.
+      </p>
+    </div>
+  );
+}
+
+async function OnboardingContent() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  const profileResult = await getProfileForUser(user.id);
+
+  return (
+    <OnboardingForm
+      profile={profileResult.profile}
+      databaseReady={!profileResult.isMissingTable}
+      setupMessage={profileResult.errorMessage}
+    />
+  );
+}
 
 export default function OnboardingPage() {
   return (
     <main className="industrial-grid min-h-screen bg-background p-5">
-      <div className="mx-auto max-w-5xl py-10">
-        <PhasePlaceholder
-          icon={Store}
-          title="Onboarding rota temeli"
-          description="Faz 1'de bu rota iş profili ve ürün kaynağı seçimi akışına dönüşecek."
-          items={[
-            "İş profili alanları profil ve mağaza bağlamını oluşturacak.",
-            "Kaynak seçimi Shopify veya native içe aktarma kurulumuna ayrılacak.",
-            "Kurulumu tamamlanmamış giriş yapmış kullanıcılar panelden önce buraya gelecek.",
-            "Bu yer tutucu, özellik geliştirme başlamadan önce rota grupları hazır olsun diye var.",
-          ]}
-        />
+      <div className="mx-auto w-full max-w-7xl py-10">
+        <Suspense fallback={<OnboardingFallback />}>
+          <OnboardingContent />
+        </Suspense>
       </div>
     </main>
   );
