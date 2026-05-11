@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
 import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
-import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
+import {
+  getCurrentUser,
+  getProfileForUser,
+  hasCompletedOnboarding,
+} from "@/lib/db/profile-repository";
 
 function OnboardingFallback() {
   return (
@@ -24,6 +28,10 @@ async function OnboardingContent() {
   }
 
   const profileResult = await getProfileForUser(user.id);
+
+  if (hasCompletedOnboarding(profileResult.profile)) {
+    redirect("/dashboard");
+  }
 
   return (
     <OnboardingForm

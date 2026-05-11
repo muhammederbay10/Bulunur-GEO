@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { ArrowRight, Database, Globe2, Store } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,16 +52,26 @@ export function OnboardingForm({
   databaseReady,
   setupMessage,
 }: OnboardingFormProps) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(
     saveOnboardingProfile,
     initialState,
   );
   const selectedSource = profile?.preferredProductSource ?? "shopify";
 
+  useEffect(() => {
+    if (state.status === "success" && state.redirectTo) {
+      router.replace(state.redirectTo);
+    }
+  }, [router, state.redirectTo, state.status]);
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <form action={formAction} className="industrial-panel p-6">
-        <fieldset className="space-y-6" disabled={!databaseReady || pending}>
+        <fieldset
+          className="space-y-6"
+          disabled={!databaseReady || pending || state.status === "success"}
+        >
           <div className="space-y-3">
             <p className="font-mono text-xs uppercase text-primary">
               Faz 1 / Onboarding
@@ -83,6 +94,12 @@ export function OnboardingForm({
 
           {state.status === "error" && state.message ? (
             <div className="border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+              {state.message}
+            </div>
+          ) : null}
+
+          {state.status === "success" && state.message ? (
+            <div className="border border-primary/50 bg-primary/10 p-4 text-sm text-primary">
               {state.message}
             </div>
           ) : null}
@@ -188,7 +205,9 @@ export function OnboardingForm({
           </div>
 
           <Button type="submit" className="w-full md:w-auto">
-            {pending ? "Kaydediliyor..." : "Onboarding'i tamamla"}
+            {pending || state.status === "success"
+              ? "Panele yönlendiriliyor..."
+              : "Onboarding'i tamamla"}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </fieldset>

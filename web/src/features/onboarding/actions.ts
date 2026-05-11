@@ -13,9 +13,10 @@ import {
 } from "@/lib/validation/onboarding";
 
 export type OnboardingFormState = {
-  status: "idle" | "error";
+  status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: OnboardingFieldErrors;
+  redirectTo?: string;
 };
 
 function getFormValue(formData: FormData, key: string) {
@@ -61,5 +62,9 @@ export async function saveOnboardingProfile(
 
   revalidatePath("/onboarding");
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  return {
+    status: "success",
+    message: "Onboarding tamamlandı. Panele yönlendiriliyorsun.",
+    redirectTo: "/dashboard",
+  };
 }

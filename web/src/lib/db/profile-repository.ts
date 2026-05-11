@@ -8,12 +8,13 @@ import type { OnboardingInput, UserProfile } from "@/types/profile";
 type ProfileRow = {
   id: string;
   email: string | null;
-  full_name: string;
-  business_name: string;
-  business_category: string;
+  full_name: string | null;
+  business_name: string | null;
+  business_category: string | null;
   website_url: string | null;
-  market_focus: string;
-  preferred_product_source: "shopify" | "native";
+  market_focus: string | null;
+  preferred_product_source: "shopify" | "native" | null;
+  onboarding_completed: boolean;
   onboarding_completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -34,6 +35,9 @@ export type ProfileMutationResult =
   | { ok: true; profile: UserProfile }
   | { ok: false; message: string; isMissingTable?: boolean };
 
+const profileSelect =
+  "id,email,full_name,business_name,business_category,website_url,market_focus,preferred_product_source,onboarding_completed,onboarding_completed_at,created_at,updated_at";
+
 function mapProfileRow(row: ProfileRow): UserProfile {
   return {
     id: row.id,
@@ -44,6 +48,7 @@ function mapProfileRow(row: ProfileRow): UserProfile {
     websiteUrl: row.website_url,
     marketFocus: row.market_focus,
     preferredProductSource: row.preferred_product_source,
+    onboardingCompleted: row.onboarding_completed,
     onboardingCompletedAt: row.onboarding_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -81,9 +86,7 @@ export const getProfileForUser = cache(
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("profiles")
-      .select(
-        "id,email,full_name,business_name,business_category,website_url,market_focus,preferred_product_source,onboarding_completed_at,created_at,updated_at",
-      )
+      .select(profileSelect)
       .eq("id", userId)
       .maybeSingle<ProfileRow>();
 
@@ -98,7 +101,8 @@ export const getProfileForUser = cache(
 
       return {
         profile: null,
-        errorMessage: "Profil bilgisi okunamadı. Lütfen tekrar dene.",
+        errorMessage:
+          "Profil bilgisi okunamadı. SQL şemasının güncel olduğundan emin ol ve tekrar dene.",
       };
     }
 
@@ -123,13 +127,12 @@ export async function upsertOnboardingProfile(
         website_url: input.websiteUrl ?? null,
         market_focus: input.marketFocus,
         preferred_product_source: input.preferredProductSource,
+        onboarding_completed: true,
         onboarding_completed_at: new Date().toISOString(),
       },
       { onConflict: "id" },
     )
-    .select(
-      "id,email,full_name,business_name,business_category,website_url,market_focus,preferred_product_source,onboarding_completed_at,created_at,updated_at",
-    )
+    .select(profileSelect)
     .single<ProfileRow>();
 
   if (error) {
@@ -137,7 +140,7 @@ export async function upsertOnboardingProfile(
       ok: false,
       message: isMissingProfilesTable(error)
         ? databaseSetupMessage()
-        : "Profil kaydedilemedi. Lütfen bilgileri kontrol edip tekrar dene.",
+        : "Profil kaydedilemedi. Lütfen SQL şemasının güncel olduğundan emin ol ve tekrar dene.",
       isMissingTable: isMissingProfilesTable(error),
     };
   }
@@ -146,5 +149,5 @@ export async function upsertOnboardingProfile(
 }
 
 export function hasCompletedOnboarding(profile: UserProfile | null) {
-  return Boolean(profile?.onboardingCompletedAt);
+  return profile?.onboardingCompleted === true;
 }
