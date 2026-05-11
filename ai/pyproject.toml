@@ -1,0 +1,18 @@
+[project]
+name = "bulunur-ai"
+version = "0.1.0"
+description = "AI/GEO engine for Bulunur Turkish e-commerce product optimization."
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0,<3.0",
+]
+
+[tool.setuptools.packages.find]
+include = [
+    "agents*",
+    "api_contracts*",
+    "geo_engine*",
+    "llm*",
+    "schema_engine*",
+    "turkish_nlp*",
+]
