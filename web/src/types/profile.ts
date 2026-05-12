@@ -19,7 +19,5 @@ export type OnboardingInput = {
   fullName: string;
   businessName: string;
   businessCategory: string;
-  websiteUrl?: string;
   marketFocus: string;
-  preferredProductSource: ProductSourcePreference;
 };

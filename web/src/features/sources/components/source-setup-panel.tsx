@@ -162,12 +162,41 @@ export function SourceSetupPanel({
   const formsDisabled = !databaseReady || !canWriteSources;
   const nativeStore = stores.find((store) => store.sourceType === "native");
   const shopifyStore = stores.find((store) => store.sourceType === "shopify");
+  const successMessage =
+    nativeState.status === "success"
+      ? nativeState.message
+      : shopifyState.status === "success"
+        ? shopifyState.message
+        : undefined;
 
   useEffect(() => {
     if (nativeState.status === "success" || shopifyState.status === "success") {
-      router.refresh();
+      const timeoutId = window.setTimeout(() => {
+        router.replace("/dashboard");
+      }, 1250);
+
+      return () => window.clearTimeout(timeoutId);
     }
   }, [nativeState.status, router, shopifyState.status]);
+
+  if (successMessage) {
+    return (
+      <section className="seller-surface mx-auto max-w-2xl p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-primary/10 text-primary">
+          <CheckCircle2 className="h-7 w-7" />
+        </div>
+        <h1 className="mt-5 text-3xl font-semibold">
+          Kaynak hazırlığı tamamlandı
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl leading-7 text-muted-foreground">
+          {successMessage}
+        </p>
+        <p className="mt-5 text-sm text-muted-foreground">
+          Panel yenileniyor ve dashboard ekranına geçiliyor...
+        </p>
+      </section>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

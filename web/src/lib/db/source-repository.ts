@@ -115,6 +115,21 @@ function profileDefaults(profile: UserProfile) {
   };
 }
 
+async function updateProfileSourcePreference(
+  supabase: ReturnType<typeof createAdminClient>,
+  profileId: string,
+  preferredProductSource: "shopify" | "native",
+  websiteUrl?: string,
+) {
+  await supabase
+    .from("profiles")
+    .update({
+      preferred_product_source: preferredProductSource,
+      ...(websiteUrl ? { website_url: websiteUrl } : {}),
+    })
+    .eq("id", profileId);
+}
+
 async function loadStoreWithConnection(
   supabase: ReturnType<typeof createAdminClient>,
   profileId: string,
@@ -262,6 +277,13 @@ export async function createOrUpdateNativeSource(
       };
     }
 
+    await updateProfileSourcePreference(
+      supabase,
+      profile.id,
+      "native",
+      payload.website_url ?? undefined,
+    );
+
     return loadStoreWithConnection(supabase, profile.id, data.id);
   } catch (error) {
     if (error instanceof MissingSupabaseServiceRoleKeyError) {
@@ -357,6 +379,8 @@ export async function prepareShopifySource(
         isMissingTable: isMissingSourceTable(connectionError),
       };
     }
+
+    await updateProfileSourcePreference(supabase, profile.id, "shopify");
 
     return loadStoreWithConnection(supabase, profile.id, storeData.id);
   } catch (error) {

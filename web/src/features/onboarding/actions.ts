@@ -38,9 +38,7 @@ export async function saveOnboardingProfile(
     fullName: getFormValue(formData, "fullName"),
     businessName: getFormValue(formData, "businessName"),
     businessCategory: getFormValue(formData, "businessCategory"),
-    websiteUrl: getFormValue(formData, "websiteUrl"),
     marketFocus: getFormValue(formData, "marketFocus"),
-    preferredProductSource: getFormValue(formData, "preferredProductSource"),
   });
 
   if (!parsed.success) {
@@ -61,10 +59,11 @@ export async function saveOnboardingProfile(
   }
 
   revalidatePath("/onboarding");
+  revalidatePath("/sources");
   revalidatePath("/dashboard");
   return {
     status: "success",
-    message: "Onboarding tamamlandı. Panele yönlendiriliyorsun.",
-    redirectTo: "/dashboard",
+    message: "Onboarding tamamlandı. Ürün kaynağını hazırlamaya geçiyoruz.",
+    redirectTo: "/sources?setup=1",
   };
 }
