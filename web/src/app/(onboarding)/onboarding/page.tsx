@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   getProfileForUser,
   hasCompletedOnboarding,
+  hasCompletedSourceSetup,
 } from "@/lib/db/profile-repository";
 
 function OnboardingFallback() {
@@ -30,6 +31,10 @@ async function OnboardingContent() {
   const profileResult = await getProfileForUser(user.id);
 
   if (hasCompletedOnboarding(profileResult.profile)) {
+    if (!hasCompletedSourceSetup(profileResult.profile)) {
+      redirect("/sources?setup=1");
+    }
+
     redirect("/dashboard");
   }
 
