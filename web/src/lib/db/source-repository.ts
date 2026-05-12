@@ -160,6 +160,13 @@ async function completeSourceSetupTransaction(
   if (error) {
     const isMissingTable = isMissingSourceTable(error);
 
+    console.error("[source-setup] complete_source_setup RPC failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+
     return {
       ok: false,
       message: isMissingTable
