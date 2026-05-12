@@ -3,9 +3,11 @@ import { CheckCircle2, RefreshCw } from "lucide-react";
 export function SourceSetupSuccess({
   message,
   setupMode,
+  redirectLabel,
 }: {
   message: string;
   setupMode: boolean;
+  redirectLabel?: string;
 }) {
   return (
     <section className="seller-surface mx-auto max-w-2xl p-8 text-center">
@@ -13,7 +15,7 @@ export function SourceSetupSuccess({
         <CheckCircle2 className="h-7 w-7" />
       </div>
       <h1 className="mt-5 text-3xl font-semibold">
-        Kaynak hazırlığı tamamlandı
+        Kaynak hazirligi tamamlandi
       </h1>
       <p className="mx-auto mt-3 max-w-xl leading-7 text-muted-foreground">
         {message}
@@ -24,9 +26,10 @@ export function SourceSetupSuccess({
         </div>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <RefreshCw className="h-4 w-4 motion-safe:animate-spin" />
-          {setupMode
-            ? "Panel yenileniyor ve dashboard ekranına geçiliyor..."
-            : "Kaynak durumu yenileniyor..."}
+          {redirectLabel ??
+            (setupMode
+              ? "Panel yenileniyor ve dashboard ekranina geciliyor..."
+              : "Kaynak durumu yenileniyor...")}
         </p>
       </div>
     </section>

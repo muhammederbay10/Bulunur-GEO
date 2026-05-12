@@ -26,6 +26,10 @@ type SourceSetupPanelProps = {
   canWriteSources: boolean;
   setupMessage?: string;
   setupMode: boolean;
+  shopifyNotice?: {
+    kind: "success" | "warning" | "error";
+    message: string;
+  };
 };
 
 const nativeInitialState: NativeSourceFormState = { status: "idle" };
@@ -38,6 +42,7 @@ export function SourceSetupPanel({
   canWriteSources,
   setupMessage,
   setupMode,
+  shopifyNotice,
 }: SourceSetupPanelProps) {
   const router = useRouter();
   const [nativeState, nativeAction, nativePending] = useActionState(
@@ -59,6 +64,14 @@ export function SourceSetupPanel({
         : undefined;
 
   useEffect(() => {
+    if (shopifyState.status === "success" && shopifyState.connectUrl) {
+      const timeoutId = window.setTimeout(() => {
+        router.push(shopifyState.connectUrl as string);
+      }, 500);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
     if (nativeState.status === "success" || shopifyState.status === "success") {
       const timeoutId = window.setTimeout(() => {
         if (setupMode) {
@@ -70,11 +83,25 @@ export function SourceSetupPanel({
 
       return () => window.clearTimeout(timeoutId);
     }
-  }, [nativeState.status, router, setupMode, shopifyState.status]);
+  }, [
+    nativeState.status,
+    router,
+    setupMode,
+    shopifyState.connectUrl,
+    shopifyState.status,
+  ]);
 
   if (successMessage) {
     return (
-      <SourceSetupSuccess message={successMessage} setupMode={setupMode} />
+      <SourceSetupSuccess
+        message={successMessage}
+        setupMode={setupMode}
+        redirectLabel={
+          shopifyState.status === "success" && shopifyState.connectUrl
+            ? "Shopify yetki ekranina yonlendiriliyorsunuz..."
+            : undefined
+        }
+      />
     );
   }
 
@@ -92,6 +119,20 @@ export function SourceSetupPanel({
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
           Kaynak kurulumu şu anda kullanılamıyor. Lütfen daha sonra tekrar
           deneyin veya destek ekibine haber verin.
+        </div>
+      ) : null}
+
+      {shopifyNotice ? (
+        <div
+          className={
+            shopifyNotice.kind === "error"
+              ? "rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
+              : shopifyNotice.kind === "warning"
+                ? "rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground"
+                : "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-900 dark:text-emerald-100"
+          }
+        >
+          {shopifyNotice.message}
         </div>
       ) : null}
 

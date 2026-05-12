@@ -7,10 +7,17 @@ import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
 import { getSourceSetupForUser } from "@/lib/db/source-repository";
 import { hasSupabaseElevatedKey } from "@/lib/env/server";
 
+type SourcesSearchParams = {
+  setup?: string;
+  shopify_connected?: string;
+  shopify_sync?: string;
+  shopify_error?: string;
+  product_count?: string;
+  shop?: string;
+};
+
 type SourcesPageProps = {
-  searchParams?: Promise<{
-    setup?: string;
-  }>;
+  searchParams?: Promise<SourcesSearchParams>;
 };
 
 function SourcesFallback() {
@@ -18,12 +25,12 @@ function SourcesFallback() {
     <main className="min-h-screen bg-background p-5">
       <div className="mx-auto w-full max-w-5xl py-10">
         <div className="seller-surface p-6">
-          <p className="text-sm font-medium text-primary">Ürün kaynağı</p>
+          <p className="text-sm font-medium text-primary">Urun kaynagi</p>
           <h1 className="mt-3 text-2xl font-semibold">
-            Kaynak durumu hazırlanıyor
+            Kaynak durumu hazirlaniyor
           </h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Mağaza ve bağlantı kayıtlarınız güvenli şekilde okunuyor.
+            Magaza ve baglanti kayitlariniz guvenli sekilde okunuyor.
           </p>
         </div>
       </div>
@@ -31,12 +38,42 @@ function SourcesFallback() {
   );
 }
 
+function getShopifyNotice(params?: SourcesSearchParams) {
+  if (params?.shopify_error) {
+    return {
+      kind: "error" as const,
+      message:
+        "Shopify baglantisi tamamlanamadi. Magaza alan adini ve Shopify uygulama ayarlarini kontrol edip tekrar deneyin.",
+    };
+  }
+
+  if (params?.shopify_connected === "1" && params.shopify_sync === "failed") {
+    return {
+      kind: "warning" as const,
+      message:
+        "Shopify baglantisi kuruldu, ancak urun senkronizasyonu tamamlanamadi. Kaynak kartindan tekrar senkronize edebilirsiniz.",
+    };
+  }
+
+  if (params?.shopify_connected === "1") {
+    const productCount = Number(params.product_count ?? "0");
+
+    return {
+      kind: "success" as const,
+      message:
+        productCount > 0
+          ? `Shopify baglantisi kuruldu ve ${productCount} urun iceri alindi.`
+          : "Shopify baglantisi kuruldu. Bu magazada senkronize edilecek urun bulunamadi.",
+    };
+  }
+
+  return undefined;
+}
+
 async function SourcesContent({
   searchParams,
 }: {
-  searchParams?: Promise<{
-    setup?: string;
-  }>;
+  searchParams?: Promise<SourcesSearchParams>;
 }) {
   const params = await searchParams;
   const setupRequested = params?.setup === "1";
@@ -66,6 +103,7 @@ async function SourcesContent({
       canWriteSources={hasSupabaseElevatedKey()}
       setupMessage={profileResult.errorMessage ?? sourceResult.errorMessage}
       setupMode={setupMode}
+      shopifyNotice={getShopifyNotice(params)}
     />
   );
 

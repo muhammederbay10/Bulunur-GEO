@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getCurrentUser } from "@/lib/db/profile-repository";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ShopifyProductUpsert } from "@/lib/shopify/product-mapper";
 import type { ProductSummary } from "@/types/product";
@@ -50,7 +51,19 @@ function mapProductSummary(row: ProductRow): ProductSummary {
 }
 
 export async function listProductsForCurrentUser(): Promise<ProductSummary[]> {
-  throw new Error("Product repository implementation starts in Phase 2.");
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return [];
+  }
+
+  const result = await listProductsForProfile(user.id);
+
+  if (!result.ok) {
+    return [];
+  }
+
+  return result.data;
 }
 
 export async function upsertShopifyProducts(

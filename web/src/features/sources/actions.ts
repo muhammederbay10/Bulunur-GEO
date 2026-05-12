@@ -29,6 +29,8 @@ export type ShopifySourceFormState = {
   status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: ShopifySourceFieldErrors;
+  connectUrl?: string;
+  shopDomain?: string;
 };
 
 function getFormValue(formData: FormData, key: string) {
@@ -65,7 +67,7 @@ export async function saveNativeSource(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Web sitesi kaynağını kaydetmeden önce alanları düzelt.",
+      message: "Web sitesi kaynagini kaydetmeden once alanlari duzelt.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -85,7 +87,7 @@ export async function saveNativeSource(
   return {
     status: "success",
     message:
-      "Web sitesi kaynağı hazır. Ürün ekleme akışı Phase 5'te bu kaynaktan devam edecek.",
+      "Web sitesi kaynagi hazir. Urun ekleme akisi Phase 5'te bu kaynaktan devam edecek.",
   };
 }
 
@@ -101,7 +103,7 @@ export async function saveShopifySource(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Shopify hazırlığını kaydetmeden önce alanları düzelt.",
+      message: "Shopify hazirligini kaydetmeden once alanlari duzelt.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -121,6 +123,10 @@ export async function saveShopifySource(
   return {
     status: "success",
     message:
-      "Shopify mağaza bilgisi kaydedildi. OAuth bağlantısı Phase 4'te buradan başlatılacak.",
+      "Shopify magaza bilgisi kaydedildi. Yetki vermeniz icin Shopify'a yonlendiriliyorsunuz.",
+    connectUrl: `/api/shopify/connect?shop=${encodeURIComponent(
+      parsed.data.shopDomain,
+    )}`,
+    shopDomain: parsed.data.shopDomain,
   };
 }

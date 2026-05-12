@@ -1,4 +1,11 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { CheckCircle2, ExternalLink, RefreshCw, Unplug } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { SourceStore } from "@/types/source";
 
 const sourceLabels = {
@@ -8,29 +15,87 @@ const sourceLabels = {
 };
 
 const storeStatusLabels = {
-  setup_pending: "Hazırlanıyor",
-  active: "Hazır",
+  setup_pending: "Hazirlaniyor",
+  active: "Hazir",
   syncing: "Senkronize ediliyor",
   error: "Hata var",
-  disconnected: "Bağlantı kesildi",
+  disconnected: "Baglanti kesildi",
 };
 
 const connectionStatusLabels = {
-  pending: "Bağlantı bekliyor",
-  connected: "Bağlı",
-  error: "Hata var",
-  revoked: "Yetki kaldırıldı",
-  disconnected: "Bağlantı kesildi",
+  pending: "Yetki bekliyor",
+  connected: "Bagli",
+  error: "Tekrar gerekli",
+  revoked: "Yetki kaldirildi",
+  disconnected: "Baglanti kesildi",
 };
+
+function formatDateTime(value: string | null) {
+  if (!value) {
+    return "Henuz senkronize edilmedi";
+  }
+
+  return new Intl.DateTimeFormat("tr-TR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getShopifyAction(store: SourceStore) {
+  const shopDomain = store.connection?.shopDomain;
+  const connectionStatus = store.connection?.status;
+
+  if (!shopDomain || !connectionStatus || connectionStatus === "disconnected") {
+    return null;
+  }
+
+  if (connectionStatus === "connected") {
+    return "sync";
+  }
+
+  return "connect";
+}
+
+function SyncButton({ storeId }: { storeId: string }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleSync() {
+    startTransition(async () => {
+      await fetch("/api/shopify/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ storeId }),
+      });
+      router.refresh();
+    });
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="gap-2"
+      onClick={handleSync}
+      disabled={isPending}
+    >
+      <RefreshCw className={isPending ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+      Senkronize et
+    </Button>
+  );
+}
 
 export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
   if (!stores.length) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-background/60 p-5">
-        <p className="font-medium">Henüz ürün kaynağı yok</p>
+        <p className="font-medium">Henuz urun kaynagi yok</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Önce Shopify mağazanızı hazırlayın veya web sitenizden ürün eklemek
-          için bir kaynak oluşturun.
+          Once Shopify magazanizi baglayin veya web sitenizden urun eklemek
+          icin bir kaynak olusturun.
         </p>
       </div>
     );
@@ -38,39 +103,83 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
 
   return (
     <div className="grid gap-3">
-      {stores.map((store) => (
-        <article
-          key={store.id}
-          className="rounded-lg border border-border bg-background/70 p-4"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold">{store.name}</h3>
-                <Badge variant="secondary">{sourceLabels[store.sourceType]}</Badge>
-                <Badge variant={store.status === "error" ? "destructive" : "outline"}>
-                  {storeStatusLabels[store.status]}
-                </Badge>
+      {stores.map((store) => {
+        const shopifyAction =
+          store.sourceType === "shopify" ? getShopifyAction(store) : null;
+        const shopDomain = store.connection?.shopDomain;
+
+        return (
+          <article
+            key={store.id}
+            className="rounded-lg border border-border bg-background/70 p-4"
+          >
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold">{store.name}</h3>
+                  <Badge variant="secondary">{sourceLabels[store.sourceType]}</Badge>
+                  <Badge variant={store.status === "error" ? "destructive" : "outline"}>
+                    {storeStatusLabels[store.status]}
+                  </Badge>
+                  {store.connection ? (
+                    <Badge
+                      variant={
+                        store.connection.status === "error"
+                          ? "destructive"
+                          : "outline"
+                      }
+                    >
+                      {connectionStatusLabels[store.connection.status]}
+                    </Badge>
+                  ) : null}
+                </div>
+                <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
+                  {store.sourceType === "shopify"
+                    ? shopDomain ?? "Shopify alan adi bekleniyor"
+                    : store.websiteUrl ?? "Web sitesi adresi eklenmedi"}
+                </p>
+                {store.sourceType === "shopify" ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Son senkronizasyon: {formatDateTime(store.lastSyncAt)}
+                  </p>
+                ) : null}
               </div>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {store.sourceType === "shopify"
-                  ? store.connection?.shopDomain ?? "Shopify alan adı bekleniyor"
-                  : store.websiteUrl ?? "Web sitesi adresi eklenmedi"}
-              </p>
+
+              {shopifyAction === "connect" && shopDomain ? (
+                <Button asChild size="sm" className="gap-2">
+                  <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain)}`}>
+                    <ExternalLink className="h-4 w-4" />
+                    Shopify&apos;a baglan
+                  </a>
+                </Button>
+              ) : null}
+
+              {shopifyAction === "sync" ? <SyncButton storeId={store.id} /> : null}
+
+              {store.connection?.status === "disconnected" ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Unplug className="h-4 w-4" />
+                  Kayitli urunler DB&apos;den gosterilir.
+                </div>
+              ) : null}
             </div>
-            {store.connection ? (
-              <Badge variant="outline">
-                {connectionStatusLabels[store.connection.status]}
-              </Badge>
+
+            {store.connection?.status === "connected" ? (
+              <p className="mt-3 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-4 w-4" />
+                Shopify bagli. Urunler otomatik senkronize edilir; gerekirse
+                tekrar senkronize edebilirsiniz.
+              </p>
             ) : null}
-          </div>
-          {store.connection?.lastErrorMessage ? (
-            <p className="mt-3 text-sm text-destructive">
-              {store.connection.lastErrorMessage}
-            </p>
-          ) : null}
-        </article>
-      ))}
+
+            {store.connection?.lastErrorMessage ? (
+              <p className="mt-3 text-sm text-destructive">
+                {store.connection.lastErrorMessage}
+              </p>
+            ) : null}
+          </article>
+        );
+      })}
     </div>
   );
 }

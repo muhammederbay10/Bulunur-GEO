@@ -29,6 +29,16 @@ function createSourcesRedirect(request: NextRequest, params: Record<string, stri
   return NextResponse.redirect(url);
 }
 
+function createProductsRedirect(request: NextRequest, params: Record<string, string>) {
+  const url = new URL("/products", request.nextUrl.origin);
+
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  return NextResponse.redirect(url);
+}
+
 function clearStateCookie(response: NextResponse) {
   response.cookies.delete(SHOPIFY_OAUTH_STATE_COOKIE);
 
@@ -157,7 +167,7 @@ export async function GET(request: NextRequest) {
 
     if (!syncResult.ok) {
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createProductsRedirect(request, {
           shopify_connected: "1",
           shopify_sync: "failed",
           shop: parsed.data.shop,
@@ -166,7 +176,7 @@ export async function GET(request: NextRequest) {
     }
 
     return clearStateCookie(
-      createSourcesRedirect(request, {
+      createProductsRedirect(request, {
         shopify_connected: "1",
         shopify_sync: "success",
         product_count: String(syncResult.data.syncedCount),
