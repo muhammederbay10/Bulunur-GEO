@@ -2,9 +2,24 @@ import { Activity, CircleAlert, Package, Sparkles } from "lucide-react";
 
 const metrics = [
   { label: "Ürünler", value: "0", note: "İlk kaynak bekleniyor", icon: Package },
-  { label: "Analiz edilen", value: "0", note: "AI bağlantısı Faz 7'de eklenecek", icon: Activity },
-  { label: "Optimize edilen", value: "0", note: "Onay akışı sonraki fazlarda gelecek", icon: Sparkles },
-  { label: "Dikkat isteyen", value: "0", note: "Düşük skor görünümü için yer tutucu", icon: CircleAlert },
+  {
+    label: "Analiz edilen",
+    value: "0",
+    note: "AI bağlantısı Faz 7'de eklenecek",
+    icon: Activity,
+  },
+  {
+    label: "Optimize edilen",
+    value: "0",
+    note: "Onay akışı sonraki fazlarda gelecek",
+    icon: Sparkles,
+  },
+  {
+    label: "Dikkat isteyen",
+    value: "0",
+    note: "Düşük skor görünümü için yer tutucu",
+    icon: CircleAlert,
+  },
 ];
 
 export default function DashboardPage() {
@@ -16,12 +31,12 @@ export default function DashboardPage() {
         </p>
         <div className="mt-4 max-w-3xl space-y-3">
           <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
-            Panel temeli
+            Panel hazır
           </h1>
           <p className="leading-7 text-muted-foreground">
-            Bu ekran, katalog özetinin Faz 0 kabuğudur. Sonraki fazlarda
-            Supabase veritabanına bağlı mağazalar, içe aktarılan ürünler, analiz
-            sonuçları ve optimizasyon geçmişi buraya bağlanacak.
+            Onboarding tamamlandı. Bu ekran şimdilik katalog özetinin Faz 1
+            kabuğudur; kaynak bağlantısı, ürünler, analiz sonuçları ve
+            optimizasyon geçmişi sonraki fazlarda bağlanacak.
           </p>
         </div>
       </section>
