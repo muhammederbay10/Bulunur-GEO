@@ -11,6 +11,7 @@ import {
   assertRequiredScopesGranted,
   exchangeCodeForAccessToken,
 } from "@/lib/shopify/oauth";
+import { syncShopifyProductsForConnection } from "@/lib/shopify/service";
 import {
   SHOPIFY_OAUTH_STATE_COOKIE,
   verifySignedOAuthStateCookie,
@@ -149,9 +150,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const syncResult = await syncShopifyProductsForConnection({
+      profileId: statePayload.profileId,
+      storeId: statePayload.storeId,
+    });
+
+    if (!syncResult.ok) {
+      return clearStateCookie(
+        createSourcesRedirect(request, {
+          shopify_connected: "1",
+          shopify_sync: "failed",
+          shop: parsed.data.shop,
+        }),
+      );
+    }
+
     return clearStateCookie(
       createSourcesRedirect(request, {
         shopify_connected: "1",
+        shopify_sync: "success",
+        product_count: String(syncResult.data.syncedCount),
         shop: parsed.data.shop,
       }),
     );

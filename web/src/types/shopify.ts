@@ -10,12 +10,64 @@ export type ShopifyProductSummary = {
   gid: string;
   title: string;
   handle: string;
+  description?: string | null;
   descriptionHtml?: string;
   productType?: string;
   vendor?: string;
   imageUrls: string[];
+  priceDisplay?: string | null;
+  currency?: string | null;
+  availability?: string | null;
+  status?: string | null;
   seoTitle?: string;
   seoDescription?: string;
+  updatedAt?: string | null;
+};
+
+export type ShopifyMoney = {
+  amount: string;
+  currencyCode: string;
+};
+
+export type ShopifyProduct = {
+  id: string;
+  title: string;
+  handle: string;
+  description: string | null;
+  descriptionHtml: string | null;
+  status: string | null;
+  vendor: string | null;
+  productType: string | null;
+  tags: string[];
+  updatedAt: string | null;
+  onlineStorePreviewUrl: string | null;
+  totalInventory: number | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+  } | null;
+  featuredMedia: {
+    preview?: {
+      image?: {
+        url: string | null;
+        altText: string | null;
+      } | null;
+    } | null;
+  } | null;
+  media: {
+    nodes: Array<{
+      preview?: {
+        image?: {
+          url: string | null;
+          altText: string | null;
+        } | null;
+      } | null;
+    }>;
+  } | null;
+  priceRangeV2: {
+    minVariantPrice: ShopifyMoney;
+    maxVariantPrice: ShopifyMoney;
+  } | null;
 };
 
 export type ShopifyPublishableField =
@@ -47,4 +99,13 @@ export type ShopifyConnectionSecret = {
   tokenReference: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ShopifyProductSyncResult = {
+  storeId: string;
+  shopDomain: string;
+  fetchedCount: number;
+  syncedCount: number;
+  hasNextPage: boolean;
+  lastCursor: string | null;
 };

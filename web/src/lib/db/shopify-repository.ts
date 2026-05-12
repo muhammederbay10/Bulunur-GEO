@@ -12,6 +12,8 @@ type ShopifyStoreRow = {
   profile_id: string;
   source_type: "shopify";
   status: StoreStatus;
+  market: string;
+  language: string;
   last_sync_at: string | null;
 };
 
@@ -51,6 +53,18 @@ type CompleteShopifyConnectionInput = {
   encryptedAccessToken: string;
   scopes: string[];
   externalShopId?: string | null;
+};
+
+export type ShopifySyncContext = {
+  store: {
+    id: string;
+    profileId: string;
+    status: StoreStatus;
+    market: string;
+    language: string;
+    lastSyncAt: string | null;
+  };
+  connection: ShopifyConnectionSummary;
 };
 
 const shopifyConnectionSelect =
@@ -110,7 +124,7 @@ async function getOwnedShopifyStore(
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id,profile_id,source_type,status,last_sync_at")
+    .select("id,profile_id,source_type,status,market,language,last_sync_at")
     .eq("profile_id", profileId)
     .eq("id", storeId)
     .eq("source_type", "shopify")
@@ -130,6 +144,23 @@ async function getOwnedShopifyStore(
   }
 
   return { ok: true, data };
+}
+
+function mapSyncContext(
+  store: ShopifyStoreRow,
+  connection: ShopifyConnectionSummary,
+): ShopifySyncContext {
+  return {
+    store: {
+      id: store.id,
+      profileId: store.profile_id,
+      status: store.status,
+      market: store.market,
+      language: store.language,
+      lastSyncAt: store.last_sync_at,
+    },
+    connection,
+  };
 }
 
 export async function getOwnedShopifyConnection(
@@ -165,6 +196,28 @@ export async function getOwnedShopifyConnection(
   }
 
   return { ok: true, data: mapConnectionSummary(data) };
+}
+
+export async function getOwnedShopifySyncContext(
+  profileId: string,
+  storeId: string,
+): Promise<ShopifyRepositoryResult<ShopifySyncContext>> {
+  const store = await getOwnedShopifyStore(profileId, storeId);
+
+  if (!store.ok) {
+    return store;
+  }
+
+  const connection = await getOwnedShopifyConnection(profileId, storeId);
+
+  if (!connection.ok) {
+    return connection;
+  }
+
+  return {
+    ok: true,
+    data: mapSyncContext(store.data, connection.data),
+  };
 }
 
 export async function getOwnedShopifyConnectionByShopDomain(
@@ -327,6 +380,118 @@ export async function markShopifyConnectionError(params: {
     console.error("[shopify] failed to mark connection error", {
       code: error.code,
       message: error.message,
+    });
+  }
+}
+
+export async function markShopifySyncStarted(params: {
+  profileId: string;
+  storeId: string;
+}) {
+  const supabase = createAdminClient();
+  const [storeResult, connectionResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .update({
+        status: "syncing",
+      })
+      .eq("profile_id", params.profileId)
+      .eq("id", params.storeId)
+      .eq("source_type", "shopify"),
+    supabase
+      .from("store_connections")
+      .update({
+        status: "connected",
+        last_error_code: null,
+        last_error_message: null,
+      })
+      .eq("profile_id", params.profileId)
+      .eq("store_id", params.storeId)
+      .eq("platform", "shopify"),
+  ]);
+
+  if (storeResult.error || connectionResult.error) {
+    console.error("[shopify] failed to mark sync started", {
+      storeCode: storeResult.error?.code,
+      storeMessage: storeResult.error?.message,
+      connectionCode: connectionResult.error?.code,
+      connectionMessage: connectionResult.error?.message,
+    });
+  }
+}
+
+export async function markShopifySyncSuccess(params: {
+  profileId: string;
+  storeId: string;
+}) {
+  const supabase = createAdminClient();
+  const now = new Date().toISOString();
+  const [storeResult, connectionResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .update({
+        status: "active",
+        last_sync_at: now,
+      })
+      .eq("profile_id", params.profileId)
+      .eq("id", params.storeId)
+      .eq("source_type", "shopify"),
+    supabase
+      .from("store_connections")
+      .update({
+        status: "connected",
+        last_error_code: null,
+        last_error_message: null,
+      })
+      .eq("profile_id", params.profileId)
+      .eq("store_id", params.storeId)
+      .eq("platform", "shopify"),
+  ]);
+
+  if (storeResult.error || connectionResult.error) {
+    console.error("[shopify] failed to mark sync success", {
+      storeCode: storeResult.error?.code,
+      storeMessage: storeResult.error?.message,
+      connectionCode: connectionResult.error?.code,
+      connectionMessage: connectionResult.error?.message,
+    });
+  }
+}
+
+export async function markShopifySyncError(params: {
+  profileId: string;
+  storeId: string;
+  errorCode: string;
+  errorMessage: string;
+}) {
+  const supabase = createAdminClient();
+  const [storeResult, connectionResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .update({
+        status: "error",
+      })
+      .eq("profile_id", params.profileId)
+      .eq("id", params.storeId)
+      .eq("source_type", "shopify"),
+    supabase
+      .from("store_connections")
+      .update({
+        status: "error",
+        last_error_code: params.errorCode,
+        last_error_message: params.errorMessage,
+      })
+      .eq("profile_id", params.profileId)
+      .eq("store_id", params.storeId)
+      .eq("platform", "shopify"),
+  ]);
+
+  if (storeResult.error || connectionResult.error) {
+    console.error("[shopify] failed to mark sync error", {
+      storeCode: storeResult.error?.code,
+      storeMessage: storeResult.error?.message,
+      connectionCode: connectionResult.error?.code,
+      connectionMessage: connectionResult.error?.message,
     });
   }
 }

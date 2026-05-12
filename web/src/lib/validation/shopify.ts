@@ -24,3 +24,11 @@ export const shopifyOAuthCallbackSchema = z.object({
 export type ShopifyOAuthCallbackInput = z.infer<
   typeof shopifyOAuthCallbackSchema
 >;
+
+export const shopifyProductSyncSchema = z.object({
+  storeId: z.string().uuid(),
+});
+
+export type ShopifyProductSyncInput = z.infer<
+  typeof shopifyProductSyncSchema
+>;
