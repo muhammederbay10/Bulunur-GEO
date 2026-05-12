@@ -6,13 +6,13 @@ export default function ProductsPage() {
   return (
     <PhasePlaceholder
       icon={Package}
-      title="Ürünler rota temeli"
-      description="Faz 6'da Shopify ve native ürünler analiz ve optimizasyon aksiyonlarıyla burada listelenecek."
+      title="Ürünler burada listelenecek"
+      description="Shopify veya web sitenizden gelen ürünler, satıcının kolayca seçim yapabileceği sade bir listeyle burada görünecek."
       items={[
-        "Ürün satırları görsel, başlık, kaynak, fiyat, son skor ve sonraki aksiyonu gösterecek.",
-        "Filtreler tüm ürünleri, analiz edilmemişleri, düşük skorluları, optimize edilenleri, Shopify ve native kaynakları kapsayacak.",
-        "Analiz tüm katalog için değil, yalnızca seçilen ürün için çalışacak.",
-        "Ürün verisi sahiplik kontrolü yapan veritabanı sorgularından gelmeli.",
+        "Ürün görseli, başlık, kaynak, fiyat, son skor ve sıradaki aksiyon kolay taranır şekilde gösterilecek.",
+        "Filtreler; tüm ürünler, analiz bekleyenler, düşük skorlular, optimize edilenler, Shopify ve web sitesi kaynaklarını kapsayacak.",
+        "Analiz tüm katalog için değil, yalnızca seçilen ürün için başlatılacak.",
+        "Ürün verisi sahiplik kontrolü yapan veritabanı sorgularından gelecek.",
       ]}
     />
   );

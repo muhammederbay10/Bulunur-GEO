@@ -10,11 +10,11 @@ import {
 
 function OnboardingFallback() {
   return (
-    <div className="industrial-panel p-6">
-      <p className="font-mono text-xs uppercase text-primary">Faz 1</p>
-      <h1 className="mt-3 text-2xl font-semibold">Onboarding hazırlanıyor</h1>
+    <div className="seller-surface p-6">
+      <p className="text-sm font-medium text-primary">Onboarding</p>
+      <h1 className="mt-3 text-2xl font-semibold">Bilgiler hazırlanıyor</h1>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        Supabase oturumu ve mevcut profil bilgileri kontrol ediliyor.
+        Oturumunuz ve mevcut işletme bilgileriniz kontrol ediliyor.
       </p>
     </div>
   );
@@ -44,7 +44,7 @@ async function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <main className="industrial-grid min-h-screen bg-background p-5">
+    <main className="min-h-screen bg-background p-5">
       <div className="mx-auto w-full max-w-7xl py-10">
         <Suspense fallback={<OnboardingFallback />}>
           <OnboardingContent />

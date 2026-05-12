@@ -13,6 +13,8 @@ Read these files before making code changes:
 5. `web/.codex/docs/final-project-implementation-plan.md`
 6. `web/.codex/docs/project-architecture-and-implementation-plan.md`
 7. `web/.codex/docs/ui-ux-flow-and-visual-direction-plan.md`
+8. `web/.codex/docs/ui-ux-seller-friendly-update-plan.md`
+9. `web/.codex/docs/final-frontend-implementation-plan.md` when present
 
 Task-specific reference docs:
 
@@ -145,25 +147,27 @@ Rules:
 
 ## 9. UI/UX Rules
 
-Use the documented product design principle: high-tech appearance, simple business workflow.
+Use the documented product design principle: high-tech appearance, simple business workflow. The latest UI direction is `Friendly Premium SaaS + Industrial AI Accents`.
 
 Project-specific UI rules:
 
 1. The website/application UI must be Turkish by default. Use English only for developer-facing docs, code identifiers, API field names, library terms, or external platform terms that should remain unchanged.
-2. Use a premium industrial noir direction: graphite/dark surfaces, safety orange action color, sharp radii, thin borders, subtle grid texture, and score instrumentation.
-3. Keep the app usable for non-technical sellers.
-4. The dashboard is a catalog/status dashboard, not the product analysis page.
-5. Product analysis and optimization result should live on the product page.
-6. Keep analysis visible while optimization runs.
-7. Show before/after output on the same product page after optimization.
-8. Provide clear loading, empty, error, retry, and partial-success states.
-9. Explain score dimensions in plain Turkish.
-10. Avoid unexplained AI/GEO jargon in primary UI.
-11. Do not expose raw debug payloads as the main user experience.
-12. Show warnings near affected fields.
-13. Make approval/export/publish actions explicit and human-controlled.
-14. Respect responsive layouts and reduced-motion preferences.
-15. Avoid decorative fake charts and nested-card clutter.
+2. Build normal seller workflow screens light-first: auth, onboarding, source choice, dashboard, product list, sources, history, and settings should feel clean, warm, spacious, and approachable.
+3. Reserve dark/noir industrial panels for AI-heavy moments: analysis score modules, AI processing states, signal breakdowns, before/after optimization results, schema preview, and technical source signals.
+4. Use safety orange for primary actions and important state, not broad decoration. Avoid orange flooding, repeated orange borders, and orange icons on every card.
+5. Keep the app usable for non-technical Turkish e-commerce sellers. Prefer practical seller benefits over connector, crawler, pipeline, or AI jargon.
+6. The dashboard is a business/catalog status dashboard, not an engineering cockpit and not the product analysis page.
+7. Product analysis and optimization result should live on the product page.
+8. Keep analysis visible while optimization runs.
+9. Show before/after output on the same product page after optimization.
+10. Provide strong loading, empty, error, retry, and partial-success states with clear next actions.
+11. Explain score dimensions in plain Turkish. Prefer labels like `Bulunabilirlik`, `Ürün Bilgisi Kalitesi`, `Karşılaştırma Gücü`, and `AI Cevap Hazırlığı` over raw internal terms.
+12. Avoid unexplained AI/GEO jargon in primary UI. Keep technical metadata collapsed or secondary.
+13. Do not expose raw debug payloads as the main user experience.
+14. Show warnings near affected fields.
+15. Make approval/export/publish actions explicit and human-controlled. Publishing must never feel automatic.
+16. Respect responsive layouts and reduced-motion preferences.
+17. Avoid decorative fake charts, dense cockpit layouts, scanlines on ordinary screens, and nested-card clutter.
 
 ## 10. Auth, Security, And Environment Rules
 
@@ -391,6 +395,8 @@ Keep these docs aligned with code and decisions:
 - `web/.codex/docs/final-project-implementation-plan.md`
 - `web/.codex/docs/project-architecture-and-implementation-plan.md`
 - `web/.codex/docs/ui-ux-flow-and-visual-direction-plan.md`
+- `web/.codex/docs/ui-ux-seller-friendly-update-plan.md`
+- `web/.codex/docs/final-frontend-implementation-plan.md`
 - This `web/AGENTS.md`
 
 If code and docs disagree, do not silently pick one. Report the mismatch, explain the implementation impact, and update the relevant doc when the task includes documentation maintenance.

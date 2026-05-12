@@ -1,34 +1,34 @@
 import Link from "next/link";
-import { ArrowRight, Gauge, PackageSearch, ShieldCheck } from "lucide-react";
+import { ArrowRight, CheckCircle2, PackageSearch, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { hasRequiredPublicEnv } from "@/lib/env/public";
 
 const foundationSignals = [
   {
-    icon: Gauge,
-    title: "GEO analiz akışı",
-    body: "Seçilen tek bir ürün katalogdan skora, sorunlara ve önerilen aksiyona ilerler.",
+    icon: PackageSearch,
+    title: "Ürünlerinizi tek yerden yönetin",
+    body: "Shopify veya web sitenizden gelen ürünler için sade bir çalışma alanı hazırlanıyor.",
   },
   {
-    icon: PackageSearch,
-    title: "Kaynaklara hazır yapı",
-    body: "Shopify ve native içe aktarma sınırları sunucu tarafı servisler için hazırlandı.",
+    icon: CheckCircle2,
+    title: "Anlaşılır AI görünürlük akışı",
+    body: "Her ürün için neyin eksik olduğunu, hangi adımın güvenli olduğunu ve sıradaki aksiyonu net gösterir.",
   },
   {
     icon: ShieldCheck,
-    title: "Önce insan onayı",
-    body: "Optimizasyon çıktısı, satıcı alanları onaylayana kadar taslak olarak kalır.",
+    title: "Yayınlamadan önce onay",
+    body: "AI önerileri siz onaylamadan mağazanıza uygulanmaz veya yayınlanmaz.",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="industrial-grid min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-6">
         <header className="flex items-center justify-between border-b border-border/70 pb-4">
-          <Link href="/" className="font-mono text-sm uppercase text-primary">
-            GEO Platformu
+          <Link href="/" className="text-sm font-semibold text-foreground">
+            AI Görünürlük
           </Link>
           <nav className="flex items-center gap-2 text-sm">
             <Link
@@ -44,15 +44,18 @@ export default function Home() {
         </header>
 
         <div className="grid flex-1 items-center gap-8 py-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-8">
-            <div className="space-y-5">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-5">
+              <p className="text-sm font-medium text-primary">
+                Türkçe e-ticaret satıcıları için
+              </p>
               <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-foreground md:text-6xl">
-                Türkçe e-ticaret ürünleri için AI görünürlük akışı.
+                Ürünlerinizi AI aramalarında daha anlaşılır hale getirin.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-                Faz 0; Next.js platform kabuğunu, proje yapısını, tasarım
-                tokenlarını, ortam doğrulama düzenini ve iç servis sınırlarını
-                hazırlar.
+                Ürünlerinizi içeri alın, görünürlük sinyallerini tek ürün
+                üzerinden analiz edin ve önerilen iyileştirmeleri yayınlamadan
+                önce güvenle inceleyin.
               </p>
             </div>
 
@@ -64,25 +67,25 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/onboarding">Onboarding rotasını gör</Link>
+                <Link href="/onboarding">Onboarding sayfasına devam et</Link>
               </Button>
             </div>
           </div>
 
-          <div className="industrial-panel scanline p-5">
+          <div className="seller-surface p-5">
             <div className="border-b border-border/70 pb-4">
-              <p className="font-mono text-xs uppercase text-muted-foreground">
-                Temel durum
+              <p className="text-sm font-medium text-primary">
+                Satıcı dostu temel hazır
               </p>
               <p className="mt-2 text-2xl font-semibold">
-                Faz 0 iskeleti aktif
+                Hafif arayüz, kontrollü AI iş akışı
               </p>
             </div>
             <div className="grid gap-3 pt-5">
               {foundationSignals.map((signal) => (
                 <div
                   key={signal.title}
-                  className="flex gap-4 border border-border/60 bg-background/35 p-4"
+                  className="flex gap-4 rounded-md border border-border/60 bg-background/70 p-4"
                 >
                   <signal.icon className="mt-1 h-5 w-5 shrink-0 text-primary" />
                   <div>
@@ -94,7 +97,7 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <div className="mt-5 border-t border-border/70 pt-4 font-mono text-xs text-muted-foreground">
+            <div className="mt-5 border-t border-border/70 pt-4 text-xs text-muted-foreground">
               Supabase ortamı:{" "}
               {hasRequiredPublicEnv ? "hazır" : "yapılandırılmadı"}
             </div>

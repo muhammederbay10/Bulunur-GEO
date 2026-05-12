@@ -1,7 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,9 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 export function LoginForm({
   className,
@@ -52,7 +53,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle className="text-2xl">Giriş yap</CardTitle>
           <CardDescription>
-            Hesabına giriş yapmak için e-posta adresini gir.
+            Ürünlerinizi kaldığınız yerden yönetmek için hesabınıza girin.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -63,7 +64,7 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="ornek@magazam.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +75,7 @@ export function LoginForm({
                   <Label htmlFor="password">Şifre</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    className="ml-auto inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                   >
                     Şifreni mi unuttun?
                   </Link>
@@ -87,7 +88,7 @@ export function LoginForm({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Giriş yapılıyor..." : "Giriş yap"}
               </Button>

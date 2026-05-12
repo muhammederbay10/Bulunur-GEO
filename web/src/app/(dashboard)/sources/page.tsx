@@ -6,13 +6,13 @@ export default function SourcesPage() {
   return (
     <PhasePlaceholder
       icon={Store}
-      title="Kaynaklar rota temeli"
-      description="Faz 3, 4 ve 5'te bu alan Shopify bağlantısı ve native içe aktarma için kullanılacak."
+      title="Ürün kaynağınızı hazırlayın"
+      description="Phase 3 başlamadan önce bu sayfa yalnızca temel yönü gösterir: Shopify mağazanızı bağlayın veya web sitenizden ürün ekleyin."
       items={[
-        "Shopify OAuth; mağaza alan adını, state değerini, HMAC'i, izinleri ve token saklamayı doğrulayacak.",
-        "Native URL içe aktarma sınırlı, sunucu taraflı, güvenli ve önce önizlemeli olacak.",
-        "Takım MVP kapsamını değiştirmedikçe WooCommerce gelecek/opsiyonel kapsamda kalır.",
-        "Kaynak bağlantı durumu ve manuel yeniden senkronizasyon burada yer alır.",
+        "Shopify akışı satıcıya mağaza bağlantısı gibi görünecek; OAuth, izinler ve token saklama sunucu tarafında kalacak.",
+        "Web sitesinden ürün ekleme akışı güvenli, sınırlı ve önce önizlemeli olacak.",
+        "WooCommerce şimdilik arayüzde gösterilmeyecek; gelecekteki kapsam olarak kalacak.",
+        "Kaynak bağlantı durumu, anlaşılır hata mesajları ve güvenli sonraki aksiyonlar burada yer alacak.",
       ]}
     />
   );

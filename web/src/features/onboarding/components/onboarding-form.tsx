@@ -27,15 +27,15 @@ const sourceOptions: Array<{
 }> = [
   {
     value: "shopify",
-    label: "Shopify",
+    label: "Shopify Mağazamı Bağla",
     description:
-      "Faz 4'te OAuth bağlantısı ve ürün senkronizasyonu bu seçimden devam edecek.",
+      "Mağazanızdaki ürünleri otomatik senkronize etmeye hazırlanır.",
   },
   {
     value: "native",
-    label: "Native içe aktarma",
+    label: "Web Sitemden Ürün Ekle",
     description:
-      "Faz 5'te URL, CSV veya manuel/demo içe aktarma akışı bu seçimden devam edecek.",
+      "Shopify kullanmıyorsanız ürünlerinizi bağlantı veya dosya ile eklemeye hazırlanır.",
   },
 ];
 
@@ -67,39 +67,39 @@ export function OnboardingForm({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-      <form action={formAction} className="industrial-panel p-6">
+      <form action={formAction} className="seller-surface p-6">
         <fieldset
-          className="space-y-6"
+          className="flex flex-col gap-6"
           disabled={!databaseReady || pending || state.status === "success"}
         >
-          <div className="space-y-3">
-            <p className="font-mono text-xs uppercase text-primary">
-              Faz 1 / Onboarding
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium text-primary">
+              İşletmenizi tanıyalım
             </p>
             <h1 className="text-3xl font-semibold tracking-normal">
-              İşletme bağlamını oluştur
+              Mağazanıza uygun bir başlangıç hazırlayalım
             </h1>
             <p className="max-w-2xl leading-7 text-muted-foreground">
-              Bu bilgiler ürün kaynağı, analiz ve optimizasyon akışında mağaza
-              bağlamını oluşturmak için kullanılacak. Yayınlama veya ürün
-              değişikliği yapılmaz.
+              Bu bilgiler, ürün analizlerini işletmenize daha uygun hale
+              getirmek için kullanılır. Bu adımda ürünlerinizde veya
+              mağazanızda hiçbir değişiklik yapılmaz.
             </p>
           </div>
 
           {!databaseReady && setupMessage ? (
-            <div className="border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
               {setupMessage}
             </div>
           ) : null}
 
           {state.status === "error" && state.message ? (
-            <div className="border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
               {state.message}
             </div>
           ) : null}
 
           {state.status === "success" && state.message ? (
-            <div className="border border-primary/50 bg-primary/10 p-4 text-sm text-primary">
+            <div className="rounded-md border border-primary/50 bg-primary/10 p-4 text-sm text-primary">
               {state.message}
             </div>
           ) : null}
@@ -168,19 +168,20 @@ export function OnboardingForm({
               placeholder="https://magazam.com"
             />
             <p className="text-sm text-muted-foreground">
-              Opsiyonel. Native içe aktarma veya marka bağlamı için kullanılacak.
+              Opsiyonel. Web siteniz varsa ürün ve marka bağlamını daha doğru
+              hazırlamaya yardımcı olur.
             </p>
             <FieldError errors={state.fieldErrors?.websiteUrl} />
           </div>
 
-          <div className="space-y-3">
-            <Label>Ürün kaynağı</Label>
+          <div className="flex flex-col gap-3">
+            <Label>Ürünleriniz nereden gelecek?</Label>
             <div className="grid gap-3 md:grid-cols-2">
               {sourceOptions.map((option) => (
                 <label
                   key={option.value}
                   className={cn(
-                    "flex cursor-pointer gap-3 border border-border bg-background/40 p-4 transition hover:border-primary/60",
+                    "flex cursor-pointer gap-3 rounded-md border border-border bg-background/70 p-4 transition hover:border-primary/60",
                     "has-[:checked]:border-primary has-[:checked]:bg-primary/10",
                   )}
                 >
@@ -213,32 +214,31 @@ export function OnboardingForm({
         </fieldset>
       </form>
 
-      <aside className="space-y-4">
-        <div className="industrial-panel p-5">
+      <aside className="flex flex-col gap-4">
+        <div className="seller-surface p-5">
           <Store className="h-5 w-5 text-primary" />
           <h2 className="mt-4 text-lg font-semibold">Sonraki adım</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Bu faz yalnızca profil ve kaynak tercihini kaydeder. Shopify
-            bağlantısı, native içe aktarma ve ürün tabloları sonraki fazlarda
-            eklenecek.
+            Profiliniz kaydedildikten sonra ürün kaynağınızı hazırlamaya
+            geçeceğiz: Shopify mağazası veya web sitenizden ürün ekleme.
           </p>
         </div>
 
-        <div className="industrial-panel p-5">
+        <div className="seller-surface p-5">
           <Globe2 className="h-5 w-5 text-primary" />
-          <h2 className="mt-4 text-lg font-semibold">Türkçe varsayılan</h2>
+          <h2 className="mt-4 text-lg font-semibold">Türkçe ve anlaşılır</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Satıcıya görünen ana arayüz Türkçe ilerler. Kod, API alanları ve dış
-            platform terimleri gerektiğinde İngilizce kalabilir.
+            Satıcıya görünen ana arayüz Türkçe ilerler. Teknik terimler yalnızca
+            gerekli olduğunda ve açıklanarak kullanılır.
           </p>
         </div>
 
-        <div className="industrial-panel p-5">
+        <div className="seller-surface p-5">
           <Database className="h-5 w-5 text-primary" />
-          <h2 className="mt-4 text-lg font-semibold">Manuel SQL akışı</h2>
+          <h2 className="mt-4 text-lg font-semibold">Kontrol sizde</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Veritabanı değişiklikleri uygulama tarafından otomatik çalıştırılmaz.
-            SQL dosyası Supabase SQL Editor&apos;de manuel çalıştırılmalı.
+            AI önerileri daha sonraki fazlarda gösterilecek. Siz onaylamadan
+            ürün içeriği yayınlanmaz veya mağazanıza uygulanmaz.
           </p>
         </div>
       </aside>

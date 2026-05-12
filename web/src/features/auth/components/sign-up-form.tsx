@@ -1,7 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,9 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 export function SignUpForm({
   className,
@@ -60,8 +61,10 @@ export function SignUpForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Kayıt ol</CardTitle>
-          <CardDescription>Yeni hesap oluştur</CardDescription>
+          <CardTitle className="text-2xl">Hesap oluştur</CardTitle>
+          <CardDescription>
+            Mağazanızdaki ürünleri AI aramalarına hazırlamak için başlayın.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignUp}>
@@ -71,16 +74,14 @@ export function SignUpForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="ornek@magazam.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Şifre</Label>
-                </div>
+                <Label htmlFor="password">Şifre</Label>
                 <Input
                   id="password"
                   type="password"
@@ -90,9 +91,7 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Şifreyi tekrar gir</Label>
-                </div>
+                <Label htmlFor="repeat-password">Şifreyi tekrar gir</Label>
                 <Input
                   id="repeat-password"
                   type="password"
@@ -101,9 +100,9 @@ export function SignUpForm({
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Hesap oluşturuluyor..." : "Kayıt ol"}
+                {isLoading ? "Hesap oluşturuluyor..." : "Hesap oluştur"}
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">

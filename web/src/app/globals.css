@@ -72,13 +72,21 @@
 @layer components {
   .industrial-grid {
     background-image:
-      linear-gradient(hsl(var(--border) / 0.18) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--border) / 0.18) 1px, transparent 1px);
-    background-size: 36px 36px;
+      linear-gradient(hsl(var(--border) / 0.11) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.11) 1px, transparent 1px);
+    background-size: 44px 44px;
   }
 
   .industrial-panel {
-    @apply border border-border/70 bg-card/90 shadow-industrial-panel;
+    @apply rounded-lg border border-border/60 bg-card/90 shadow-industrial-panel;
+  }
+
+  .seller-surface {
+    @apply rounded-lg border border-border/60 bg-card/95 shadow-industrial-panel;
+  }
+
+  .ai-engine-panel {
+    @apply rounded-lg border border-border/70 bg-[#1a120b] text-[#f8f7f5] shadow-industrial-panel;
   }
 
   .scanline {

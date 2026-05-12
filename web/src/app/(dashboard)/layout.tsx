@@ -10,14 +10,16 @@ import {
 
 function ProtectedAreaFallback() {
   return (
-    <main className="industrial-grid min-h-screen bg-background p-5">
+    <main className="min-h-screen bg-background p-5">
       <div className="mx-auto flex min-h-[60vh] w-full max-w-7xl items-center">
-        <div className="industrial-panel max-w-xl p-6">
-          <p className="font-mono text-xs uppercase text-primary">Faz 1</p>
-          <h1 className="mt-3 text-2xl font-semibold">Oturum kontrol ediliyor</h1>
+        <div className="seller-surface max-w-xl p-6">
+          <p className="text-sm font-medium text-primary">Güvenli alan</p>
+          <h1 className="mt-3 text-2xl font-semibold">
+            Çalışma alanınız hazırlanıyor
+          </h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Korumalı uygulama alanı açılmadan önce Supabase oturumu ve
-            onboarding durumu doğrulanıyor.
+            Panele geçmeden önce oturumunuz ve onboarding durumunuz kontrol
+            ediliyor.
           </p>
         </div>
       </div>
