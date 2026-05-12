@@ -45,21 +45,19 @@ export async function exchangeCodeForAccessToken({
   code,
 }: ExchangeCodeForAccessTokenInput): Promise<ShopifyAccessToken> {
   const config = getShopifyConfig();
-  const body = new URLSearchParams({
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
-    code,
-  });
 
   const response = await fetch(
     `https://${validateShopDomain(shop)}/admin/oauth/access_token`,
     {
       method: "POST",
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
-      body,
+      body: JSON.stringify({
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
+        code,
+      }),
       signal: AbortSignal.timeout(SHOPIFY_REQUEST_TIMEOUT_MS),
     },
   );

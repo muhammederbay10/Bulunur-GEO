@@ -167,6 +167,41 @@ export async function getOwnedShopifyConnection(
   return { ok: true, data: mapConnectionSummary(data) };
 }
 
+export async function getOwnedShopifyConnectionByShopDomain(
+  profileId: string,
+  shopDomain: string,
+): Promise<ShopifyRepositoryResult<ShopifyConnectionSummary>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("store_connections")
+    .select(shopifyConnectionSelect)
+    .eq("profile_id", profileId)
+    .eq("platform", "shopify")
+    .eq("shop_domain", shopDomain)
+    .single<ShopifyConnectionRow>();
+
+  if (error) {
+    const isMissingTable = isMissingShopifyTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? shopifyStorageSetupMessage()
+        : "Shopify baglantisi bulunamadi. Once kaynak ekraninda magazayi hazirla.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  const store = await getOwnedShopifyStore(profileId, data.store_id);
+
+  if (!store.ok) {
+    return store;
+  }
+
+  return { ok: true, data: mapConnectionSummary(data) };
+}
+
 export async function completeShopifyConnection(
   input: CompleteShopifyConnectionInput,
 ): Promise<ShopifyRepositoryResult<ShopifyConnectionSummary>> {
