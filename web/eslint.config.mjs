@@ -14,6 +14,8 @@ const eslintConfig = [
     ignores: [
       ".next/**",
       "node_modules/**",
+      "shopify-testing/**",
+      "scrapingtest/**",
       "next-env.d.ts",
     ],
   },
