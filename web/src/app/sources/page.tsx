@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { SourceSetupPanel } from "@/features/sources/components/source-setup-panel";
 import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
 import { getSourceSetupForUser } from "@/lib/db/source-repository";
-import { hasSupabaseServiceRoleKey } from "@/lib/env/server";
+import { hasSupabaseElevatedKey } from "@/lib/env/server";
 
 type SourcesPageProps = {
   searchParams?: Promise<{
@@ -63,7 +63,7 @@ async function SourcesContent({
       profile={profile}
       stores={sourceResult.stores}
       databaseReady={!profileResult.isMissingTable && !sourceResult.isMissingTable}
-      canWriteSources={hasSupabaseServiceRoleKey()}
+      canWriteSources={hasSupabaseElevatedKey()}
       setupMessage={profileResult.errorMessage ?? sourceResult.errorMessage}
       setupMode={setupMode}
     />

@@ -2,27 +2,27 @@ import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-import { getServerEnv } from "@/lib/env/server";
+import { getSupabaseElevatedKey } from "@/lib/env/server";
 import { getSupabasePublicEnv } from "@/lib/env/public";
 
-export class MissingSupabaseServiceRoleKeyError extends Error {
+export class MissingSupabaseElevatedKeyError extends Error {
   constructor() {
-    super("SUPABASE_SERVICE_ROLE_KEY is not configured.");
-    this.name = "MissingSupabaseServiceRoleKeyError";
+    super("SUPABASE_SECRET_KEY is not configured.");
+    this.name = "MissingSupabaseElevatedKeyError";
   }
 }
 
 export function createAdminClient() {
   const publicEnv = getSupabasePublicEnv();
-  const serverEnv = getServerEnv();
+  const elevatedKey = getSupabaseElevatedKey();
 
-  if (!serverEnv.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new MissingSupabaseServiceRoleKeyError();
+  if (!elevatedKey) {
+    throw new MissingSupabaseElevatedKeyError();
   }
 
   return createSupabaseClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    serverEnv.SUPABASE_SERVICE_ROLE_KEY,
+    elevatedKey,
     {
       auth: {
         autoRefreshToken: false,

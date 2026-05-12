@@ -248,8 +248,8 @@ export function SourceSetupPanel({
 
       {databaseReady && !canWriteSources ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          SUPABASE_SERVICE_ROLE_KEY eksik. Phase 3 kaynak kayıtlarını yazmak
-          için bu anahtarı sadece server ortamında `.env.local` içine ekleyin.
+          Kaynak kurulumu su anda kullanilamiyor. Lutfen daha sonra tekrar
+          deneyin veya destek ekibine haber verin.
         </div>
       ) : null}
 

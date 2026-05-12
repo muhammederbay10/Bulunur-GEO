@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createAdminClient, MissingSupabaseServiceRoleKeyError } from "@/lib/supabase/admin";
+import { createAdminClient, MissingSupabaseElevatedKeyError } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types/profile";
 import type {
@@ -66,7 +66,7 @@ function sourceSetupTransactionMessage() {
 }
 
 function serviceRoleMessage() {
-  return "Kaynak kaydi olusturmak icin SUPABASE_SERVICE_ROLE_KEY sunucu ortam degiskeni gerekli. Bu anahtar tarayiciya acilmamali.";
+  return "Kaynak kaydi olusturmak icin server tarafinda guvenli Supabase anahtari gerekli. Bu anahtar tarayiciya acilmamali.";
 }
 
 function isMissingSourceTable(error: { code?: string; message?: string }) {
@@ -304,7 +304,7 @@ export async function createOrUpdateNativeSource(
 
     return loadStoreWithConnection(supabase, profile.id, setupResult.storeId);
   } catch (error) {
-    if (error instanceof MissingSupabaseServiceRoleKeyError) {
+    if (error instanceof MissingSupabaseElevatedKeyError) {
       return {
         ok: false,
         message: serviceRoleMessage(),
@@ -342,7 +342,7 @@ export async function prepareShopifySource(
 
     return loadStoreWithConnection(supabase, profile.id, setupResult.storeId);
   } catch (error) {
-    if (error instanceof MissingSupabaseServiceRoleKeyError) {
+    if (error instanceof MissingSupabaseElevatedKeyError) {
       return {
         ok: false,
         message: serviceRoleMessage(),
