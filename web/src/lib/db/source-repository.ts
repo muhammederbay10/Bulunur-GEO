@@ -47,6 +47,10 @@ type SourceMutationResult =
   | { ok: true; store: SourceStore }
   | { ok: false; message: string; isMissingTable?: boolean; isMissingServiceRole?: boolean };
 
+type SourceSetupRpcResult = {
+  store_id: string;
+};
+
 const storeSelect =
   "id,profile_id,name,source_type,website_url,market,language,status,last_sync_at,created_at,updated_at";
 
@@ -54,11 +58,15 @@ const connectionSelect =
   "id,profile_id,store_id,platform,shop_domain,scopes,status,last_error_code,last_error_message,connected_at,created_at,updated_at";
 
 function sourceSetupMessage() {
-  return "Kaynak tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
+  return "Kaynak tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+}
+
+function sourceSetupTransactionMessage() {
+  return "Kaynak kurulum SQL'i guncel degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase3_source_setup_transaction_rpc.sql dosyasini calistir.";
 }
 
 function serviceRoleMessage() {
-  return "Kaynak kaydı oluşturmak için SUPABASE_SERVICE_ROLE_KEY sunucu ortam değişkeni gerekli. Bu anahtar tarayıcıya açılmamalı.";
+  return "Kaynak kaydi olusturmak icin SUPABASE_SERVICE_ROLE_KEY sunucu ortam degiskeni gerekli. Bu anahtar tarayiciya acilmamali.";
 }
 
 function isMissingSourceTable(error: { code?: string; message?: string }) {
@@ -68,6 +76,16 @@ function isMissingSourceTable(error: { code?: string; message?: string }) {
     error.code === "42P01" ||
     message.includes("stores") ||
     message.includes("store_connections")
+  );
+}
+
+function isMissingSourceSetupTransaction(error: { code?: string; message?: string }) {
+  const message = error.message?.toLowerCase() ?? "";
+
+  return (
+    error.code === "42883" ||
+    message.includes("complete_source_setup") ||
+    message.includes("source_setup_completed")
   );
 }
 
@@ -109,37 +127,58 @@ function mapStoreRow(
 
 function profileDefaults(profile: UserProfile) {
   return {
-    storeName: profile.businessName?.trim() || "Mağazam",
+    storeName: profile.businessName?.trim() || "Magazam",
     market: profile.marketFocus?.trim() || "TR",
     websiteUrl: profile.websiteUrl?.trim() || null,
   };
 }
 
-async function updateProfileSourcePreference(
+async function completeSourceSetupTransaction(
   supabase: ReturnType<typeof createAdminClient>,
-  profileId: string,
-  preferredProductSource: "shopify" | "native",
-  websiteUrl?: string,
-): Promise<{ ok: true } | { ok: false; message: string }> {
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      preferred_product_source: preferredProductSource,
-      source_setup_completed: true,
-      source_setup_completed_at: new Date().toISOString(),
-      ...(websiteUrl ? { website_url: websiteUrl } : {}),
+  params: {
+    profileId: string;
+    sourceType: "shopify" | "native";
+    storeName: string;
+    websiteUrl?: string | null;
+    shopDomain?: string | null;
+    market: string;
+    language: string;
+  },
+): Promise<{ ok: true; storeId: string } | { ok: false; message: string; isMissingTable?: boolean }> {
+  const { data, error } = await supabase
+    .rpc("complete_source_setup", {
+      p_profile_id: params.profileId,
+      p_source_type: params.sourceType,
+      p_store_name: params.storeName,
+      p_website_url: params.websiteUrl ?? null,
+      p_shop_domain: params.shopDomain ?? null,
+      p_market: params.market,
+      p_language: params.language,
     })
-    .eq("id", profileId);
+    .single<SourceSetupRpcResult>();
 
   if (error) {
+    const isMissingTable = isMissingSourceTable(error);
+
     return {
       ok: false,
-      message:
-        "Kaynak kaydedildi ancak profil kaynak durumu güncellenemedi. Lütfen SQL şemasını güncelle ve tekrar dene.",
+      message: isMissingTable
+        ? sourceSetupMessage()
+        : isMissingSourceSetupTransaction(error)
+          ? sourceSetupTransactionMessage()
+          : "Kaynak kurulumu tamamlanamadi. Lutfen tekrar dene.",
+      isMissingTable,
     };
   }
 
-  return { ok: true };
+  if (!data?.store_id) {
+    return {
+      ok: false,
+      message: "Kaynak kurulumu tamamlandi ancak kaynak kaydi bulunamadi. Lutfen tekrar dene.",
+    };
+  }
+
+  return { ok: true, storeId: data.store_id };
 }
 
 async function loadStoreWithConnection(
@@ -149,7 +188,12 @@ async function loadStoreWithConnection(
 ): Promise<SourceMutationResult> {
   const [{ data: storeData, error: storeError }, { data: connectionData, error: connectionError }] =
     await Promise.all([
-      supabase.from("stores").select(storeSelect).eq("profile_id", profileId).eq("id", storeId).single<StoreRow>(),
+      supabase
+        .from("stores")
+        .select(storeSelect)
+        .eq("profile_id", profileId)
+        .eq("id", storeId)
+        .single<StoreRow>(),
       supabase
         .from("store_connections")
         .select(connectionSelect)
@@ -163,7 +207,7 @@ async function loadStoreWithConnection(
       ok: false,
       message: isMissingSourceTable(storeError)
         ? sourceSetupMessage()
-        : "Kaynak kaydı okunamadı. Lütfen tekrar dene.",
+        : "Kaynak kaydi okunamadi. Lutfen tekrar dene.",
       isMissingTable: isMissingSourceTable(storeError),
     };
   }
@@ -173,7 +217,7 @@ async function loadStoreWithConnection(
       ok: false,
       message: isMissingSourceTable(connectionError)
         ? sourceSetupMessage()
-        : "Kaynak bağlantı durumu okunamadı. Lütfen tekrar dene.",
+        : "Kaynak baglanti durumu okunamadi. Lutfen tekrar dene.",
       isMissingTable: isMissingSourceTable(connectionError),
     };
   }
@@ -211,7 +255,7 @@ export async function getSourceSetupForUser(
       stores: [],
       errorMessage: isMissingSourceTable(storesResult.error)
         ? sourceSetupMessage()
-        : "Kaynak bilgileri okunamadı. Lütfen tekrar dene.",
+        : "Kaynak bilgileri okunamadi. Lutfen tekrar dene.",
       isMissingTable: isMissingSourceTable(storesResult.error),
     };
   }
@@ -221,7 +265,7 @@ export async function getSourceSetupForUser(
       stores: [],
       errorMessage: isMissingSourceTable(connectionsResult.error)
         ? sourceSetupMessage()
-        : "Kaynak bağlantıları okunamadı. Lütfen tekrar dene.",
+        : "Kaynak baglantilari okunamadi. Lutfen tekrar dene.",
       isMissingTable: isMissingSourceTable(connectionsResult.error),
     };
   }
@@ -244,63 +288,21 @@ export async function createOrUpdateNativeSource(
   try {
     const supabase = createAdminClient();
     const defaults = profileDefaults(profile);
-    const { data: existingStore, error: existingError } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("profile_id", profile.id)
-      .eq("source_type", "native")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle<{ id: string }>();
-
-    if (existingError) {
-      return {
-        ok: false,
-        message: isMissingSourceTable(existingError)
-          ? sourceSetupMessage()
-          : "Mevcut kaynak durumu kontrol edilemedi. Lütfen tekrar dene.",
-        isMissingTable: isMissingSourceTable(existingError),
-      };
-    }
-
-    const payload = {
-      profile_id: profile.id,
-      name: input.storeName,
-      source_type: "native" as const,
-      website_url: input.websiteUrl ?? defaults.websiteUrl,
+    const setupResult = await completeSourceSetupTransaction(supabase, {
+      profileId: profile.id,
+      sourceType: "native",
+      storeName: input.storeName,
+      websiteUrl: input.websiteUrl ?? defaults.websiteUrl,
+      shopDomain: null,
       market: defaults.market,
       language: "tr",
-      status: "active" as const,
-    };
+    });
 
-    const mutation = existingStore
-      ? supabase.from("stores").update(payload).eq("id", existingStore.id).eq("profile_id", profile.id).select("id").single<{ id: string }>()
-      : supabase.from("stores").insert(payload).select("id").single<{ id: string }>();
-
-    const { data, error } = await mutation;
-
-    if (error) {
-      return {
-        ok: false,
-        message: isMissingSourceTable(error)
-          ? sourceSetupMessage()
-          : "Web sitesi kaynak kaydı oluşturulamadı. Lütfen tekrar dene.",
-        isMissingTable: isMissingSourceTable(error),
-      };
+    if (!setupResult.ok) {
+      return setupResult;
     }
 
-    const profileUpdateResult = await updateProfileSourcePreference(
-      supabase,
-      profile.id,
-      "native",
-      payload.website_url ?? undefined,
-    );
-
-    if (!profileUpdateResult.ok) {
-      return profileUpdateResult;
-    }
-
-    return loadStoreWithConnection(supabase, profile.id, data.id);
+    return loadStoreWithConnection(supabase, profile.id, setupResult.storeId);
   } catch (error) {
     if (error instanceof MissingSupabaseServiceRoleKeyError) {
       return {
@@ -312,7 +314,7 @@ export async function createOrUpdateNativeSource(
 
     return {
       ok: false,
-      message: "Kaynak kaydı oluşturulurken beklenmeyen bir hata oluştu.",
+      message: "Kaynak kaydi olusturulurken beklenmeyen bir hata olustu.",
     };
   }
 }
@@ -324,89 +326,21 @@ export async function prepareShopifySource(
   try {
     const supabase = createAdminClient();
     const defaults = profileDefaults(profile);
-    const { data: existingStore, error: existingError } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("profile_id", profile.id)
-      .eq("source_type", "shopify")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle<{ id: string }>();
-
-    if (existingError) {
-      return {
-        ok: false,
-        message: isMissingSourceTable(existingError)
-          ? sourceSetupMessage()
-          : "Mevcut Shopify hazırlığı kontrol edilemedi. Lütfen tekrar dene.",
-        isMissingTable: isMissingSourceTable(existingError),
-      };
-    }
-
-    const storePayload = {
-      profile_id: profile.id,
-      name: `${defaults.storeName} Shopify`,
-      source_type: "shopify" as const,
-      website_url: null,
+    const setupResult = await completeSourceSetupTransaction(supabase, {
+      profileId: profile.id,
+      sourceType: "shopify",
+      storeName: `${defaults.storeName} Shopify`,
+      websiteUrl: null,
+      shopDomain: input.shopDomain,
       market: defaults.market,
       language: "tr",
-      status: "setup_pending" as const,
-    };
+    });
 
-    const storeMutation = existingStore
-      ? supabase.from("stores").update(storePayload).eq("id", existingStore.id).eq("profile_id", profile.id).select("id").single<{ id: string }>()
-      : supabase.from("stores").insert(storePayload).select("id").single<{ id: string }>();
-
-    const { data: storeData, error: storeError } = await storeMutation;
-
-    if (storeError) {
-      return {
-        ok: false,
-        message: isMissingSourceTable(storeError)
-          ? sourceSetupMessage()
-          : "Shopify kaynak kaydı hazırlanamadı. Lütfen tekrar dene.",
-        isMissingTable: isMissingSourceTable(storeError),
-      };
+    if (!setupResult.ok) {
+      return setupResult;
     }
 
-    const { error: connectionError } = await supabase
-      .from("store_connections")
-      .upsert(
-        {
-          profile_id: profile.id,
-          store_id: storeData.id,
-          platform: "shopify",
-          shop_domain: input.shopDomain,
-          scopes: [],
-          status: "pending",
-          last_error_code: null,
-          last_error_message: null,
-          connected_at: null,
-        },
-        { onConflict: "store_id,platform" },
-      );
-
-    if (connectionError) {
-      return {
-        ok: false,
-        message: isMissingSourceTable(connectionError)
-          ? sourceSetupMessage()
-          : "Shopify bağlantı hazırlığı kaydedilemedi. Lütfen tekrar dene.",
-        isMissingTable: isMissingSourceTable(connectionError),
-      };
-    }
-
-    const profileUpdateResult = await updateProfileSourcePreference(
-      supabase,
-      profile.id,
-      "shopify",
-    );
-
-    if (!profileUpdateResult.ok) {
-      return profileUpdateResult;
-    }
-
-    return loadStoreWithConnection(supabase, profile.id, storeData.id);
+    return loadStoreWithConnection(supabase, profile.id, setupResult.storeId);
   } catch (error) {
     if (error instanceof MissingSupabaseServiceRoleKeyError) {
       return {
@@ -418,7 +352,7 @@ export async function prepareShopifySource(
 
     return {
       ok: false,
-      message: "Shopify hazırlığı yapılırken beklenmeyen bir hata oluştu.",
+      message: "Shopify hazirligi yapilirken beklenmeyen bir hata olustu.",
     };
   }
 }

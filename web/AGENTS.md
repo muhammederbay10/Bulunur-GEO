@@ -213,6 +213,7 @@ Rules:
 7. Do not silently apply database changes outside the documented workflow.
 8. Do not run Supabase SQL from the agent environment. The user will run SQL manually from the Supabase SQL Editor.
 9. When adding SQL, tell the user the exact SQL file to run and when it must be run before local testing.
+10. Source setup completion is transaction-backed by `public.complete_source_setup(...)`. Future source setup changes must preserve atomic store, connection, and profile completion updates or replace them with an equivalent transaction-backed server operation.
 
 Known conflict:
 
@@ -277,9 +278,9 @@ src/app
     dashboard/
     products/
     products/[productId]/
-    sources/
     history/
     settings/
+  sources/
   api/
     ai/
     shopify/
@@ -316,6 +317,13 @@ src/types
   shopify.ts
   scraping.ts
 ```
+
+Route placement notes:
+
+- `/sources` is intentionally a top-level route, not inside `(dashboard)`.
+- During first-time setup, `/sources?setup=1` and users with `source_setup_completed = false` must render without the dashboard sidebar.
+- After source setup is complete, normal `/sources` visits should wrap the same source setup surface in `AppShell`.
+- Do not move `/sources` back under `(dashboard)` unless the no-sidebar setup experience is replaced with an equivalent route pattern.
 
 Route handler pattern:
 
