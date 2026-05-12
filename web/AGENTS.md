@@ -177,10 +177,11 @@ Project-specific UI rules:
 4. Frontend checks are not a replacement for server-side authorization or RLS.
 5. Keep secrets server-side only.
 6. Never expose Shopify secrets, Shopify access tokens, AI service secrets, encryption keys, Supabase service-role keys, or internal bearer tokens to client components.
-7. Centralize environment variable reads in `src/lib/env` or the established env module.
-8. Fail fast for missing required server env vars.
-9. Store `AI_SERVICE_URL` and `AI_SERVICE_SECRET` server-side only.
-10. Persist external API failures safely without leaking stack traces or secrets to users.
+7. Workflow table writes that bypass select-only RLS must use server-only repository/service code with `SUPABASE_SERVICE_ROLE_KEY` after explicit ownership validation.
+8. Centralize environment variable reads in `src/lib/env` or the established env module.
+9. Fail fast for missing required server env vars.
+10. Store `AI_SERVICE_URL` and `AI_SERVICE_SECRET` server-side only.
+11. Persist external API failures safely without leaking stack traces or secrets to users.
 
 ## 11. Database / SQL Rules
 

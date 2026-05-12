@@ -1,19 +1,58 @@
-import { Store } from "lucide-react";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { PhasePlaceholder } from "@/components/phase-placeholder";
+import { SourceSetupPanel } from "@/features/sources/components/source-setup-panel";
+import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
+import { getSourceSetupForUser } from "@/lib/db/source-repository";
+import { hasSupabaseServiceRoleKey } from "@/lib/env/server";
+
+function SourcesFallback() {
+  return (
+    <div className="seller-surface p-6">
+      <p className="text-sm font-medium text-primary">Ürün kaynağı</p>
+      <h1 className="mt-3 text-2xl font-semibold">
+        Kaynak durumu hazırlanıyor
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        Mağaza ve bağlantı kayıtlarınız güvenli şekilde okunuyor.
+      </p>
+    </div>
+  );
+}
+
+async function SourcesContent() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  const [profileResult, sourceResult] = await Promise.all([
+    getProfileForUser(user.id),
+    getSourceSetupForUser(user.id),
+  ]);
+
+  const profile = profileResult.profile;
+
+  if (!profile?.onboardingCompleted) {
+    redirect("/onboarding");
+  }
+
+  return (
+    <SourceSetupPanel
+      profile={profile}
+      stores={sourceResult.stores}
+      databaseReady={!profileResult.isMissingTable && !sourceResult.isMissingTable}
+      canWriteSources={hasSupabaseServiceRoleKey()}
+      setupMessage={profileResult.errorMessage ?? sourceResult.errorMessage}
+    />
+  );
+}
 
 export default function SourcesPage() {
   return (
-    <PhasePlaceholder
-      icon={Store}
-      title="Ürün kaynağınızı hazırlayın"
-      description="Phase 3 başlamadan önce bu sayfa yalnızca temel yönü gösterir: Shopify mağazanızı bağlayın veya web sitenizden ürün ekleyin."
-      items={[
-        "Shopify akışı satıcıya mağaza bağlantısı gibi görünecek; OAuth, izinler ve token saklama sunucu tarafında kalacak.",
-        "Web sitesinden ürün ekleme akışı güvenli, sınırlı ve önce önizlemeli olacak.",
-        "WooCommerce şimdilik arayüzde gösterilmeyecek; gelecekteki kapsam olarak kalacak.",
-        "Kaynak bağlantı durumu, anlaşılır hata mesajları ve güvenli sonraki aksiyonlar burada yer alacak.",
-      ]}
-    />
+    <Suspense fallback={<SourcesFallback />}>
+      <SourcesContent />
+    </Suspense>
   );
 }
