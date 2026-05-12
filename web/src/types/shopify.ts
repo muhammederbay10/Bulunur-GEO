@@ -24,3 +24,27 @@ export type ShopifyPublishableField =
   | "tags"
   | "seo.title"
   | "seo.description";
+
+export type ShopifyConnectionSummary = {
+  id: string;
+  profileId: string;
+  storeId: string;
+  shopDomain: string | null;
+  externalShopId: string | null;
+  scopes: string[];
+  status: "pending" | "connected" | "error" | "revoked" | "disconnected";
+  lastErrorCode: string | null;
+  lastErrorMessage: string | null;
+  connectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ShopifyConnectionSecret = {
+  connectionId: string;
+  profileId: string;
+  accessTokenCiphertext: string | null;
+  tokenReference: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
