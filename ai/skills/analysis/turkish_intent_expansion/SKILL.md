@@ -49,26 +49,21 @@ Varyantlar şu türleri kapsamalıdır:
 - karşılaştırma niyeti
 - tavsiye niyeti
 - güven veya satın alma öncesi soru niyeti
-- kategoriye uygunsa ödünç kelime veya yaygın Türkçe alternatif
+- ürünün kendi pazar dilinde yaygınsa ödünç kelime veya Türkçe alternatif
 
-Örnek airfryer varyantları:
+Farklı ürün tipleri için örnek varyantlar:
 
 ```text
-5 litre airfryer
-küçük mutfak için hava fritözü
-3-4 kişilik aile için airfryer
-kolay temizlenen airfryer önerisi
-airfryer mı fırın mı
+kablosuz kulaklık yorumları
+filtre kahve makinesi alırken nelere dikkat edilmeli
+kadın spor ayakkabı günlük kullanım için uygun mu
+taşınabilir şarj cihazı karşılaştırma
+çocuk montu beden seçimi nasıl yapılır
 ```
 
-Kategoriye göre ödünç kelimeleri doğal kullan:
+Ödünç kelimeyi sırf çeşitlilik olsun diye ekleme. Türkiye e-ticaret dilinde ürün için gerçekten kullanılıyorsa ekle.
 
-- airfryer / hava fritözü
-- smartwatch / akıllı saat
-- blender seti / el blenderı
-- sneaker / spor ayakkabı
-
-Fakat ödünç kelimeyi sırf çeşitlilik olsun diye ekleme. Türkiye e-ticaret dilinde gerçekten kullanılıyorsa ekle.
+Bu skill sabit bir kategori listesine bağlı değildir. Verilen kategori ve ürün başlığını serbest metin olarak değerlendir.
 
 ## Anti-Hallucination Kuralları
 
@@ -84,31 +79,30 @@ Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kul
 
 ```json
 {
-  "detectedCategory": "Airfryer",
+  "detectedCategory": "kablosuz kulaklık",
   "buyerIntentVariants": [
-    "5 litre airfryer",
-    "küçük mutfak için hava fritözü"
+    "kablosuz kulaklık yorumları",
+    "kablosuz kulaklık alınır mı"
   ],
   "borrowedTermVariants": [
-    "airfryer",
-    "hava fritözü"
+    "bluetooth kulaklık"
   ],
   "intentGroups": {
     "productType": [
-      "airfryer"
+      "kablosuz kulaklık"
     ],
     "useCase": [
-      "küçük mutfak için hava fritözü"
+      "günlük kullanım için kablosuz kulaklık"
     ],
     "comparison": [
-      "airfryer mı fırın mı"
+      "kablosuz kulaklık karşılaştırma"
     ],
     "prePurchaseQuestions": [
-      "airfryer alırken nelere dikkat edilmeli"
+      "kablosuz kulaklık alırken nelere dikkat edilmeli"
     ]
   },
   "missingSignals": [
-    "Kapasite bilgisi bilinmediği için kapasite odaklı niyetler sınırlı tutuldu."
+    "Ürün attribute bilgileri sınırlı olduğu için özellik odaklı niyetler sınırlı tutuldu."
   ],
   "reasoningSummary": "Varyantlar ürün kategorisi, görünen ürün bilgileri ve Türkiye'deki doğal e-ticaret sorgu dili dikkate alınarak üretildi."
 }

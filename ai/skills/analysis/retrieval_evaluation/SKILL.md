@@ -55,13 +55,13 @@ Puan verirken şunlara bak:
 Zayıf örnek:
 
 ```text
-X500 Airfryer 
+X12
 ```
 
 Daha iyi örnek:
 
 ```text
-X500 5 Litre Airfryer - Küçük Mutfaklar İçin Kompakt Hava Fritözü
+X12 Kablosuz Kulaklık - Bluetooth Bağlantılı USB-C Şarj Kutulu Model
 ```
 
 ## Anti-Hallucination Kuralları
@@ -88,7 +88,7 @@ Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kul
   ],
   "missingSignals": [
     "Kullanım amacı",
-    "Kategoriye özgü ana özellik"
+    "Ürüne özgü ayırt edici özellik"
   ],
   "recommendedNextAction": "Başlığı ürün tipi, önemli özellik ve Türkçe alıcı niyetiyle yeniden yapılandır."
 }
