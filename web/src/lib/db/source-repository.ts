@@ -120,14 +120,26 @@ async function updateProfileSourcePreference(
   profileId: string,
   preferredProductSource: "shopify" | "native",
   websiteUrl?: string,
-) {
-  await supabase
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const { error } = await supabase
     .from("profiles")
     .update({
       preferred_product_source: preferredProductSource,
+      source_setup_completed: true,
+      source_setup_completed_at: new Date().toISOString(),
       ...(websiteUrl ? { website_url: websiteUrl } : {}),
     })
     .eq("id", profileId);
+
+  if (error) {
+    return {
+      ok: false,
+      message:
+        "Kaynak kaydedildi ancak profil kaynak durumu güncellenemedi. Lütfen SQL şemasını güncelle ve tekrar dene.",
+    };
+  }
+
+  return { ok: true };
 }
 
 async function loadStoreWithConnection(
@@ -277,12 +289,16 @@ export async function createOrUpdateNativeSource(
       };
     }
 
-    await updateProfileSourcePreference(
+    const profileUpdateResult = await updateProfileSourcePreference(
       supabase,
       profile.id,
       "native",
       payload.website_url ?? undefined,
     );
+
+    if (!profileUpdateResult.ok) {
+      return profileUpdateResult;
+    }
 
     return loadStoreWithConnection(supabase, profile.id, data.id);
   } catch (error) {
@@ -380,7 +396,15 @@ export async function prepareShopifySource(
       };
     }
 
-    await updateProfileSourcePreference(supabase, profile.id, "shopify");
+    const profileUpdateResult = await updateProfileSourcePreference(
+      supabase,
+      profile.id,
+      "shopify",
+    );
+
+    if (!profileUpdateResult.ok) {
+      return profileUpdateResult;
+    }
 
     return loadStoreWithConnection(supabase, profile.id, storeData.id);
   } catch (error) {

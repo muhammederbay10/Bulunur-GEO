@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   getProfileForUser,
   hasCompletedOnboarding,
+  hasCompletedSourceSetup,
 } from "@/lib/db/profile-repository";
 
 function ProtectedAreaFallback() {
@@ -42,6 +43,10 @@ async function ProtectedDashboardShell({
 
   if (!hasCompletedOnboarding(profile)) {
     redirect("/onboarding");
+  }
+
+  if (!hasCompletedSourceSetup(profile)) {
+    redirect("/sources?setup=1");
   }
 
   return <AppShell>{children}</AppShell>;

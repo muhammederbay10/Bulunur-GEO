@@ -16,6 +16,8 @@ type ProfileRow = {
   preferred_product_source: "shopify" | "native" | null;
   onboarding_completed: boolean;
   onboarding_completed_at: string | null;
+  source_setup_completed: boolean | null;
+  source_setup_completed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -36,7 +38,7 @@ export type ProfileMutationResult =
   | { ok: false; message: string; isMissingTable?: boolean };
 
 const profileSelect =
-  "id,email,full_name,business_name,business_category,website_url,market_focus,preferred_product_source,onboarding_completed,onboarding_completed_at,created_at,updated_at";
+  "id,email,full_name,business_name,business_category,website_url,market_focus,preferred_product_source,onboarding_completed,onboarding_completed_at,source_setup_completed,source_setup_completed_at,created_at,updated_at";
 
 function mapProfileRow(row: ProfileRow): UserProfile {
   return {
@@ -50,6 +52,8 @@ function mapProfileRow(row: ProfileRow): UserProfile {
     preferredProductSource: row.preferred_product_source,
     onboardingCompleted: row.onboarding_completed,
     onboardingCompletedAt: row.onboarding_completed_at,
+    sourceSetupCompleted: row.source_setup_completed === true,
+    sourceSetupCompletedAt: row.source_setup_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -58,12 +62,13 @@ function mapProfileRow(row: ProfileRow): UserProfile {
 function isMissingProfilesTable(error: { code?: string; message?: string }) {
   return (
     error.code === "42P01" ||
-    error.message?.toLowerCase().includes("profiles") === true
+    error.message?.toLowerCase().includes("profiles") === true ||
+    error.message?.toLowerCase().includes("source_setup_completed") === true
   );
 }
 
 function databaseSetupMessage() {
-  return "Profil tablosu hazır değil. Supabase SQL Editor'de web/.codex/sql/20260511_phase1_profiles.sql dosyasını çalıştır.";
+  return "Profil tablosu güncel değil. Supabase SQL Editor'de web/.codex/sql/20260511_phase1_profiles.sql ve gerekiyorsa web/.codex/sql/20260512_phase3_source_setup_completion_flag.sql dosyalarını çalıştır.";
 }
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
@@ -127,6 +132,8 @@ export async function upsertOnboardingProfile(
         market_focus: input.marketFocus,
         onboarding_completed: true,
         onboarding_completed_at: new Date().toISOString(),
+        source_setup_completed: false,
+        source_setup_completed_at: null,
       },
       { onConflict: "id" },
     )
@@ -148,4 +155,8 @@ export async function upsertOnboardingProfile(
 
 export function hasCompletedOnboarding(profile: UserProfile | null) {
   return profile?.onboardingCompleted === true;
+}
+
+export function hasCompletedSourceSetup(profile: UserProfile | null) {
+  return profile?.sourceSetupCompleted === true;
 }

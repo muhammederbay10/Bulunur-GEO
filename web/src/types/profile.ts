@@ -11,6 +11,8 @@ export type UserProfile = {
   preferredProductSource: ProductSourcePreference | null;
   onboardingCompleted: boolean;
   onboardingCompletedAt: string | null;
+  sourceSetupCompleted: boolean;
+  sourceSetupCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };

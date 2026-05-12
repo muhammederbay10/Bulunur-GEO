@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Globe2,
   Loader2,
+  RefreshCw,
   Store,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,6 +31,7 @@ type SourceSetupPanelProps = {
   databaseReady: boolean;
   canWriteSources: boolean;
   setupMessage?: string;
+  setupMode: boolean;
 };
 
 const nativeInitialState: NativeSourceFormState = { status: "idle" };
@@ -149,6 +151,7 @@ export function SourceSetupPanel({
   databaseReady,
   canWriteSources,
   setupMessage,
+  setupMode,
 }: SourceSetupPanelProps) {
   const router = useRouter();
   const [nativeState, nativeAction, nativePending] = useActionState(
@@ -172,17 +175,21 @@ export function SourceSetupPanel({
   useEffect(() => {
     if (nativeState.status === "success" || shopifyState.status === "success") {
       const timeoutId = window.setTimeout(() => {
-        router.replace("/dashboard");
-      }, 1250);
+        if (setupMode) {
+          router.replace("/dashboard");
+        } else {
+          router.refresh();
+        }
+      }, setupMode ? 1600 : 900);
 
       return () => window.clearTimeout(timeoutId);
     }
-  }, [nativeState.status, router, shopifyState.status]);
+  }, [nativeState.status, router, setupMode, shopifyState.status]);
 
   if (successMessage) {
     return (
       <section className="seller-surface mx-auto max-w-2xl p-8 text-center">
-        <div className="mx-auto flex h-14 w-14 animate-pulse items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div className="mx-auto flex h-16 w-16 motion-safe:animate-pulse items-center justify-center rounded-full bg-primary/10 text-primary">
           <CheckCircle2 className="h-7 w-7" />
         </div>
         <h1 className="mt-5 text-3xl font-semibold">
@@ -191,9 +198,17 @@ export function SourceSetupPanel({
         <p className="mx-auto mt-3 max-w-xl leading-7 text-muted-foreground">
           {successMessage}
         </p>
-        <p className="mt-5 text-sm text-muted-foreground">
-          Panel yenileniyor ve dashboard ekranına geçiliyor...
-        </p>
+        <div className="mx-auto mt-6 flex max-w-sm flex-col items-center gap-3">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-2/3 rounded-full bg-primary motion-safe:animate-pulse" />
+          </div>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <RefreshCw className="h-4 w-4 motion-safe:animate-spin" />
+            {setupMode
+              ? "Panel yenileniyor ve dashboard ekranına geçiliyor..."
+              : "Kaynak durumu yenileniyor..."}
+          </p>
+        </div>
       </section>
     );
   }
