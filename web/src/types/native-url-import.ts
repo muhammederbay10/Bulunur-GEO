@@ -39,13 +39,39 @@ export type NativeUrlImportErrorCode =
   | "too_many_redirects"
   | "no_product_links"
   | "all_products_failed"
+  | "robots_disallowed"
+  | "robots_unavailable"
+  | "partial_product_failures"
   | "unauthorized"
   | "native_source_not_found"
   | "native_source_conflict"
   | "native_source_lookup_failed"
   | "native_source_schema_missing"
   | "invalid_scan_request"
+  | "scrape_storage_schema_missing"
+  | "scrape_job_create_failed"
+  | "scrape_job_update_failed"
+  | "scrape_preview_persist_failed"
   | "unexpected_error";
+
+export type NativeRobotsCheck = {
+  checked: boolean;
+  allowed: boolean;
+  url: string | null;
+  status: "allowed" | "disallowed" | "not_found" | "unavailable";
+  httpStatus?: number;
+  error?: string;
+  errorCode?: NativeUrlImportErrorCode;
+};
+
+export type NativeCrawlMetadata = {
+  requestedUrl: string;
+  finalUrl: string | null;
+  fetchedAt: string | null;
+  httpStatus: number | null;
+  contentType: string | null;
+  robots: NativeRobotsCheck | null;
+};
 
 export type UrlValidationResult = {
   isValid: boolean;
@@ -62,6 +88,7 @@ export type SafeFetchResult = {
   status?: number;
   contentType?: string | null;
   html?: string;
+  crawlMetadata?: NativeCrawlMetadata;
   error?: string;
   errorCode?: NativeUrlImportErrorCode;
 };
@@ -121,6 +148,7 @@ export type ScrapePreviewItem = {
   status: NativeUrlImportStatus;
   warnings: string[];
   rawPayload: Record<string, unknown>;
+  crawlMetadata: NativeCrawlMetadata;
 };
 
 export type ScrapePreviewFailure = {
@@ -140,6 +168,7 @@ export type ScanResponse = {
   success: boolean;
   sourceUrl: string;
   normalizedUrl?: string;
+  scrapeJobId?: string;
   source?: NativeUrlImportSourceContext;
   detectedCount: number;
   previewItems: ScrapePreviewItem[];

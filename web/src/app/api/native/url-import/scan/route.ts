@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCurrentUser } from "@/lib/db/profile-repository";
+import {
+  completeScrapeJob,
+  createRunningScrapeJob,
+  persistScrapePreviewItems,
+} from "@/lib/db/scrape-repository";
 import { getActiveNativeSourceForUser } from "@/lib/db/source-repository";
 import {
   scanNativeProductListing,
@@ -68,10 +73,109 @@ function mapNativeSourceContext(
 function withSource(
   scanResult: ScanResponse,
   source: NativeUrlImportSourceContext,
+  scrapeJobId?: string,
 ): ScanResponse {
   return {
     ...scanResult,
     source,
+    scrapeJobId,
+  };
+}
+
+function scanStorageFailureResponse(params: {
+  sourceUrl: string;
+  source: NativeUrlImportSourceContext;
+  scrapeJobId?: string;
+  error: string;
+  errorCode: ScanResponse["errorCode"];
+}): ScanResponse {
+  return {
+    success: false,
+    sourceUrl: params.sourceUrl,
+    scrapeJobId: params.scrapeJobId,
+    source: params.source,
+    detectedCount: 0,
+    previewItems: [],
+    status: "failed",
+    error: params.error,
+    errorCode: params.errorCode,
+  };
+}
+
+async function persistScanSession(params: {
+  profileId: string;
+  storeId: string;
+  scrapeJobId: string;
+  source: NativeUrlImportSourceContext;
+  sourceUrl: string;
+  normalizedUrl?: string | null;
+  scanResult: ScanResponse;
+}): Promise<{ body: ScanResponse; status: number }> {
+  if (params.scanResult.previewItems.length > 0) {
+    const persistResult = await persistScrapePreviewItems({
+      profileId: params.profileId,
+      storeId: params.storeId,
+      scrapeJobId: params.scrapeJobId,
+      previewItems: params.scanResult.previewItems,
+    });
+
+    if (!persistResult.ok) {
+      await completeScrapeJob({
+        profileId: params.profileId,
+        scrapeJobId: params.scrapeJobId,
+        status: "failed",
+        normalizedUrl: params.scanResult.normalizedUrl ?? params.normalizedUrl,
+        errorCode: persistResult.code,
+        errorMessage: persistResult.message,
+      });
+
+      return {
+        body: scanStorageFailureResponse({
+          sourceUrl: params.sourceUrl,
+          source: params.source,
+          scrapeJobId: params.scrapeJobId,
+          error: persistResult.message,
+          errorCode: persistResult.code,
+        }),
+        status: persistResult.status,
+      };
+    }
+  }
+
+  const failedCount = params.scanResult.failedItems?.length ?? 0;
+  const completeResult = await completeScrapeJob({
+    profileId: params.profileId,
+    scrapeJobId: params.scrapeJobId,
+    status: params.scanResult.success ? "preview_ready" : "failed",
+    normalizedUrl: params.scanResult.normalizedUrl ?? params.normalizedUrl,
+    errorCode: params.scanResult.success
+      ? failedCount > 0
+        ? "partial_product_failures"
+        : null
+      : (params.scanResult.errorCode ?? "unexpected_error"),
+    errorMessage: params.scanResult.success
+      ? failedCount > 0
+        ? `${failedCount} product page(s) could not be scanned.`
+        : null
+      : (params.scanResult.error ?? "Native URL scan failed."),
+  });
+
+  if (!completeResult.ok) {
+    return {
+      body: scanStorageFailureResponse({
+        sourceUrl: params.sourceUrl,
+        source: params.source,
+        scrapeJobId: params.scrapeJobId,
+        error: completeResult.message,
+        errorCode: completeResult.code,
+      }),
+      status: completeResult.status,
+    };
+  }
+
+  return {
+    body: withSource(params.scanResult, params.source, params.scrapeJobId),
+    status: params.scanResult.success ? 200 : 422,
   };
 }
 
@@ -131,11 +235,38 @@ export async function POST(request: Request) {
     const source = mapNativeSourceContext(nativeSource.store);
 
     if (parsedBody.data.urls) {
-      const scanResult = await scanNativeProductUrls(parsedBody.data.urls);
-      const responseStatus = scanResult.success ? 200 : 422;
+      const jobResult = await createRunningScrapeJob({
+        profileId: user.id,
+        storeId: nativeSource.store.id,
+        inputUrl: "manual_product_urls",
+        normalizedUrl: null,
+      });
 
-      return NextResponse.json(withSource(scanResult, source), {
-        status: responseStatus,
+      if (!jobResult.ok) {
+        return NextResponse.json(
+          scanStorageFailureResponse({
+            sourceUrl: "manual_product_urls",
+            source,
+            error: jobResult.message,
+            errorCode: jobResult.code,
+          }),
+          { status: jobResult.status },
+        );
+      }
+
+      const scanResult = await scanNativeProductUrls(parsedBody.data.urls);
+      const persistedScan = await persistScanSession({
+        profileId: user.id,
+        storeId: nativeSource.store.id,
+        scrapeJobId: jobResult.data.scrapeJobId,
+        source,
+        sourceUrl: "manual_product_urls",
+        normalizedUrl: null,
+        scanResult,
+      });
+
+      return NextResponse.json(persistedScan.body, {
+        status: persistedScan.status,
       });
     }
 
@@ -158,14 +289,40 @@ export async function POST(request: Request) {
       );
     }
 
+    const jobResult = await createRunningScrapeJob({
+      profileId: user.id,
+      storeId: nativeSource.store.id,
+      inputUrl: sourceUrl,
+      normalizedUrl: validationResult.normalizedUrl,
+    });
+
+    if (!jobResult.ok) {
+      return NextResponse.json(
+        scanStorageFailureResponse({
+          sourceUrl,
+          source,
+          error: jobResult.message,
+          errorCode: jobResult.code,
+        }),
+        { status: jobResult.status },
+      );
+    }
+
     const scanResult = await scanNativeProductListing(
       validationResult.normalizedUrl,
     );
+    const persistedScan = await persistScanSession({
+      profileId: user.id,
+      storeId: nativeSource.store.id,
+      scrapeJobId: jobResult.data.scrapeJobId,
+      source,
+      sourceUrl,
+      normalizedUrl: validationResult.normalizedUrl,
+      scanResult,
+    });
 
-    const responseStatus = scanResult.success ? 200 : 422;
-
-    return NextResponse.json(withSource(scanResult, source), {
-      status: responseStatus,
+    return NextResponse.json(persistedScan.body, {
+      status: persistedScan.status,
     });
   } catch (error) {
     console.error("[native-url-import/scan]", error);

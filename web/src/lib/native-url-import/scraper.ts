@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import pLimit from "p-limit";
 
 import type {
+  NativeCrawlMetadata,
   NativeUrlImportErrorCode,
   ScanResponse,
   ScrapePreviewFailure,
@@ -25,10 +26,32 @@ function createFailedPreviewItem(
   return {
     id: randomUUID(),
     productUrl,
-    status: errorCode === "blocked_status" ? "blocked" : "failed",
+    status:
+      errorCode === "blocked_status" ||
+      errorCode === "robots_disallowed" ||
+      errorCode === "robots_unavailable"
+        ? "blocked"
+        : "failed",
     error,
     errorCode,
   };
+}
+
+function createFallbackCrawlMetadata(productUrl: string): NativeCrawlMetadata {
+  return {
+    requestedUrl: productUrl,
+    finalUrl: productUrl,
+    fetchedAt: null,
+    httpStatus: null,
+    contentType: null,
+    robots: null,
+  };
+}
+
+function isScrapePreviewItem(
+  item: ScrapePreviewItem | ScrapePreviewFailure,
+): item is ScrapePreviewItem {
+  return item.status !== "failed" && item.status !== "blocked";
 }
 
 async function scrapeSingleProduct(
@@ -44,12 +67,13 @@ async function scrapeSingleProduct(
     );
   }
 
-  const product = extractProductDetail(fetchResult.html, productUrl);
+  const finalProductUrl = fetchResult.finalUrl ?? fetchResult.url;
+  const product = extractProductDetail(fetchResult.html, finalProductUrl);
   const confidence = calculateProductConfidence(product);
 
   return {
     id: randomUUID(),
-    productUrl,
+    productUrl: finalProductUrl,
     title: product.title,
     imageUrl: product.images[0] ?? null,
     shortDescription: product.shortDescription,
@@ -70,6 +94,8 @@ async function scrapeSingleProduct(
       images: product.images,
       extractionMethods: product.extractionMethods,
     },
+    crawlMetadata:
+      fetchResult.crawlMetadata ?? createFallbackCrawlMetadata(finalProductUrl),
   };
 }
 
@@ -108,6 +134,31 @@ export async function scanNativeProductListing(
   );
 
   if (detectedProductLinks.length === 0) {
+    const directProductFallback = await scrapeSingleProduct(listingUrl);
+
+    if (
+      isScrapePreviewItem(directProductFallback) &&
+      directProductFallback.title &&
+      directProductFallback.extractionConfidence >= 50
+    ) {
+      return {
+        success: true,
+        sourceUrl,
+        normalizedUrl: listingUrl,
+        detectedCount: 1,
+        previewItems: [
+          {
+            ...directProductFallback,
+            warnings: [
+              ...directProductFallback.warnings,
+              "No listing links were detected, so this URL was scanned as a direct product page.",
+            ],
+          },
+        ],
+        status: "preview_ready",
+      };
+    }
+
     return {
       success: false,
       sourceUrl,
@@ -130,8 +181,7 @@ export async function scanNativeProductListing(
   );
 
   const previewItems = scanItems.filter(
-    (item): item is ScrapePreviewItem =>
-      item.status !== "failed" && item.status !== "blocked",
+    (item): item is ScrapePreviewItem => isScrapePreviewItem(item),
   );
 
   const failedItems = scanItems.filter(
@@ -193,8 +243,7 @@ export async function scanNativeProductUrls(
   );
 
   const previewItems = scanItems.filter(
-    (item): item is ScrapePreviewItem =>
-      item.status !== "failed" && item.status !== "blocked",
+    (item): item is ScrapePreviewItem => isScrapePreviewItem(item),
   );
 
   const failedItems = scanItems.filter(
