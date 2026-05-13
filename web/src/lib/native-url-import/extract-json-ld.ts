@@ -17,6 +17,7 @@ export type JsonLdProductData = {
   description: string | null;
   images: string[];
   priceDisplay: string | null;
+  currency: string | null;
   stockDisplay: string | null;
   brand: string | null;
   sku: string | null;
@@ -233,6 +234,7 @@ export function extractJsonLdProduct(html: string): JsonLdProductData | null {
     description: asString(product.description),
     images: normalizeImages(product.image),
     priceDisplay: extractPriceDisplay(offer),
+    currency: offer ? asString(offer.priceCurrency) : null,
     stockDisplay: extractStockDisplay(offer),
     brand: extractBrand(product),
     sku: asString(product.sku),

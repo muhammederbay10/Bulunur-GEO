@@ -232,6 +232,51 @@ function extractStock($: cheerio.CheerioAPI): string | null {
   );
 }
 
+function extractBrand($: cheerio.CheerioAPI): string | null {
+  return getMetaContent($, [
+    'meta[property="product:brand"]',
+    'meta[name="brand"]',
+  ]) ?? getFirstText($, [
+    '[itemprop="brand"]',
+    ".brand",
+    ".marka",
+    ".product-brand",
+    ".urun-marka",
+    "[class*='brand']",
+    "[class*='marka']",
+  ]);
+}
+
+function extractSku($: cheerio.CheerioAPI): string | null {
+  return cleanText($("[data-sku]").first().attr("data-sku")) ??
+    getMetaContent($, ['meta[property="product:retailer_item_id"]']) ??
+    getFirstText($, [
+      '[itemprop="sku"]',
+      ".sku",
+      ".stok-kodu",
+      ".urun-kodu",
+      ".product-sku",
+      "[class*='sku']",
+      "[class*='stok-kodu']",
+      "[class*='urun-kodu']",
+    ]);
+}
+
+function extractCurrency(value: string | null | undefined): string | null {
+  const text = cleanText(value)?.toLocaleUpperCase("tr-TR");
+
+  if (!text) return null;
+
+  if (text.includes("TRY") || text.includes("TL") || text.includes("₺")) {
+    return "TRY";
+  }
+
+  if (text.includes("USD") || text.includes("$")) return "USD";
+  if (text.includes("EUR") || text.includes("€")) return "EUR";
+
+  return null;
+}
+
 function extractTags($: cheerio.CheerioAPI): string[] {
   const tagCandidates: string[] = [];
 
@@ -353,6 +398,9 @@ export function extractProductDetail(
 
   const priceDisplay = jsonLdProduct?.priceDisplay ?? extractPrice($);
   const stockDisplay = jsonLdProduct?.stockDisplay ?? extractStock($);
+  const brand = jsonLdProduct?.brand ?? extractBrand($);
+  const sku = jsonLdProduct?.sku ?? extractSku($);
+  const currency = jsonLdProduct?.currency ?? extractCurrency(priceDisplay);
 
   const tags = extractTags($);
 
@@ -372,6 +420,8 @@ export function extractProductDetail(
   return {
     title,
     productUrl,
+    brand,
+    sku,
     shortDescription: finalPlainDescription,
     descriptionHtml: finalDescriptionHtml,
     plainDescription: finalPlainDescription,
@@ -379,11 +429,15 @@ export function extractProductDetail(
     seoTitle,
     seoDescription,
     priceDisplay,
+    currency,
     stockDisplay,
     tags,
     categories,
     rawPayload: {
       jsonLdProduct,
+      brand,
+      sku,
+      currency,
       seoTitle,
       seoDescription,
       domTitle,

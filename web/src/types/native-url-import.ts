@@ -52,6 +52,10 @@ export type NativeUrlImportErrorCode =
   | "scrape_job_create_failed"
   | "scrape_job_update_failed"
   | "scrape_preview_persist_failed"
+  | "invalid_import_request"
+  | "scrape_preview_not_found"
+  | "native_product_import_failed"
+  | "scrape_preview_update_failed"
   | "unexpected_error";
 
 export type NativeRobotsCheck = {
@@ -110,6 +114,8 @@ export type DetectedProductLink = {
 export type ExtractedProductData = {
   title: string | null;
   productUrl: string;
+  brand: string | null;
+  sku: string | null;
   shortDescription: string | null;
   descriptionHtml: string | null;
   plainDescription: string | null;
@@ -117,6 +123,7 @@ export type ExtractedProductData = {
   seoTitle: string | null;
   seoDescription: string | null;
   priceDisplay: string | null;
+  currency: string | null;
   stockDisplay: string | null;
   tags: string[];
   categories: string[];
@@ -134,11 +141,14 @@ export type ScrapePreviewItem = {
   id: string;
   productUrl: string;
   title: string | null;
+  brand: string | null;
+  sku: string | null;
   imageUrl: string | null;
   shortDescription: string | null;
   descriptionHtml: string | null;
   plainDescription: string | null;
   priceDisplay: string | null;
+  currency: string | null;
   stockDisplay: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
@@ -198,6 +208,21 @@ export type ValidateUrlResponse = {
   preflight?: ValidateUrlPreflight;
 };
 
+export type NativeUrlImportRequest = {
+  scrapeJobId: string;
+  previewItemIds: string[];
+};
+
+export type NativeUrlImportResponse = {
+  success: boolean;
+  scrapeJobId?: string;
+  source?: NativeUrlImportSourceContext;
+  importedCount: number;
+  productIds: string[];
+  error?: string;
+  errorCode?: NativeUrlImportErrorCode;
+};
+
 export type LocalImportedProduct = {
   id: string;
   platform: "native";
@@ -205,6 +230,8 @@ export type LocalImportedProduct = {
   sourceUrl: string;
   productUrl: string;
   title: string;
+  brand: string | null;
+  sku: string | null;
   shortDescription: string | null;
   descriptionHtml: string | null;
   plainDescription: string | null;
@@ -212,6 +239,7 @@ export type LocalImportedProduct = {
   seoTitle: string | null;
   seoDescription: string | null;
   priceDisplay: string | null;
+  currency: string | null;
   stockDisplay: string | null;
   tags: string[];
   categories: string[];

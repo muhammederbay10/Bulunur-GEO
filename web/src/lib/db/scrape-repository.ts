@@ -12,7 +12,7 @@ type ScrapeJobRow = {
   status: ScrapeJobDbStatus;
 };
 
-type ScrapeMutationResult<T> =
+export type ScrapeMutationResult<T> =
   | { ok: true; data: T }
   | {
       ok: false;
@@ -33,7 +33,10 @@ type CreateScrapeJobInput = {
 type CompleteScrapeJobInput = {
   profileId: string;
   scrapeJobId: string;
-  status: Extract<ScrapeJobDbStatus, "preview_ready" | "failed" | "cancelled">;
+  status: Extract<
+    ScrapeJobDbStatus,
+    "preview_ready" | "imported" | "failed" | "cancelled"
+  >;
   normalizedUrl?: string | null;
   errorCode?: NativeUrlImportErrorCode | null;
   errorMessage?: string | null;
@@ -46,7 +49,42 @@ type PersistPreviewItemsInput = {
   previewItems: ScrapePreviewItem[];
 };
 
+export type ScrapePreviewRow = {
+  id: string;
+  profile_id: string;
+  store_id: string;
+  scrape_job_id: string;
+  product_url: string;
+  title: string | null;
+  image_urls: string[] | null;
+  price_display: string | null;
+  confidence_score: number | null;
+  confidence_status: "ready" | "partial" | "needs_review" | "blocked";
+  raw_extracted: Record<string, unknown> | null;
+  crawl_metadata: Record<string, unknown> | null;
+  imported_product_id: string | null;
+};
+
+type LoadPreviewItemsInput = {
+  profileId: string;
+  storeId: string;
+  scrapeJobId: string;
+  previewItemIds: string[];
+};
+
+type MarkPreviewItemsImportedInput = {
+  profileId: string;
+  storeId: string;
+  scrapeJobId: string;
+  importedItems: Array<{
+    previewItemId: string;
+    productId: string;
+  }>;
+};
+
 const scrapeJobSelect = "id,status";
+const scrapePreviewItemSelect =
+  "id,profile_id,store_id,scrape_job_id,product_url,title,image_urls,price_display,confidence_score,confidence_status,raw_extracted,crawl_metadata,imported_product_id";
 
 function scrapeStorageSetupMessage() {
   return "Kazima tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
@@ -165,15 +203,26 @@ export async function completeScrapeJob(
   input: CompleteScrapeJobInput,
 ): Promise<ScrapeMutationResult<{ scrapeJobId: string }>> {
   const supabase = createAdminClient();
+  const updatePayload: {
+    normalized_url?: string | null;
+    status: CompleteScrapeJobInput["status"];
+    error_code: NativeUrlImportErrorCode | null;
+    error_message: string | null;
+    completed_at: string;
+  } = {
+    status: input.status,
+    error_code: input.errorCode ?? null,
+    error_message: input.errorMessage ?? null,
+    completed_at: new Date().toISOString(),
+  };
+
+  if (input.normalizedUrl !== undefined) {
+    updatePayload.normalized_url = input.normalizedUrl;
+  }
+
   const { data, error } = await supabase
     .from("scrape_jobs")
-    .update({
-      normalized_url: input.normalizedUrl ?? null,
-      status: input.status,
-      error_code: input.errorCode ?? null,
-      error_message: input.errorMessage ?? null,
-      completed_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq("id", input.scrapeJobId)
     .eq("profile_id", input.profileId)
     .select(scrapeJobSelect)
@@ -247,6 +296,85 @@ export async function persistScrapePreviewItems(
     ok: true,
     data: {
       persistedCount: rows.length,
+    },
+  };
+}
+
+export async function loadOwnedScrapePreviewItems(
+  input: LoadPreviewItemsInput,
+): Promise<ScrapeMutationResult<ScrapePreviewRow[]>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("scrape_preview_items")
+    .select(scrapePreviewItemSelect)
+    .eq("profile_id", input.profileId)
+    .eq("store_id", input.storeId)
+    .eq("scrape_job_id", input.scrapeJobId)
+    .in("id", input.previewItemIds)
+    .returns<ScrapePreviewRow[]>();
+
+  if (error) {
+    console.error("[native-url-import] scrape preview lookup failed", {
+      code: error.code,
+      message: error.message,
+    });
+
+    return mutationError({
+      message: "Urun onizlemeleri okunamadi.",
+      error,
+      code: "scrape_preview_not_found",
+    });
+  }
+
+  if ((data?.length ?? 0) !== input.previewItemIds.length) {
+    return {
+      ok: false,
+      message: "Secilen urun onizlemeleri bulunamadi veya bu hesaba ait degil.",
+      code: "scrape_preview_not_found",
+      status: 404,
+    };
+  }
+
+  return {
+    ok: true,
+    data: data ?? [],
+  };
+}
+
+export async function markScrapePreviewItemsImported(
+  input: MarkPreviewItemsImportedInput,
+): Promise<ScrapeMutationResult<{ updatedCount: number }>> {
+  const supabase = createAdminClient();
+
+  for (const item of input.importedItems) {
+    const { error } = await supabase
+      .from("scrape_preview_items")
+      .update({
+        imported_product_id: item.productId,
+      })
+      .eq("id", item.previewItemId)
+      .eq("profile_id", input.profileId)
+      .eq("store_id", input.storeId)
+      .eq("scrape_job_id", input.scrapeJobId);
+
+    if (error) {
+      console.error("[native-url-import] scrape preview update failed", {
+        code: error.code,
+        message: error.message,
+      });
+
+      return mutationError({
+        message: "Aktarilan onizleme satirlari guncellenemedi.",
+        error,
+        code: "scrape_preview_update_failed",
+      });
+    }
+  }
+
+  return {
+    ok: true,
+    data: {
+      updatedCount: input.importedItems.length,
     },
   };
 }
