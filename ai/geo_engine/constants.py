@@ -86,6 +86,13 @@ LAYER_SKILL_PATHS: Final[dict[str, str]] = {
     "ai_answer_readiness": "analysis/answer_readiness",
 }
 
+LAYER_SKILL_MAX_SCORES: Final[dict[str, float]] = {
+    "retrieval": 10.0,
+    "machine_understanding": 6.0,
+    "reranking_strength": 14.0,
+    "ai_answer_readiness": 15.0,
+}
+
 TURKISH_INTENT_SKILL_PATH: Final[str] = "analysis/turkish_intent_expansion"
 
 CORE_PRODUCT_FACT_FIELDS: Final[tuple[str, ...]] = (
@@ -153,6 +160,7 @@ __all__ = [
     "LAYER_DISPLAY_NAMES",
     "LAYER_MAX_WEIGHTED_POINTS",
     "LAYER_SEMANTIC_MAX_POINTS",
+    "LAYER_SKILL_MAX_SCORES",
     "LAYER_SKILL_PATHS",
     "MAX_MAIN_PROBLEMS",
     "MAX_MISSING_SIGNALS_PER_LAYER",
