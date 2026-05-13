@@ -32,3 +32,9 @@ export const shopifyProductSyncSchema = z.object({
 export type ShopifyProductSyncInput = z.infer<
   typeof shopifyProductSyncSchema
 >;
+
+export const shopifyDisconnectSchema = z.object({
+  storeId: z.string().uuid(),
+});
+
+export type ShopifyDisconnectInput = z.infer<typeof shopifyDisconnectSchema>;

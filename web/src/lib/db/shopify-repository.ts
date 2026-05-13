@@ -495,3 +495,80 @@ export async function markShopifySyncError(params: {
     });
   }
 }
+
+export async function disconnectShopifyConnection(params: {
+  profileId: string;
+  storeId: string;
+}): Promise<ShopifyRepositoryResult<ShopifyConnectionSummary>> {
+  const connection = await getOwnedShopifyConnection(
+    params.profileId,
+    params.storeId,
+  );
+
+  if (!connection.ok) {
+    return connection;
+  }
+
+  const supabase = createAdminClient();
+  const [storeResult, connectionResult, secretResult] = await Promise.all([
+    supabase
+      .from("stores")
+      .update({
+        status: "disconnected",
+      })
+      .eq("profile_id", params.profileId)
+      .eq("id", params.storeId)
+      .eq("source_type", "shopify"),
+    supabase
+      .from("store_connections")
+      .update({
+        status: "disconnected",
+        last_error_code: null,
+        last_error_message: null,
+      })
+      .eq("id", connection.data.id)
+      .eq("profile_id", params.profileId)
+      .select(shopifyConnectionSelect)
+      .single<ShopifyConnectionRow>(),
+    supabase
+      .from("store_connection_secrets")
+      .update({
+        access_token_ciphertext: null,
+        token_reference: null,
+      })
+      .eq("connection_id", connection.data.id)
+      .eq("profile_id", params.profileId),
+  ]);
+
+  if (storeResult.error) {
+    return {
+      ok: false,
+      message: "Shopify magazasi baglanti kesildi olarak isaretlenemedi.",
+      code: storeResult.error.code,
+      isMissingTable: isMissingShopifyTable(storeResult.error),
+    };
+  }
+
+  if (connectionResult.error) {
+    return {
+      ok: false,
+      message: "Shopify baglantisi kesilemedi.",
+      code: connectionResult.error.code,
+      isMissingTable: isMissingShopifyTable(connectionResult.error),
+    };
+  }
+
+  if (secretResult.error) {
+    return {
+      ok: false,
+      message: "Shopify erisim anahtari kaldirilamadi.",
+      code: secretResult.error.code,
+      isMissingTable: isMissingShopifyTable(secretResult.error),
+    };
+  }
+
+  return {
+    ok: true,
+    data: mapConnectionSummary(connectionResult.data),
+  };
+}

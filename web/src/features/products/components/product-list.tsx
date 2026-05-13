@@ -21,6 +21,14 @@ const workflowLabels = {
   failed: "Hata var",
 };
 
+const availabilityLabels: Record<string, string> = {
+  source_disconnected: "Bagli kaynak yok",
+  in_stock: "Stokta",
+  active: "Aktif",
+  draft: "Taslak",
+  archived: "Arsiv",
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
@@ -79,7 +87,11 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
       {products.map((product) => (
         <article
           key={product.id}
-          className="rounded-lg border border-border bg-card p-4"
+          className={
+            product.availability === "source_disconnected"
+              ? "rounded-lg border border-border bg-muted/40 p-4"
+              : "rounded-lg border border-border bg-card p-4"
+          }
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-4">
@@ -93,6 +105,18 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
                   <Badge variant="outline">
                     {workflowLabels[product.workflowStatus]}
                   </Badge>
+                  {product.availability ? (
+                    <Badge
+                      variant={
+                        product.availability === "source_disconnected"
+                          ? "outline"
+                          : "secondary"
+                      }
+                    >
+                      {availabilityLabels[product.availability] ??
+                        product.availability}
+                    </Badge>
+                  ) : null}
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5">
@@ -105,6 +129,9 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
                   ) : (
                     <span>Skor bekliyor</span>
                   )}
+                  {product.availability === "source_disconnected" ? (
+                    <span>Shopify API islemleri kapali</span>
+                  ) : null}
                 </div>
               </div>
             </div>

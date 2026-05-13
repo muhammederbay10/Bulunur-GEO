@@ -2,7 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { CheckCircle2, ExternalLink, RefreshCw, Unplug } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+  Unplug,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,7 +51,7 @@ function getShopifyAction(store: SourceStore) {
   const shopDomain = store.connection?.shopDomain;
   const connectionStatus = store.connection?.status;
 
-  if (!shopDomain || !connectionStatus || connectionStatus === "disconnected") {
+  if (!shopDomain || !connectionStatus) {
     return null;
   }
 
@@ -88,6 +94,42 @@ function SyncButton({ storeId }: { storeId: string }) {
   );
 }
 
+function DisconnectButton({ storeId }: { storeId: string }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function handleDisconnect() {
+    startTransition(async () => {
+      await fetch("/api/shopify/disconnect", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ storeId }),
+      });
+      router.refresh();
+    });
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="gap-2"
+      onClick={handleDisconnect}
+      disabled={isPending}
+    >
+      {isPending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Unplug className="h-4 w-4" />
+      )}
+      Baglantiyi kes
+    </Button>
+  );
+}
+
 export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
   if (!stores.length) {
     return (
@@ -107,6 +149,12 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
         const shopifyAction =
           store.sourceType === "shopify" ? getShopifyAction(store) : null;
         const shopDomain = store.connection?.shopDomain;
+        const canDisconnect =
+          store.sourceType === "shopify" &&
+          Boolean(store.connection) &&
+          store.connection?.status !== "pending" &&
+          store.connection?.status !== "disconnected" &&
+          store.connection?.status !== "revoked";
 
         return (
           <article
@@ -145,24 +193,39 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
                 ) : null}
               </div>
 
-              {shopifyAction === "connect" && shopDomain ? (
-                <Button asChild size="sm" className="gap-2">
-                  <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain)}`}>
-                    <ExternalLink className="h-4 w-4" />
-                    Shopify&apos;a baglan
-                  </a>
-                </Button>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                {shopifyAction === "connect" && shopDomain ? (
+                  <Button asChild size="sm" className="gap-2">
+                    <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain)}`}>
+                      <ExternalLink className="h-4 w-4" />
+                      {store.connection?.status === "disconnected"
+                        ? "Yeniden baglan"
+                        : "Shopify'a baglan"}
+                    </a>
+                  </Button>
+                ) : null}
 
-              {shopifyAction === "sync" ? <SyncButton storeId={store.id} /> : null}
+                {shopifyAction === "sync" ? <SyncButton storeId={store.id} /> : null}
 
-              {store.connection?.status === "disconnected" ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Unplug className="h-4 w-4" />
-                  Kayitli urunler DB&apos;den gosterilir.
-                </div>
-              ) : null}
+                {canDisconnect ? <DisconnectButton storeId={store.id} /> : null}
+
+                {store.connection?.status === "disconnected" ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Unplug className="h-4 w-4" />
+                    Kayitli urunler DB&apos;den gosterilir.
+                  </div>
+                ) : null}
+              </div>
             </div>
+
+            {store.connection?.status === "disconnected" ? (
+              <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <Unplug className="h-4 w-4" />
+                Shopify baglantisi kesildi. Eski urunler kayitli veri olarak
+                gorunur, fakat Shopify API islemleri yeniden baglanana kadar
+                kapali kalir.
+              </p>
+            ) : null}
 
             {store.connection?.status === "connected" ? (
               <p className="mt-3 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">

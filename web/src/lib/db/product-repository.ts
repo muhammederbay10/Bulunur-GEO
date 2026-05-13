@@ -14,6 +14,7 @@ type ProductRow = {
   url: string | null;
   image_urls: string[] | null;
   price_display: string | null;
+  availability: string | null;
   latest_score: number | null;
   workflow_status: ProductSummary["workflowStatus"];
   updated_at: string;
@@ -24,7 +25,7 @@ type ProductRepositoryResult<T> =
   | { ok: false; message: string; code?: string; isMissingTable?: boolean };
 
 const productSummarySelect =
-  "id,store_id,source,title,url,image_urls,price_display,latest_score,workflow_status,updated_at";
+  "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,updated_at";
 
 const shopifyProductSyncSelect = "id,external_id";
 
@@ -47,6 +48,7 @@ function mapProductSummary(row: ProductRow): ProductSummary {
     url: row.url ?? undefined,
     imageUrl: row.image_urls?.[0],
     priceDisplay: row.price_display ?? undefined,
+    availability: row.availability ?? undefined,
     latestScore: row.latest_score ?? undefined,
     workflowStatus: row.workflow_status,
     updatedAt: row.updated_at,
@@ -200,5 +202,37 @@ export async function listProductsForProfile(
   return {
     ok: true,
     data: (data ?? []).map(mapProductSummary),
+  };
+}
+
+export async function markShopifyProductsSourceDisconnected(params: {
+  profileId: string;
+  storeId: string;
+}): Promise<ProductRepositoryResult<{ affectedCount: number }>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      availability: "source_disconnected",
+    })
+    .eq("profile_id", params.profileId)
+    .eq("store_id", params.storeId)
+    .eq("source", "shopify")
+    .select("id");
+
+  if (error) {
+    return {
+      ok: false,
+      message: "Shopify urunleri baglanti kesildi olarak isaretlenemedi.",
+      code: error.code,
+      isMissingTable: isMissingProductTable(error),
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      affectedCount: data?.length ?? 0,
+    },
   };
 }

@@ -17,6 +17,7 @@ export type ProductSummary = {
   url?: string;
   imageUrl?: string;
   priceDisplay?: string;
+  availability?: string;
   latestScore?: number;
   workflowStatus: ProductWorkflowStatus;
   updatedAt: string;
