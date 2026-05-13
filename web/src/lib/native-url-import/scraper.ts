@@ -5,6 +5,7 @@ import pLimit from "p-limit";
 import type {
   NativeUrlImportErrorCode,
   ScanResponse,
+  ScrapePreviewFailure,
   ScrapePreviewItem,
 } from "@/types/native-url-import";
 
@@ -20,34 +21,19 @@ function createFailedPreviewItem(
   productUrl: string,
   error: string,
   errorCode?: NativeUrlImportErrorCode,
-): ScrapePreviewItem {
+): ScrapePreviewFailure {
   return {
     id: randomUUID(),
     productUrl,
-    title: null,
-    imageUrl: null,
-    shortDescription: null,
-    descriptionHtml: null,
-    plainDescription: null,
-    priceDisplay: null,
-    stockDisplay: null,
-    seoTitle: null,
-    seoDescription: null,
-    tags: [],
-    categories: [],
-    extractionConfidence: 0,
-    status: "failed",
-    warnings: [error],
-    rawPayload: {
-      error,
-      errorCode,
-    },
+    status: errorCode === "blocked_status" ? "blocked" : "failed",
+    error,
+    errorCode,
   };
 }
 
 async function scrapeSingleProduct(
   productUrl: string,
-): Promise<ScrapePreviewItem> {
+): Promise<ScrapePreviewItem | ScrapePreviewFailure> {
   const fetchResult = await safeFetchHtml(productUrl);
 
   if (!fetchResult.ok || !fetchResult.html) {
@@ -137,23 +123,30 @@ export async function scanNativeProductListing(
 
   const limit = pLimit(PRODUCT_PAGE_CONCURRENCY);
 
-  const previewItems = await Promise.all(
+  const scanItems = await Promise.all(
     detectedProductLinks.map((link) =>
       limit(() => scrapeSingleProduct(link.url)),
     ),
   );
 
-  const usablePreviewItems = previewItems.filter(
-    (item) => item.status !== "failed",
+  const previewItems = scanItems.filter(
+    (item): item is ScrapePreviewItem =>
+      item.status !== "failed" && item.status !== "blocked",
   );
 
-  if (usablePreviewItems.length === 0) {
+  const failedItems = scanItems.filter(
+    (item): item is ScrapePreviewFailure =>
+      item.status === "failed" || item.status === "blocked",
+  );
+
+  if (previewItems.length === 0) {
     return {
       success: false,
       sourceUrl,
       normalizedUrl: listingUrl,
       detectedCount: detectedProductLinks.length,
-      previewItems,
+      previewItems: [],
+      failedItems,
       status: "failed",
       error:
         "Product links were found, but none of the product pages could be parsed successfully.",
@@ -167,6 +160,7 @@ export async function scanNativeProductListing(
     normalizedUrl: listingUrl,
     detectedCount: detectedProductLinks.length,
     previewItems,
+    failedItems,
     status: "preview_ready",
   };
 }
@@ -192,22 +186,29 @@ export async function scanNativeProductUrls(
 
   const limit = pLimit(PRODUCT_PAGE_CONCURRENCY);
 
-  const previewItems = await Promise.all(
+  const scanItems = await Promise.all(
     uniqueProductUrls.map((productUrl) =>
       limit(() => scrapeSingleProduct(productUrl)),
     ),
   );
 
-  const usablePreviewItems = previewItems.filter(
-    (item) => item.status !== "failed",
+  const previewItems = scanItems.filter(
+    (item): item is ScrapePreviewItem =>
+      item.status !== "failed" && item.status !== "blocked",
   );
 
-  if (usablePreviewItems.length === 0) {
+  const failedItems = scanItems.filter(
+    (item): item is ScrapePreviewFailure =>
+      item.status === "failed" || item.status === "blocked",
+  );
+
+  if (previewItems.length === 0) {
     return {
       success: false,
       sourceUrl: "manual_product_urls",
       detectedCount: uniqueProductUrls.length,
-      previewItems,
+      previewItems: [],
+      failedItems,
       status: "failed",
       error:
         "Product URLs were provided, but none of the product pages could be parsed successfully.",
@@ -220,6 +221,7 @@ export async function scanNativeProductUrls(
     sourceUrl: "manual_product_urls",
     detectedCount: uniqueProductUrls.length,
     previewItems,
+    failedItems,
     status: "preview_ready",
   };
 }

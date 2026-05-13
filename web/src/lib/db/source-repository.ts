@@ -47,6 +47,20 @@ type SourceMutationResult =
   | { ok: true; store: SourceStore }
   | { ok: false; message: string; isMissingTable?: boolean; isMissingServiceRole?: boolean };
 
+export type NativeSourceAccessResult =
+  | { ok: true; store: SourceStore }
+  | {
+      ok: false;
+      code:
+        | "native_source_not_found"
+        | "native_source_conflict"
+        | "native_source_lookup_failed"
+        | "native_source_schema_missing";
+      message: string;
+      status: number;
+      isMissingTable?: boolean;
+    };
+
 type SourceSetupRpcResult = {
   store_id: string;
 };
@@ -285,6 +299,62 @@ export async function getSourceSetupForUser(
     stores: (storesResult.data ?? []).map((row) =>
       mapStoreRow(row, connectionsByStoreId.get(row.id) ?? null),
     ),
+  };
+}
+
+export async function getActiveNativeSourceForUser(
+  profileId: string,
+): Promise<NativeSourceAccessResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .select(storeSelect)
+    .eq("profile_id", profileId)
+    .eq("source_type", "native")
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(2)
+    .returns<StoreRow[]>();
+
+  if (error) {
+    const isMissingTable = isMissingSourceTable(error);
+
+    return {
+      ok: false,
+      code: isMissingTable
+        ? "native_source_schema_missing"
+        : "native_source_lookup_failed",
+      message: isMissingTable
+        ? sourceSetupMessage()
+        : "Web sitesi kaynaÄŸÄ± okunamadÄ±. LÃ¼tfen tekrar dene.",
+      status: isMissingTable ? 500 : 400,
+      isMissingTable,
+    };
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      ok: false,
+      code: "native_source_not_found",
+      message:
+        "Devam etmek iÃ§in Ã¶nce Kaynaklar sayfasÄ±ndan web sitesi kaynaÄŸÄ±nÄ± hazÄ±rla.",
+      status: 409,
+    };
+  }
+
+  if (data.length > 1) {
+    return {
+      ok: false,
+      code: "native_source_conflict",
+      message:
+        "Bu hesapta birden fazla aktif web sitesi kaynaÄŸÄ± var. MVP'de tek aktif kaynak desteklenir.",
+      status: 409,
+    };
+  }
+
+  return {
+    ok: true,
+    store: mapStoreRow(data[0], null),
   };
 }
 

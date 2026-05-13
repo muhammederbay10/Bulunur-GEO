@@ -6,14 +6,15 @@ export type NativeUrlImportStatus =
   | "excluded"
   | "imported";
 
-export type ScrapeJobStatus =
-  | "idle"
-  | "validating"
-  | "scanning"
+export type ScrapeJobDbStatus =
+  | "queued"
+  | "running"
   | "preview_ready"
   | "imported"
   | "failed"
-  | "blocked";
+  | "cancelled";
+
+export type ScanResponseStatus = ScrapeJobDbStatus | "blocked";
 
 export type SourceType =
   | "native_upload"
@@ -38,6 +39,12 @@ export type NativeUrlImportErrorCode =
   | "too_many_redirects"
   | "no_product_links"
   | "all_products_failed"
+  | "unauthorized"
+  | "native_source_not_found"
+  | "native_source_conflict"
+  | "native_source_lookup_failed"
+  | "native_source_schema_missing"
+  | "invalid_scan_request"
   | "unexpected_error";
 
 export type UrlValidationResult = {
@@ -57,6 +64,14 @@ export type SafeFetchResult = {
   html?: string;
   error?: string;
   errorCode?: NativeUrlImportErrorCode;
+};
+
+export type NativeUrlImportSourceContext = {
+  storeId: string;
+  storeName: string;
+  websiteUrl: string | null;
+  market: string;
+  language: string;
 };
 
 export type DetectedProductLink = {
@@ -108,6 +123,14 @@ export type ScrapePreviewItem = {
   rawPayload: Record<string, unknown>;
 };
 
+export type ScrapePreviewFailure = {
+  id: string;
+  productUrl: string;
+  status: "failed" | "blocked";
+  error: string;
+  errorCode?: NativeUrlImportErrorCode;
+};
+
 export type ScanRequest = {
   url?: string;
   urls?: string[];
@@ -117,9 +140,11 @@ export type ScanResponse = {
   success: boolean;
   sourceUrl: string;
   normalizedUrl?: string;
+  source?: NativeUrlImportSourceContext;
   detectedCount: number;
   previewItems: ScrapePreviewItem[];
-  status: ScrapeJobStatus;
+  failedItems?: ScrapePreviewFailure[];
+  status: ScanResponseStatus;
   error?: string;
   errorCode?: NativeUrlImportErrorCode;
 };
@@ -128,9 +153,20 @@ export type ValidateUrlRequest = {
   url: string;
 };
 
+export type ValidateUrlPreflight = {
+  ok: boolean;
+  status: number | null;
+  contentType: string | null;
+  finalUrl: string | null;
+  error?: string;
+  errorCode?: NativeUrlImportErrorCode;
+};
+
 export type ValidateUrlResponse = {
   success: boolean;
   result: UrlValidationResult;
+  source?: NativeUrlImportSourceContext;
+  preflight?: ValidateUrlPreflight;
 };
 
 export type LocalImportedProduct = {
