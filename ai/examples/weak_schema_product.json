@@ -1,0 +1,77 @@
+{
+  "productId": "url-kettle-basic-001",
+  "storeId": "demo-url-mode",
+  "source": "url",
+  "url": "https://demo.bulunur.test/urunler/celik-su-isitici",
+  "language": "tr",
+  "market": "TR",
+  "title": "Çelik Su Isıtıcı",
+  "description": "Çelik su ısıtıcı, mutfakta sıcak su hazırlamak için kullanılan temel bir elektrikli üründür. Ürün sayfasında kapasite, güç, otomatik kapanma, garanti ve stok bilgisi açık şekilde verilmemiştir.",
+  "shortDescription": "Mutfak kullanımı için çelik su ısıtıcı.",
+  "price": "899.00",
+  "currency": "TRY",
+  "availability": "unknown",
+  "brand": null,
+  "category": "Su Isıtıcı",
+  "imageUrls": [
+    "https://demo.bulunur.test/images/celik-su-isitici.jpg"
+  ],
+  "attributes": {
+    "material": "çelik"
+  },
+  "rawExtracted": {
+    "pageTitle": "Çelik Su Isıtıcı - Ürün Detayı",
+    "metaDescription": "Çelik su ısıtıcı modeli için ürün detayları ve fiyat bilgisi.",
+    "headings": {
+      "h1": [
+        "Çelik Su Isıtıcı"
+      ],
+      "h2": [
+        "Ürün Bilgisi"
+      ]
+    },
+    "bodyText": "Çelik su ısıtıcı mutfakta pratik sıcak su hazırlamak için kullanılabilir. Ürün sayfasında kapasite, watt değeri, otomatik kapanma özelliği, garanti süresi, marka, stok durumu ve teslimat bilgisi belirtilmemiştir. Fiyat alanında 899 TL görünmektedir.",
+    "detectedSchema": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Çelik Su Isıtıcı",
+        "description": "Mutfak kullanımı için çelik su ısıtıcı."
+      }
+    ]
+  },
+  "crawlMetadata": {
+    "productUrl": "https://demo.bulunur.test/urunler/celik-su-isitici",
+    "crawlStatus": "partial",
+    "httpStatusCode": 200,
+    "accessible": true,
+    "blocked": false,
+    "contentExtracted": true,
+    "canonicalUrl": "https://demo.bulunur.test/urunler/celik-su-isitici",
+    "robotsAllowed": true,
+    "indexable": true,
+    "pageTitle": "Çelik Su Isıtıcı - Ürün Detayı",
+    "metaDescription": "Çelik su ısıtıcı modeli için ürün detayları ve fiyat bilgisi.",
+    "headings": {
+      "h1": [
+        "Çelik Su Isıtıcı"
+      ],
+      "h2": [
+        "Ürün Bilgisi"
+      ]
+    },
+    "detectedStructuredData": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Çelik Su Isıtıcı",
+        "description": "Mutfak kullanımı için çelik su ısıtıcı."
+      }
+    ],
+    "imageUrls": [
+      "https://demo.bulunur.test/images/celik-su-isitici.jpg"
+    ],
+    "imagesAccessible": true,
+    "crawledAt": "2026-05-11T18:50:00+03:00"
+  }
+}
