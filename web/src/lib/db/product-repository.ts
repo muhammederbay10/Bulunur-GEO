@@ -4,6 +4,7 @@ import type { ScrapePreviewRow } from "@/lib/db/scrape-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ShopifyProductUpsert } from "@/lib/shopify/product-mapper";
+import type { NativeFallbackImportItem } from "@/types/native-url-import";
 import type { ProductSummary } from "@/types/product";
 
 type ProductRow = {
@@ -156,6 +157,76 @@ function buildNativeProductPayload(params: {
     raw_source_payload: params.preview.raw_extracted ?? {},
     raw_extracted: params.preview.raw_extracted ?? {},
     crawl_metadata: params.preview.crawl_metadata ?? {},
+    workflow_status: "not_analyzed",
+  };
+}
+
+function buildNativeFallbackProductPayload(params: {
+  profileId: string;
+  storeId: string;
+  language: string;
+  market: string;
+  item: NativeFallbackImportItem;
+}) {
+  return {
+    profile_id: params.profileId,
+    store_id: params.storeId,
+    source: "native",
+    external_id: params.item.productUrl,
+    external_handle: null,
+    url: params.item.productUrl,
+    language: params.language,
+    market: params.market,
+    title: params.item.title,
+    description: params.item.description,
+    description_html: params.item.description,
+    short_description: params.item.description,
+    seo_title: params.item.title,
+    seo_description: params.item.description,
+    tags: params.item.tags,
+    vendor: params.item.brand,
+    product_type: params.item.category,
+    price_display: params.item.priceDisplay,
+    currency: params.item.currency,
+    availability: null,
+    brand: params.item.brand,
+    category: params.item.category,
+    image_urls: params.item.imageUrls,
+    attributes: {
+      sku: params.item.sku,
+      fallbackSourceType: params.item.sourceType,
+    },
+    raw_source_payload: params.item.rawSourcePayload,
+    raw_extracted: {
+      normalized: {
+        title: params.item.title,
+        productUrl: params.item.productUrl,
+        brand: params.item.brand,
+        sku: params.item.sku,
+        shortDescription: params.item.description,
+        descriptionHtml: params.item.description,
+        plainDescription: params.item.description,
+        images: params.item.imageUrls,
+        seoTitle: params.item.title,
+        seoDescription: params.item.description,
+        priceDisplay: params.item.priceDisplay,
+        currency: params.item.currency,
+        stockDisplay: null,
+        tags: params.item.tags,
+        categories: params.item.category ? [params.item.category] : [],
+        extractionMethods: [`fallback_${params.item.sourceType}`],
+        extractionConfidence: 100,
+        confidenceStatus: "ready",
+        warnings: [],
+      },
+      fallbackSourceType: params.item.sourceType,
+      rawSourcePayload: params.item.rawSourcePayload,
+    },
+    crawl_metadata: {
+      fallback: true,
+      sourceType: params.item.sourceType,
+      importedAt: new Date().toISOString(),
+    },
     workflow_status: "not_analyzed",
   };
 }
@@ -411,6 +482,129 @@ export async function upsertNativeProductsFromPreviewItems(params: {
     data: {
       importedCount: importedItems.length,
       importedItems,
+    },
+  };
+}
+
+export async function upsertNativeProductsFromFallbackItems(params: {
+  profileId: string;
+  storeId: string;
+  language: string;
+  market: string;
+  items: NativeFallbackImportItem[];
+}): Promise<ProductRepositoryResult<{ importedCount: number; productIds: string[] }>> {
+  if (params.items.length === 0) {
+    return {
+      ok: true,
+      data: {
+        importedCount: 0,
+        productIds: [],
+      },
+    };
+  }
+
+  const supabase = createAdminClient();
+  const itemUrls = params.items
+    .map((item) => item.productUrl)
+    .filter((url): url is string => Boolean(url));
+  const existingByUrl = new Map<string, string>();
+
+  if (itemUrls.length > 0) {
+    const { data: existingProducts, error: lookupError } = await supabase
+      .from("products")
+      .select(nativeProductImportSelect)
+      .eq("profile_id", params.profileId)
+      .eq("store_id", params.storeId)
+      .eq("source", "native")
+      .in("url", itemUrls)
+      .returns<Array<{ id: string; url: string | null }>>();
+
+    if (lookupError) {
+      const isMissingTable = isMissingProductTable(lookupError);
+
+      console.error("[native-fallback-import] product lookup failed", {
+        code: lookupError.code,
+        message: lookupError.message,
+      });
+
+      return {
+        ok: false,
+        message: isMissingTable
+          ? productStorageSetupMessage()
+          : "Native urunler okunamadi.",
+        code: lookupError.code,
+        isMissingTable,
+      };
+    }
+
+    for (const product of existingProducts ?? []) {
+      if (product.url) {
+        existingByUrl.set(product.url, product.id);
+      }
+    }
+  }
+
+  const productIds: string[] = [];
+
+  for (const item of params.items) {
+    const productPayload = buildNativeFallbackProductPayload({
+      profileId: params.profileId,
+      storeId: params.storeId,
+      language: params.language,
+      market: params.market,
+      item,
+    });
+    const existingProductId = item.productUrl
+      ? existingByUrl.get(item.productUrl)
+      : undefined;
+
+    if (existingProductId) {
+      const { data, error } = await supabase
+        .from("products")
+        .update(productPayload)
+        .eq("id", existingProductId)
+        .eq("profile_id", params.profileId)
+        .eq("store_id", params.storeId)
+        .eq("source", "native")
+        .select("id")
+        .single<{ id: string }>();
+
+      if (error || !data?.id) {
+        return {
+          ok: false,
+          message: "Native urun guncellenemedi.",
+          code: error?.code,
+          isMissingTable: error ? isMissingProductTable(error) : false,
+        };
+      }
+
+      productIds.push(data.id);
+      continue;
+    }
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert(productPayload)
+      .select("id")
+      .single<{ id: string }>();
+
+    if (error || !data?.id) {
+      return {
+        ok: false,
+        message: "Native urun kaydedilemedi.",
+        code: error?.code,
+        isMissingTable: error ? isMissingProductTable(error) : false,
+      };
+    }
+
+    productIds.push(data.id);
+  }
+
+  return {
+    ok: true,
+    data: {
+      importedCount: productIds.length,
+      productIds,
     },
   };
 }

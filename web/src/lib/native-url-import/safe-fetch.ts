@@ -51,6 +51,7 @@ type HtmlReadResult =
 
 type SafeFetchHtmlOptions = {
   enforceRobots?: boolean;
+  timeoutMs?: number;
 };
 
 function isHtmlContentType(contentType: string | null): boolean {
@@ -538,7 +539,10 @@ export async function safeFetchHtml(
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    options.timeoutMs ?? FETCH_TIMEOUT_MS,
+  );
 
   try {
     let robots: NativeRobotsCheck | null = null;

@@ -17,6 +17,12 @@ import { safeFetchHtml } from "./safe-fetch";
 
 const MAX_PRODUCTS_TO_SCAN = 20;
 const PRODUCT_PAGE_CONCURRENCY = 3;
+const TOTAL_SCAN_TIMEOUT_MS = 35_000;
+const PRODUCT_FETCH_TIMEOUT_MS = 8_000;
+
+function getRemainingScanTime(deadlineMs: number) {
+  return Math.max(0, deadlineMs - Date.now());
+}
 
 function createFailedPreviewItem(
   productUrl: string,
@@ -56,8 +62,21 @@ function isScrapePreviewItem(
 
 async function scrapeSingleProduct(
   productUrl: string,
+  deadlineMs: number,
 ): Promise<ScrapePreviewItem | ScrapePreviewFailure> {
-  const fetchResult = await safeFetchHtml(productUrl);
+  const remainingTimeMs = getRemainingScanTime(deadlineMs);
+
+  if (remainingTimeMs <= 500) {
+    return createFailedPreviewItem(
+      productUrl,
+      "Scan time budget was reached before this product could be fetched.",
+      "timeout",
+    );
+  }
+
+  const fetchResult = await safeFetchHtml(productUrl, {
+    timeoutMs: Math.min(PRODUCT_FETCH_TIMEOUT_MS, remainingTimeMs),
+  });
 
   if (!fetchResult.ok || !fetchResult.html) {
     return createFailedPreviewItem(
@@ -126,7 +145,10 @@ async function scrapeSingleProduct(
 export async function scanNativeProductListing(
   sourceUrl: string,
 ): Promise<ScanResponse> {
-  const listingFetchResult = await safeFetchHtml(sourceUrl);
+  const deadlineMs = Date.now() + TOTAL_SCAN_TIMEOUT_MS;
+  const listingFetchResult = await safeFetchHtml(sourceUrl, {
+    timeoutMs: Math.min(10_000, getRemainingScanTime(deadlineMs)),
+  });
 
   if (!listingFetchResult.ok || !listingFetchResult.html) {
     return {
@@ -158,7 +180,10 @@ export async function scanNativeProductListing(
   );
 
   if (detectedProductLinks.length === 0) {
-    const directProductFallback = await scrapeSingleProduct(listingUrl);
+    const directProductFallback = await scrapeSingleProduct(
+      listingUrl,
+      deadlineMs,
+    );
 
     if (
       isScrapePreviewItem(directProductFallback) &&
@@ -200,7 +225,7 @@ export async function scanNativeProductListing(
 
   const scanItems = await Promise.all(
     detectedProductLinks.map((link) =>
-      limit(() => scrapeSingleProduct(link.url)),
+      limit(() => scrapeSingleProduct(link.url, deadlineMs)),
     ),
   );
 
@@ -242,6 +267,7 @@ export async function scanNativeProductListing(
 export async function scanNativeProductUrls(
   productUrls: string[],
 ): Promise<ScanResponse> {
+  const deadlineMs = Date.now() + TOTAL_SCAN_TIMEOUT_MS;
   const uniqueProductUrls = Array.from(
     new Set(productUrls.map((productUrl) => productUrl.trim()).filter(Boolean)),
   ).slice(0, MAX_PRODUCTS_TO_SCAN);
@@ -262,7 +288,7 @@ export async function scanNativeProductUrls(
 
   const scanItems = await Promise.all(
     uniqueProductUrls.map((productUrl) =>
-      limit(() => scrapeSingleProduct(productUrl)),
+      limit(() => scrapeSingleProduct(productUrl, deadlineMs)),
     ),
   );
 

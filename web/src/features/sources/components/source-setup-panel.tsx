@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { NativeImportPanel } from "@/features/native-import/components/native-import-panel";
 import {
   saveNativeSource,
   saveShopifySource,
@@ -167,6 +168,10 @@ export function SourceSetupPanel({
         </div>
         <SourceStatusList stores={stores} />
       </section>
+
+      {nativeStore?.status === "active" ? (
+        <NativeImportPanel store={nativeStore} />
+      ) : null}
     </div>
   );
 }

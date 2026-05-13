@@ -56,6 +56,8 @@ export type NativeUrlImportErrorCode =
   | "scrape_preview_not_found"
   | "native_product_import_failed"
   | "scrape_preview_update_failed"
+  | "fallback_import_failed"
+  | "fallback_file_invalid"
   | "unexpected_error";
 
 export type NativeRobotsCheck = {
@@ -221,6 +223,21 @@ export type NativeUrlImportResponse = {
   productIds: string[];
   error?: string;
   errorCode?: NativeUrlImportErrorCode;
+};
+
+export type NativeFallbackImportItem = {
+  title: string;
+  productUrl: string | null;
+  description: string | null;
+  priceDisplay: string | null;
+  currency: string | null;
+  imageUrls: string[];
+  brand: string | null;
+  sku: string | null;
+  category: string | null;
+  tags: string[];
+  sourceType: "manual" | "csv" | "excel";
+  rawSourcePayload: Record<string, unknown>;
 };
 
 export type LocalImportedProduct = {
