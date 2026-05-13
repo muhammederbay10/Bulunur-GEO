@@ -4,7 +4,11 @@ import {
   completeShopifyConnection,
   markShopifyConnectionError,
 } from "@/lib/db/shopify-repository";
-import { getCurrentUser } from "@/lib/db/profile-repository";
+import {
+  getCurrentUser,
+  markSourceSetupCompleted,
+} from "@/lib/db/profile-repository";
+import { getShopifyConfig } from "@/lib/shopify/config";
 import { encryptShopifyAccessToken } from "@/lib/shopify/encryption";
 import { verifyShopifyOAuthHmac } from "@/lib/shopify/hmac";
 import {
@@ -19,8 +23,9 @@ import {
 } from "@/lib/shopify/state";
 import { shopifyOAuthCallbackSchema } from "@/lib/validation/shopify";
 
-function createSourcesRedirect(request: NextRequest, params: Record<string, string>) {
-  const url = new URL("/sources", request.nextUrl.origin);
+function createAppRedirect(path: string, params: Record<string, string>) {
+  const { appUrl } = getShopifyConfig();
+  const url = new URL(path, appUrl);
 
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
@@ -29,14 +34,12 @@ function createSourcesRedirect(request: NextRequest, params: Record<string, stri
   return NextResponse.redirect(url);
 }
 
-function createProductsRedirect(request: NextRequest, params: Record<string, string>) {
-  const url = new URL("/products", request.nextUrl.origin);
+function createSourcesRedirect(params: Record<string, string>) {
+  return createAppRedirect("/sources", params);
+}
 
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
-
-  return NextResponse.redirect(url);
+function createProductsRedirect(params: Record<string, string>) {
+  return createAppRedirect("/products", params);
 }
 
 function clearStateCookie(response: NextResponse) {
@@ -78,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     if (!parsed.success) {
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createSourcesRedirect({
           shopify_error: "invalid_callback",
         }),
       );
@@ -93,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     if (!statePayload) {
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createSourcesRedirect({
           shopify_error: "invalid_state",
         }),
       );
@@ -109,7 +112,7 @@ export async function GET(request: NextRequest) {
       );
 
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createSourcesRedirect({
           shopify_error: "auth_context_mismatch",
         }),
       );
@@ -123,7 +126,7 @@ export async function GET(request: NextRequest) {
       );
 
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createSourcesRedirect({
           shopify_error: "invalid_hmac",
         }),
       );
@@ -154,11 +157,13 @@ export async function GET(request: NextRequest) {
       );
 
       return clearStateCookie(
-        createSourcesRedirect(request, {
+        createSourcesRedirect({
           shopify_error: "storage_failed",
         }),
       );
     }
+
+    await markSourceSetupCompleted(statePayload.profileId);
 
     const syncResult = await syncShopifyProductsForConnection({
       profileId: statePayload.profileId,
@@ -166,8 +171,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!syncResult.ok) {
+      console.info("[shopify] OAuth completed; redirecting to products with sync warning", {
+        shop: parsed.data.shop,
+        storeId: statePayload.storeId,
+        syncError: syncResult.code,
+      });
+
       return clearStateCookie(
-        createProductsRedirect(request, {
+        createProductsRedirect({
           shopify_connected: "1",
           shopify_sync: "failed",
           shop: parsed.data.shop,
@@ -175,8 +186,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.info("[shopify] OAuth completed; redirecting to products", {
+      shop: parsed.data.shop,
+      storeId: statePayload.storeId,
+      syncedCount: syncResult.data.syncedCount,
+    });
+
     return clearStateCookie(
-      createProductsRedirect(request, {
+      createProductsRedirect({
         shopify_connected: "1",
         shopify_sync: "success",
         product_count: String(syncResult.data.syncedCount),
@@ -191,7 +208,7 @@ export async function GET(request: NextRequest) {
     );
 
     return clearStateCookie(
-      createSourcesRedirect(request, {
+      createSourcesRedirect({
         shopify_error: "callback_failed",
       }),
     );

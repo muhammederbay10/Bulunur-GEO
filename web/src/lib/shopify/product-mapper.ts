@@ -29,19 +29,16 @@ export type ShopifyProductUpsert = {
   workflow_status: "not_analyzed";
 };
 
-function uniqueNonEmpty(values: Array<string | null | undefined>) {
+export function uniqueNonEmpty(values: Array<string | null | undefined>) {
   return Array.from(
     new Set(values.filter((value): value is string => Boolean(value?.trim()))),
   );
 }
 
 function getImageUrls(product: ShopifyProduct) {
-  return uniqueNonEmpty([
-    product.featuredMedia?.preview?.image?.url,
-    ...(product.media?.nodes ?? []).map(
-      (node) => node.preview?.image?.url,
-    ),
-  ]);
+  void product;
+
+  return [];
 }
 
 function getPriceDisplay(product: ShopifyProduct) {
@@ -104,7 +101,7 @@ export function mapShopifyProductToUpsert({
     source: "shopify",
     external_id: product.id,
     external_handle: product.handle || null,
-    url: product.onlineStorePreviewUrl,
+    url: null,
     language,
     market,
     title: product.title,

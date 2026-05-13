@@ -40,29 +40,10 @@ export type ShopifyProduct = {
   productType: string | null;
   tags: string[];
   updatedAt: string | null;
-  onlineStorePreviewUrl: string | null;
   totalInventory: number | null;
   seo: {
     title: string | null;
     description: string | null;
-  } | null;
-  featuredMedia: {
-    preview?: {
-      image?: {
-        url: string | null;
-        altText: string | null;
-      } | null;
-    } | null;
-  } | null;
-  media: {
-    nodes: Array<{
-      preview?: {
-        image?: {
-          url: string | null;
-          altText: string | null;
-        } | null;
-      } | null;
-    }>;
   } | null;
   priceRangeV2: {
     minVariantPrice: ShopifyMoney;

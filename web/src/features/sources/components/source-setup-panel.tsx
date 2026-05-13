@@ -66,7 +66,7 @@ export function SourceSetupPanel({
   useEffect(() => {
     if (shopifyState.status === "success" && shopifyState.connectUrl) {
       const timeoutId = window.setTimeout(() => {
-        router.push(shopifyState.connectUrl as string);
+        window.location.assign(shopifyState.connectUrl as string);
       }, 500);
 
       return () => window.clearTimeout(timeoutId);

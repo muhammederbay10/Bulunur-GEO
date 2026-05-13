@@ -20,29 +20,10 @@ const SHOPIFY_PRODUCTS_QUERY = `
         productType
         tags
         updatedAt
-        onlineStorePreviewUrl
         totalInventory
         seo {
           title
           description
-        }
-        featuredMedia {
-          preview {
-            image {
-              url
-              altText
-            }
-          }
-        }
-        media(first: 5) {
-          nodes {
-            preview {
-              image {
-                url
-                altText
-              }
-            }
-          }
         }
         priceRangeV2 {
           minVariantPrice {

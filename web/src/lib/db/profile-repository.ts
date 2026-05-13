@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { OnboardingInput, UserProfile } from "@/types/profile";
 
@@ -159,4 +160,22 @@ export function hasCompletedOnboarding(profile: UserProfile | null) {
 
 export function hasCompletedSourceSetup(profile: UserProfile | null) {
   return profile?.sourceSetupCompleted === true;
+}
+
+export async function markSourceSetupCompleted(profileId: string) {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      source_setup_completed: true,
+      source_setup_completed_at: new Date().toISOString(),
+    })
+    .eq("id", profileId);
+
+  if (error) {
+    console.error("[profile] failed to mark source setup complete", {
+      code: error.code,
+      message: error.message,
+    });
+  }
 }

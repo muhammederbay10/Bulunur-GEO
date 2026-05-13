@@ -43,10 +43,19 @@ export async function shopifyAdminGraphqlRequest<T>({
   const data = (await response.json()) as ShopifyGraphQLResponse<T>;
 
   if (!response.ok) {
+    console.error("[shopify] Admin API request failed", {
+      status: response.status,
+      statusText: response.statusText,
+    });
+
     throw new Error("Shopify Admin API request failed.");
   }
 
   if (data.errors?.length) {
+    console.error("[shopify] Admin API GraphQL errors", {
+      errors: data.errors.map((error) => error.message),
+    });
+
     throw new Error("Shopify Admin API returned a GraphQL error.");
   }
 
