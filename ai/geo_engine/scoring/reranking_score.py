@@ -145,37 +145,37 @@ def _score_attribute_completeness(
 
     if raw_attribute_count:
         points += min(2.0, 2.0 * raw_attribute_count / MIN_ATTRIBUTE_COUNT_FOR_FULL_CREDIT)
-        reasons.append("Product attributes are available for reranking evidence.")
+        reasons.append("Ürün özellikleri reranking kanıtı olarak mevcut.")
     else:
-        missing.append("Product attributes")
+        missing.append("Ürün özellikleri")
 
     if known_count:
         points += min(1.5, 0.35 * known_count)
-        reasons.append("Generic attribute labels were normalized.")
+        reasons.append("Genel özellik etiketleri normalize edildi.")
     else:
-        missing.append("Normalized generic attributes")
+        missing.append("Normalize genel özellikler")
 
     if unknown_count:
         points += min(0.75, 0.15 * unknown_count)
-        reasons.append("Unknown attributes are preserved for semantic judgment.")
+        reasons.append("Bilinmeyen özellikler semantik değerlendirme için korunuyor.")
 
     if is_known_value(product.brand):
         points += 0.6
-        reasons.append("Brand can help distinguish the product.")
+        reasons.append("Marka ürünü ayırt etmeye yardımcı oluyor.")
     else:
-        missing.append("Brand")
+        missing.append("Marka")
 
     if is_known_value(product.category):
         points += 0.6
-        reasons.append("Category can help compare the product to alternatives.")
+        reasons.append("Kategori ürünü alternatiflerle karşılaştırmaya yardımcı oluyor.")
     else:
-        missing.append("Category")
+        missing.append("Kategori")
 
     if product.image_urls:
         points += 0.3
-        reasons.append("Product images support reranking evidence.")
+        reasons.append("Ürün görselleri reranking kanıtını destekliyor.")
     else:
-        missing.append("Product images")
+        missing.append("Ürün görselleri")
 
     if missing_hints:
         missing.extend(_attribute_hint_names(missing_hints)[:3])
@@ -207,28 +207,30 @@ def _score_trust_signal_presence(trust_summary: Any) -> ScoreComponentResult:
             2.0,
             2.0 * len(present_signals) / MIN_TRUST_SIGNAL_COUNT_FOR_FULL_CREDIT,
         )
-        reasons.append("Trust-signal hints are present in product content.")
+        reasons.append("Ürün içeriğinde güven sinyali ipuçları mevcut.")
     else:
-        missing.append("Trust-signal hints")
+        missing.append("Güven sinyali ipuçları")
 
     core_present_count = max(0, 4 - len(missing_core_signals))
     points += min(1.2, 0.3 * core_present_count)
     if core_present_count:
-        reasons.append("Core commerce trust signals are partially covered.")
+        reasons.append("Temel ticari güven sinyallerinin bir kısmı mevcut.")
 
     if "reviews" in present_signals:
         points += 0.4
-        reasons.append("Review or rating language is present.")
+        reasons.append("Yorum veya puanlama dili mevcut.")
     else:
-        missing.append("Review or rating signal")
+        missing.append("Yorum veya puanlama sinyali")
 
     if "stock" in present_signals:
         points += 0.4
-        reasons.append("Stock or availability language is present.")
+        reasons.append("Stok veya bulunabilirlik dili mevcut.")
     else:
-        missing.append("Stock or availability signal")
+        missing.append("Stok veya bulunabilirlik sinyali")
 
-    missing.extend(f"Core trust signal: {signal}" for signal in missing_core_signals[:3])
+    missing.extend(
+        f"Temel guven sinyali: {signal}" for signal in missing_core_signals[:3]
+    )
 
     return _component(
         "trust_signal_presence",
@@ -256,21 +258,21 @@ def _score_buyer_pattern_coverage(
             1.2,
             1.2 * len(pattern_set) / MIN_BUYER_PATTERN_COUNT_FOR_FULL_CREDIT,
         )
-        reasons.append("Turkish buyer-query patterns are represented.")
+        reasons.append("Turkce alici sorgu kaliplari temsil ediliyor.")
     else:
-        missing.append("Turkish buyer-query patterns")
+        missing.append("Turkce alici sorgu kaliplari")
 
     for pattern, label in (
-        ("use_case", "Use-case buyer intent"),
-        ("audience", "Audience buyer intent"),
-        ("problem_solution", "Problem-solution buyer intent"),
-        ("attribute_question", "Attribute question buyer intent"),
-        ("comparison", "Comparison buyer intent"),
-        ("trust_question", "Trust question buyer intent"),
+        ("use_case", "Kullanım senaryosu niyeti"),
+        ("audience", "Hedef kitle niyeti"),
+        ("problem_solution", "Problem çözme niyeti"),
+        ("attribute_question", "Özellik sorusu niyeti"),
+        ("comparison", "Karşılaştırma niyeti"),
+        ("trust_question", "Güven sorusu niyeti"),
     ):
         if pattern in pattern_set:
             points += 0.3
-            reasons.append(f"{label} is covered.")
+            reasons.append(f"{label} kapsanıyor.")
         else:
             missing.append(label)
 
@@ -304,36 +306,36 @@ def _score_comparison_readiness_signals(
 
     if comparison_attribute_count:
         points += min(0.6, 0.2 * comparison_attribute_count)
-        reasons.append("Comparison-friendly attributes are present.")
+        reasons.append("Karşılaştırmaya uygun özellikler mevcut.")
     else:
-        missing.append("Comparison-friendly attributes")
+        missing.append("Karşılaştırmaya uygun özellikler")
 
     if _contains_numbered_fact(product):
         points += 0.35
-        reasons.append("Numeric or measured facts support comparison.")
+        reasons.append("Sayısal veya ölçülebilir gerçekler karşılaştırmayı destekliyor.")
     else:
-        missing.append("Numeric or measured product facts")
+        missing.append("Sayısal veya ölçülebilir ürün gerçekleri")
 
     if len(normalize_text(description_text)) >= MIN_STRONG_DESCRIPTION_CHARS:
         points += 0.35
-        reasons.append("Description is detailed enough for reranking comparison.")
+        reasons.append("Açıklama reranking karşılaştırması için yeterince detaylı.")
     elif is_known_value(description_text):
         points += 0.15
-        missing.append("More detailed comparison-oriented description")
+        missing.append("Daha detaylı karşılaştırma odaklı açıklama")
     else:
-        missing.append("Product description")
+        missing.append("Ürün açıklaması")
 
     if _contains_use_case_text(description_text):
         points += 0.35
-        reasons.append("Use-case or audience language is present.")
+        reasons.append("Kullanım senaryosu veya hedef kitle dili mevcut.")
     else:
-        missing.append("Use-case or audience language")
+        missing.append("Kullanım senaryosu veya hedef kitle dili")
 
     if "comparison" in set(buyer_patterns) or "attribute_question" in set(buyer_patterns):
         points += 0.35
-        reasons.append("Buyer patterns include comparison or attribute questions.")
+        reasons.append("Alıcı kalıpları karşılaştırma veya özellik sorularını içeriyor.")
     else:
-        missing.append("Comparison or attribute-question buyer pattern")
+        missing.append("Karşılaştırma veya özellik sorusu kalıbı")
 
     return _component(
         "comparison_readiness_signals",
@@ -393,15 +395,15 @@ def _choose_recommended_action(
 
     by_name = {component.name: component for component in components}
     if all(_component_ratio(component) >= 0.95 for component in components):
-        return "Maintain current attribute, trust, buyer-intent, and comparison signals."
+        return "Mevcut özellik, güven, alıcı niyeti ve karşılaştırma sinyallerini koruyun."
     if _component_ratio(by_name["attribute_completeness"]) < 0.75:
-        return "Add more specific product attributes for comparison and filtering."
+        return "Karşılaştırma ve filtreleme için daha spesifik ürün özellikleri ekleyin."
     if _component_ratio(by_name["trust_signal_presence"]) < 0.75:
-        return "Add only verified trust signals such as shipping, warranty, returns, or reviews."
+        return "Yalnızca doğrulanmış kargo, garanti, iade veya yorum gibi güven sinyallerini ekleyin."
     if _component_ratio(by_name["buyer_pattern_coverage"]) < 0.75:
-        return "Cover more Turkish buyer patterns such as use case, audience, and comparison."
+        return "Kullanım senaryosu, hedef kitle ve karşılaştırma gibi daha fazla Türkçe alıcı kalıbını kapsayın."
     if _component_ratio(by_name["comparison_readiness_signals"]) < 0.75:
-        return "Add measured facts and use-case detail that make the product comparable."
+        return "Ürünü karşılaştırılabilir kılacak ölçülebilir gerçekleri ve kullanım detaylarını ekleyin."
     return DEFAULT_LAYER_RECOMMENDED_ACTIONS[RERANKING_LAYER]
 
 
@@ -476,7 +478,7 @@ def _attribute_hint_names(hints: Sequence[Any]) -> list[str]:
         if isinstance(hint, Mapping):
             name = hint.get("label") or hint.get("name")
             if name:
-                names.append(f"Attribute hint: {name}")
+                names.append(f"Özellik ipucu: {name}")
     return names
 
 

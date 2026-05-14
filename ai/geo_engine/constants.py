@@ -40,10 +40,10 @@ LAYER_SEMANTIC_MAX_POINTS: Final[dict[str, float]] = {
 }
 
 LAYER_DISPLAY_NAMES: Final[dict[str, str]] = {
-    "retrieval": "Retrieval",
-    "machine_understanding": "Machine Understanding",
-    "reranking_strength": "Reranking Strength",
-    "ai_answer_readiness": "AI Answer Readiness",
+    "retrieval": "Retrieval Hazirligi",
+    "machine_understanding": "Makine Anlayisi",
+    "reranking_strength": "Reranking Gucluğu",
+    "ai_answer_readiness": "AI Cevap Hazirligi",
 }
 
 SEMANTIC_COMPONENT_NAME: Final[str] = "semantic_judgment"
@@ -138,15 +138,17 @@ MIN_KNOWN_FACT_COUNT_FOR_GROUNDING: Final[int] = 5
 MAX_REASONS_PER_LAYER: Final[int] = 6
 MAX_MISSING_SIGNALS_PER_LAYER: Final[int] = 6
 MAX_MAIN_PROBLEMS: Final[int] = 6
+MAX_VISIBLE_REASONS_PER_LAYER: Final[int] = 4
+MAX_VISIBLE_MISSING_SIGNALS_PER_LAYER: Final[int] = 4
 
 GOOD_LAYER_SCORE_THRESHOLD: Final[float] = 80.0
 WEAK_LAYER_SCORE_THRESHOLD: Final[float] = 55.0
 
 DEFAULT_LAYER_RECOMMENDED_ACTIONS: Final[dict[str, str]] = {
-    "retrieval": "Improve crawlability, metadata, and Turkish query relevance first.",
-    "machine_understanding": "Repair Product JSON-LD and complete trusted offer facts.",
-    "reranking_strength": "Add specific attributes, trust signals, and comparison-ready detail.",
-    "ai_answer_readiness": "Add grounded FAQ and answer-ready Turkish summary content.",
+    "retrieval": "Önce crawl erişimi, metadata ve Türkçe sorgu uyumunu güçlendirin.",
+    "machine_understanding": "Urun JSON-LD yapisini duzeltin ve guvenilir teklif bilgilerini tamamlayin.",
+    "reranking_strength": "Spesifik özellikleri, güven sinyallerini ve karşılaştırma detaylarını güçlendirin.",
+    "ai_answer_readiness": "Gerçeklere dayalı FAQ ve cevaplanabilir Türkçe özet içeriği ekleyin.",
 }
 
 __all__ = [
@@ -165,6 +167,8 @@ __all__ = [
     "MAX_MAIN_PROBLEMS",
     "MAX_MISSING_SIGNALS_PER_LAYER",
     "MAX_REASONS_PER_LAYER",
+    "MAX_VISIBLE_MISSING_SIGNALS_PER_LAYER",
+    "MAX_VISIBLE_REASONS_PER_LAYER",
     "MAX_USEFUL_META_DESCRIPTION_CHARS",
     "MIN_ATTRIBUTE_COUNT_FOR_FULL_CREDIT",
     "MIN_BODY_TEXT_CHARS",

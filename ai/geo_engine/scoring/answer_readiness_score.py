@@ -145,45 +145,45 @@ def _score_answer_content_presence(product: ProductInput) -> ScoreComponentResul
 
     if is_known_value(product.title):
         points += 0.5
-        reasons.append("Product title is available for answer grounding.")
+        reasons.append("Ürün başlığı cevapları temellendirmek için mevcut.")
     else:
-        missing.append("Product title")
+        missing.append("Ürün başlığı")
 
     if len(normalize_text(summary_text)) >= MIN_USEFUL_DESCRIPTION_CHARS:
         points += 1.0
-        reasons.append("Short summary or meta description can support quick answers.")
+        reasons.append("Kısa özet veya meta açıklama hızlı cevapları destekleyebilir.")
     elif is_known_value(summary_text):
         points += 0.45
-        missing.append("Clear one-paragraph product summary")
+        missing.append("Net tek paragraf ürün özeti")
     else:
-        missing.append("Short product summary")
+        missing.append("Kısa ürün özeti")
 
     if len(normalize_text(long_text)) >= MIN_STRONG_DESCRIPTION_CHARS:
         points += 1.0
-        reasons.append("Long description gives enough detail for grounded answers.")
+        reasons.append("Uzun açıklama gerçeklere dayalı cevaplar için yeterli detay sunuyor.")
     elif len(normalize_text(long_text)) >= MIN_USEFUL_DESCRIPTION_CHARS:
         points += 0.65
-        missing.append("Richer long description")
+        missing.append("Daha zengin uzun açıklama")
     else:
-        missing.append("Detailed product description")
+        missing.append("Detaylı ürün açıklaması")
 
     if contains_any_phrase(answer_text, SUMMARY_USE_CASE_TERMS):
         points += 0.8
-        reasons.append("Use-case or audience language is available.")
+        reasons.append("Kullanım senaryosu veya hedef kitle dili mevcut.")
     else:
-        missing.append("Use-case or audience context")
+        missing.append("Kullanım senaryosu veya hedef kitle bağlamı")
 
     if product.attributes:
         points += 0.4
-        reasons.append("Attributes provide answerable product facts.")
+        reasons.append("Özellikler cevaplanabilir ürün gerçekleri sağlıyor.")
     else:
-        missing.append("Product attributes")
+        missing.append("Ürün özellikleri")
 
     if is_known_value(product.price) and product.availability != "unknown":
         points += 0.3
-        reasons.append("Commerce facts can support purchase-readiness answers.")
+        reasons.append("Ticari bilgiler satın alma hazırlığı cevaplarını destekliyor.")
     else:
-        missing.append("Price and availability facts")
+        missing.append("Fiyat ve stok bilgileri")
 
     return _component(
         "answer_content_presence",
@@ -208,9 +208,9 @@ def _score_faq_readiness(
 
     if faq_items:
         points += min(1.2, 1.2 * len(faq_items) / MIN_FAQ_ITEM_COUNT_FOR_FULL_CREDIT)
-        reasons.append("FAQ items are available for buyer questions.")
+        reasons.append("Alıcı soruları için FAQ maddeleri mevcut.")
     else:
-        missing.append("Buyer-intent FAQ items")
+        missing.append("Alıcı niyeti odaklı FAQ maddeleri")
 
     complete_items = [
         item for item in faq_items if is_known_value(item.get("question"))
@@ -218,27 +218,27 @@ def _score_faq_readiness(
     ]
     if complete_items:
         points += min(0.8, 0.8 * len(complete_items) / MIN_FAQ_ITEM_COUNT_FOR_FULL_CREDIT)
-        reasons.append("FAQ items include both questions and answers.")
+        reasons.append("FAQ maddeleri hem soru hem cevap içeriyor.")
     elif faq_items:
-        missing.append("Complete FAQ question-answer pairs")
+        missing.append("Tam FAQ soru-cevap çiftleri")
 
     grounded_items = [
         item for item in complete_items if _faq_item_looks_grounded(item, known_facts)
     ]
     if grounded_items:
         points += min(0.7, 0.7 * len(grounded_items) / MIN_FAQ_ITEM_COUNT_FOR_FULL_CREDIT)
-        reasons.append("FAQ answers overlap with known product facts.")
+        reasons.append("FAQ cevapları bilinen ürün gerçekleriyle örtüşüyor.")
     elif faq_items:
-        missing.append("FAQ answers grounded in known product facts")
+        missing.append("Bilinen ürün gerçeklerine dayalı FAQ cevapları")
 
     buyer_question_items = [
         item for item in complete_items if _is_buyer_question(item.get("question"))
     ]
     if buyer_question_items:
         points += 0.3
-        reasons.append("FAQ covers natural buyer-style questions.")
+        reasons.append("FAQ doğal alıcı tarzı soruları kapsıyor.")
     elif faq_items:
-        missing.append("Buyer-style FAQ questions")
+        missing.append("Alıcı tarzı FAQ soruları")
 
     return _component(
         "faq_readiness",
@@ -264,18 +264,18 @@ def _score_known_fact_grounding(
 
     points += min(1.2, 1.2 * known_count / MIN_KNOWN_FACT_COUNT_FOR_GROUNDING)
     if known_count:
-        reasons.append("Known facts are available for grounded answers.")
+        reasons.append("Gerçeklere dayalı cevaplar için bilinen ürün verileri mevcut.")
     else:
-        missing.append("Known product facts")
+        missing.append("Bilinen ürün gerçekleri")
 
     commerce_keys = ("price", "currency", "availability")
     commerce_present = sum(1 for key in commerce_keys if is_known_value(known_facts.get(key)))
     points += 0.6 * commerce_present / len(commerce_keys)
     if commerce_present == len(commerce_keys):
-        reasons.append("Commerce facts are complete for purchase-readiness answers.")
+        reasons.append("Ticari gercekler satin alma hazirligi cevaplari icin tamam.")
     else:
         missing.extend(
-            f"Known fact: {key}"
+            f"Bilinen gerçek: {key}"
             for key in commerce_keys
             if not is_known_value(known_facts.get(key))
         )
@@ -284,23 +284,23 @@ def _score_known_fact_grounding(
     identity_present = sum(1 for key in identity_keys if is_known_value(known_facts.get(key)))
     points += 0.5 * identity_present / len(identity_keys)
     if identity_present:
-        reasons.append("Brand or category facts help place the product in context.")
+        reasons.append("Marka veya kategori bilgisi ürünü bağlama oturtuyor.")
     else:
-        missing.append("Brand or category fact")
+        missing.append("Marka veya kategori bilgisi")
 
     attributes = known_facts.get("attributes")
     if isinstance(attributes, Mapping) and attributes:
         points += 0.5
-        reasons.append("Attributes provide factual answer support.")
+        reasons.append("Özellikler gerçeklere dayalı cevap desteği sağlıyor.")
     else:
-        missing.append("Known product attributes")
+        missing.append("Bilinen ürün özellikleri")
 
     images = known_facts.get("imageUrls")
     if isinstance(images, Sequence) and images:
         points += 0.2
-        reasons.append("Image facts are available for product context.")
+        reasons.append("Ürün bağlamı için görsel bilgileri mevcut.")
     else:
-        missing.append("Product image facts")
+        missing.append("Ürün görsel bilgileri")
 
     return _component(
         "known_fact_grounding",
@@ -322,14 +322,14 @@ def _score_missing_fact_control(
 
     if missing_count == 0:
         points += 1.4
-        reasons.append("No missing answer-critical facts were detected.")
+        reasons.append("Cevap için kritik eksik bilgi tespit edilmedi.")
     elif missing_count <= 3:
         points += 1.0
-        reasons.append("Missing facts are explicitly tracked.")
+        reasons.append("Eksik bilgiler açık şekilde takip ediliyor.")
         missing.extend(missing_facts)
     elif missing_count <= 6:
         points += 0.55
-        reasons.append("Missing facts are tracked but answerability is limited.")
+        reasons.append("Eksik bilgiler takip ediliyor ancak cevaplanabilirlik sınırlı.")
         missing.extend(missing_facts)
     else:
         points += 0.25
@@ -337,10 +337,10 @@ def _score_missing_fact_control(
 
     if missing_count > 0:
         points += 0.4
-        reasons.append("Known gaps can be routed to targeted user questions.")
+        reasons.append("Bilinen boşluklar hedefli kullanıcı sorularına yönlendirilebilir.")
     else:
         points += 0.6
-        reasons.append("Answer generation can rely on available facts without gap prompts.")
+        reasons.append("Cevap üretimi ek boşluk soruları olmadan mevcut gerçeklere dayanabilir.")
 
     return _component(
         "missing_fact_control",
@@ -397,15 +397,15 @@ def _choose_recommended_action(
 
     by_name = {component.name: component for component in components}
     if all(_component_ratio(component) >= 0.95 for component in components):
-        return "Maintain current FAQ, summary, and grounded answer support."
+        return "Mevcut FAQ, özet ve gerçeklere dayalı cevap desteğini koruyun."
     if _component_ratio(by_name["answer_content_presence"]) < 0.75:
-        return "Add a concise summary, detailed description, and use-case context."
+        return "Kısa bir özet, detaylı açıklama ve kullanım bağlamı ekleyin."
     if _component_ratio(by_name["faq_readiness"]) < 0.75:
-        return "Generate buyer-intent FAQ only from known product facts."
+        return "Alıcı niyeti odaklı FAQ'ı yalnızca bilinen ürün gerçeklerinden üretin."
     if _component_ratio(by_name["known_fact_grounding"]) < 0.75:
-        return "Add trusted facts needed for grounded AI answers."
+        return "Gerçeklere dayalı AI cevapları için gerekli güvenilir bilgileri ekleyin."
     if _component_ratio(by_name["missing_fact_control"]) < 0.75:
-        return "Ask targeted questions for missing answer-critical facts."
+        return "Cevap için kritik eksik bilgiler adına hedefli sorular sorun."
     return DEFAULT_LAYER_RECOMMENDED_ACTIONS[ANSWER_READINESS_LAYER]
 
 
@@ -450,7 +450,7 @@ def _build_missing_facts(
 
     for key in ANSWER_HELPFUL_FACT_KEYS:
         if not is_known_value(known_facts.get(key)):
-            missing.append(f"Known fact: {key}")
+            missing.append(f"Bilinen gerçek: {key}")
 
     attribute_context = build_attribute_context(
         category=product.category,
@@ -461,7 +461,7 @@ def _build_missing_facts(
         if isinstance(hint, Mapping):
             name = hint.get("label") or hint.get("name")
             if name:
-                missing.append(f"Attribute for answer grounding: {name}")
+                missing.append(f"Cevap temellendirme özelliği: {name}")
 
     return _limit(missing, MAX_MISSING_SIGNALS_PER_LAYER)
 

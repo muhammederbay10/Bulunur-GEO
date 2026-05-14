@@ -101,16 +101,16 @@ def _score_schema_validation(
 
     if validation.product_schema_present:
         points += 2.0
-        reasons.append("Product JSON-LD is present.")
+        reasons.append("Urun JSON-LD mevcut.")
     else:
-        missing.append("Schema.org Product JSON-LD")
+        missing.append("Schema.org urun JSON-LD")
 
     if validation.valid and not validation.has_errors:
         points += 2.0
-        reasons.append("Schema validation has no blocking errors.")
+        reasons.append("Schema doğrulamasında engelleyici hata yok.")
     elif not validation.has_errors:
         points += 1.0
-        reasons.append("Schema has no blocking errors, but is not fully valid.")
+        reasons.append("Schema engelleyici hata içermiyor ancak tam geçerli değil.")
     else:
         missing.extend(validation.errors[:2])
 
@@ -121,7 +121,7 @@ def _score_schema_validation(
     if required_total:
         points += 2.0 * required_present / required_total
     if required_present == required_total and required_total:
-        reasons.append("Required Product schema fields are present.")
+        reasons.append("Gerekli urun schema alanlari mevcut.")
     else:
         missing.extend(_missing_fields(validation, ("@type", "name")))
 
@@ -133,7 +133,7 @@ def _score_schema_validation(
     if recommended_total:
         points += 2.0 * recommended_present / recommended_total
     if recommended_present:
-        reasons.append("Recommended Product schema fields are partly present.")
+        reasons.append("Onerilen urun schema alanlarinin bir kismi mevcut.")
     missing.extend(_missing_fields(validation, recommended_fields))
 
     offer_fields = ("offers.price", "offers.priceCurrency", "offers.availability")
@@ -141,7 +141,7 @@ def _score_schema_validation(
     if offer_total:
         points += 2.0 * offer_present / offer_total
     if offer_present == offer_total and offer_total:
-        reasons.append("Offer schema fields are valid and machine-readable.")
+        reasons.append("Teklif schema alanlari gecerli ve makine tarafindan okunabilir.")
     else:
         missing.extend(_missing_fields(validation, offer_fields))
 
@@ -169,42 +169,42 @@ def _score_offer_fact_completeness(
 
     if validation.offer_schema_present:
         points += 1.0
-        reasons.append("Product schema includes Offer data.")
+        reasons.append("Urun schema teklif verisi iceriyor.")
     else:
-        missing.append("Product Offer schema")
+        missing.append("Urun teklif schema verisi")
 
     if is_known_value(product.price):
         points += 0.75
-        reasons.append("Visible product price is available.")
+        reasons.append("Görünür ürün fiyatı mevcut.")
     else:
-        missing.append("Visible product price")
+        missing.append("Görünür ürün fiyatı")
     if _field_is_present(validation, "offers.price"):
         points += 0.75
-        reasons.append("Offer price is valid in schema.")
+        reasons.append("Teklif fiyati schema icinde gecerli.")
     else:
-        missing.append("Schema Offer price")
+        missing.append("Schema teklif fiyati")
 
     if is_known_value(product.currency):
         points += 0.5
-        reasons.append("Visible product currency is available.")
+        reasons.append("Görünür ürün para birimi mevcut.")
     else:
-        missing.append("Visible product currency")
+        missing.append("Görünür ürün para birimi")
     if _field_is_present(validation, "offers.priceCurrency"):
         points += 0.5
-        reasons.append("Offer currency is valid in schema.")
+        reasons.append("Teklif para birimi schema icinde gecerli.")
     else:
-        missing.append("Schema Offer priceCurrency")
+        missing.append("Schema teklif para birimi")
 
     if product.availability != "unknown":
         points += 0.75
-        reasons.append("Visible product availability is available.")
+        reasons.append("Görünür stok durumu mevcut.")
     else:
-        missing.append("Visible product availability")
+        missing.append("Görünür stok durumu")
     if _field_is_present(validation, "offers.availability"):
         points += 0.75
-        reasons.append("Offer availability is valid in schema.")
+        reasons.append("Teklif stok durumu schema icinde gecerli.")
     else:
-        missing.append("Schema Offer availability")
+        missing.append("Schema teklif stok durumu")
 
     return _component(
         "offer_fact_completeness",
@@ -228,50 +228,50 @@ def _score_product_fact_coverage(product: ProductInput) -> ScoreComponentResult:
 
     if is_known_value(product.title):
         points += 0.45
-        reasons.append("Product title is available as a known fact.")
+        reasons.append("Ürün başlığı bilinen gerçek olarak mevcut.")
     else:
-        missing.append("Product title")
+        missing.append("Ürün başlığı")
 
     description = _join_text(product.description, product.short_description)
     if len(normalize_text(description)) >= MIN_USEFUL_DESCRIPTION_CHARS:
         points += 0.6
-        reasons.append("Product description is detailed enough for machine context.")
+        reasons.append("Ürün açıklaması makine bağlamı için yeterince detaylı.")
     elif is_known_value(description):
         points += 0.3
-        missing.append("Detailed product description")
+        missing.append("Detaylı ürün açıklaması")
     else:
-        missing.append("Product description")
+        missing.append("Ürün açıklaması")
 
     if product.image_urls:
         points += 0.35
-        reasons.append("Product image URLs are available.")
+        reasons.append("Ürün görsel URL'leri mevcut.")
     else:
-        missing.append("Product images")
+        missing.append("Ürün görselleri")
 
     if is_known_value(product.brand):
         points += 0.35
-        reasons.append("Brand is available as a product fact.")
+        reasons.append("Marka ürün gerçeği olarak mevcut.")
     else:
-        missing.append("Product brand")
+        missing.append("Ürün markası")
 
     if is_known_value(product.category):
         points += 0.35
-        reasons.append("Category is available as a product fact.")
+        reasons.append("Kategori ürün gerçeği olarak mevcut.")
     else:
-        missing.append("Product category")
+        missing.append("Ürün kategorisi")
 
     if product.attributes:
         points += 0.5
-        reasons.append("Product attributes are available.")
+        reasons.append("Ürün özellikleri mevcut.")
     else:
-        missing.append("Product attributes")
+        missing.append("Ürün özellikleri")
 
     body_text = product.raw_extracted.body_text
     if is_known_value(body_text):
         points += 0.4
-        reasons.append("Visible body text provides additional product context.")
+        reasons.append("Görünür gövde metni ek ürün bağlamı sağlıyor.")
     else:
-        missing.append("Visible product body text")
+        missing.append("Görünür ürün gövde metni")
 
     return _component(
         "product_fact_coverage",
@@ -298,20 +298,20 @@ def _score_attribute_normalization(
 
     if isinstance(known_attributes, Mapping) and known_attributes:
         points += min(1.2, 0.3 * len(known_attributes))
-        reasons.append("Generic product attributes were normalized.")
+        reasons.append("Genel ürün özellikleri normalize edildi.")
     else:
-        missing.append("Generic normalized product attributes")
+        missing.append("Genel normalize ürün özellikleri")
 
     if isinstance(unknown_attributes, Mapping) and unknown_attributes:
         points += 0.4
-        reasons.append("Unknown attributes are preserved instead of rejected.")
+        reasons.append("Bilinmeyen özellikler korunuyor, reddedilmiyor.")
 
     if missing_hints:
         points += 0.2
         missing.extend(_attribute_hint_names(missing_hints)[:3])
     else:
         points += 0.4
-        reasons.append("No generic attribute gaps were detected.")
+        reasons.append("Genel özellik tarafında belirgin boşluk bulunmadı.")
 
     return _component(
         "attribute_normalization",
@@ -391,15 +391,15 @@ def _choose_recommended_action(
 
     by_name = {component.name: component for component in components}
     if all(_component_ratio(component) >= 0.95 for component in components):
-        return "Maintain current schema consistency and product fact coverage."
+        return "Mevcut schema tutarlılığını ve ürün gerçeklerini koruyun."
     if _component_ratio(by_name["schema_validation"]) < 0.75:
-        return "Repair Product JSON-LD validation issues before optimization."
+        return "Optimizasyondan once urun JSON-LD dogrulama sorunlarini duzeltin."
     if _component_ratio(by_name["offer_fact_completeness"]) < 0.75:
-        return "Complete trusted price, currency, and availability in Product Offer data."
+        return "Urun teklif verisindeki guvenilir fiyat, para birimi ve stok alanlarini tamamlayin."
     if _component_ratio(by_name["product_fact_coverage"]) < 0.75:
-        return "Add missing product facts needed for machine understanding."
+        return "Makine anlayışı için eksik ürün gerçeklerini ekleyin."
     if _component_ratio(by_name["attribute_normalization"]) < 0.75:
-        return "Normalize generic attributes such as brand, model, size, or material."
+        return "Marka, model, ölçü ve malzeme gibi genel özellikleri normalize edin."
     return DEFAULT_LAYER_RECOMMENDED_ACTIONS[MACHINE_UNDERSTANDING_LAYER]
 
 
@@ -447,7 +447,7 @@ def _missing_fields(
     fields: Sequence[str],
 ) -> list[str]:
     return [
-        f"Schema field {field}"
+        f"Schema alanı: {field}"
         for field in fields
         if not _field_is_present(validation, field)
     ]
@@ -462,7 +462,7 @@ def _attribute_hint_names(hints: Any) -> list[str]:
         if isinstance(hint, Mapping):
             name = hint.get("label") or hint.get("name")
             if name:
-                names.append(f"Attribute hint: {name}")
+                names.append(f"Özellik ipucu: {name}")
     return names
 
 

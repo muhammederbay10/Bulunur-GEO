@@ -200,57 +200,57 @@ def _score_crawl_accessibility(product: ProductInput) -> ScoreComponentResult:
     http_status = crawl.http_status_code
     if crawl.accessible and _is_success_http_status(http_status):
         points += 2.0
-        reasons.append("Crawler metadata says the product page is accessible.")
+        reasons.append("Crawler verisi ürün sayfasının erişilebilir olduğunu gösteriyor.")
     elif crawl.accessible:
         points += 1.25
-        reasons.append("Crawler metadata says the page is reachable.")
-        missing.append("Successful HTTP status code")
+        reasons.append("Crawler verisi sayfanın erişilebilir olduğunu gösteriyor.")
+        missing.append("Başarılı HTTP durum kodu")
     else:
-        missing.append("Accessible product page")
+        missing.append("Erişilebilir ürün sayfası")
 
     if crawl.crawl_status == "success":
         points += 1.5
-        reasons.append("Crawler completed with success status.")
+        reasons.append("Crawler işlemi başarı durumuyla tamamlandı.")
     elif crawl.crawl_status == "partial":
         points += 0.75
-        reasons.append("Crawler returned a partial result.")
-        missing.append("Complete crawl result")
+        reasons.append("Crawler kısmi sonuç döndürdü.")
+        missing.append("Tam crawl sonucu")
     else:
-        missing.append(f"Successful crawl status; current status is {crawl.crawl_status}.")
+        missing.append(f"Başarılı crawl durumu; mevcut durum {crawl.crawl_status}.")
 
     if not crawl.blocked:
         points += 1.0
-        reasons.append("Crawler metadata does not mark the page as blocked.")
+        reasons.append("Crawler verisinde sayfa engelli görünmüyor.")
     else:
-        missing.append("Unblocked crawler access")
+        missing.append("Engellenmemiş crawler erişimi")
 
     points += _score_optional_boolean(
         crawl.robots_allowed,
         full_points=0.5,
-        positive_reason="Robots metadata allows crawling.",
-        negative_missing="Robots crawling permission",
-        unknown_missing="Robots permission metadata",
+        positive_reason="Robots verisi taramaya izin veriyor.",
+        negative_missing="Robots tarama izni",
+        unknown_missing="Robots izin verisi",
         reasons=reasons,
         missing=missing,
     )
     points += _score_optional_boolean(
         crawl.indexable,
         full_points=0.5,
-        positive_reason="Page is marked as indexable.",
-        negative_missing="Indexable product page",
-        unknown_missing="Indexability metadata",
+        positive_reason="Sayfa indexlenebilir olarak işaretlenmiş.",
+        negative_missing="Indexlenebilir ürün sayfası",
+        unknown_missing="Indexlenebilirlik verisi",
         reasons=reasons,
         missing=missing,
     )
 
     if crawl.canonical_url is not None:
         points += 0.5
-        reasons.append("Canonical URL is available in crawl metadata.")
+        reasons.append("Canonical URL crawl verisinde mevcut.")
     elif crawl.product_url is not None:
         points += 0.25
         missing.append("Canonical URL")
     else:
-        missing.append("Canonical or crawled product URL")
+        missing.append("Canonical veya crawl edilen ürün URL'si")
 
     return _component(
         "crawl_accessibility",
@@ -279,40 +279,40 @@ def _score_content_extraction(
 
     if crawl.content_extracted:
         points += 1.5
-        reasons.append("Crawler reports that product content was extracted.")
+        reasons.append("Crawler urun iceriginin cikarildigini bildiriyor.")
     else:
-        missing.append("Extracted page content")
+        missing.append("Cikarilmis sayfa icerigi")
 
     body_length = len(signals.normalized_body_text)
     if body_length >= MIN_BODY_TEXT_CHARS:
         points += 1.0
-        reasons.append("Visible body text is long enough for retrieval signals.")
+        reasons.append("Gorunur govde metni retrieval sinyalleri icin yeterli uzunlukta.")
     elif body_length > 0:
         points += 0.45
-        missing.append("Richer visible product body text")
+        missing.append("Daha zengin gorunur urun govde metni")
     else:
-        missing.append("Visible product body text")
+        missing.append("Gorunur urun govde metni")
 
     detected_schema_count = len(raw.detected_schema) + len(crawl.detected_structured_data)
     if detected_schema_count:
         points += 0.75
-        reasons.append("Detected structured data is available to the scoring engine.")
+        reasons.append("Tespit edilen yapilandirilmis veri skorlama motoruna ulasabiliyor.")
     else:
-        missing.append("Detected structured data")
+        missing.append("Tespit edilen yapilandirilmis veri")
 
     image_count = len(product.image_urls) or len(crawl.image_urls)
     if image_count and crawl.images_accessible is True:
         points += 0.75
-        reasons.append("Product images are present and marked accessible.")
+        reasons.append("Urun gorselleri mevcut ve erisilebilir olarak isaretlenmis.")
     elif image_count:
         points += 0.45
-        reasons.append("Product image URLs are present.")
+        reasons.append("Urun gorsel URL'leri mevcut.")
         if crawl.images_accessible is False:
-            missing.append("Accessible product images")
+            missing.append("Erisilebilir urun gorselleri")
         else:
-            missing.append("Image accessibility metadata")
+            missing.append("Gorsel erisilebilirlik metadata verisi")
     else:
-        missing.append("Product image URLs")
+        missing.append("Urun gorsel URL'leri")
 
     return _component(
         "content_extraction",
@@ -350,31 +350,31 @@ def _score_page_metadata(
             anchors,
         ):
             points += 1.2
-            reasons.append("Page title is present and aligned with the product.")
+            reasons.append("Sayfa basligi mevcut ve urunle uyumlu.")
         else:
             points += 0.6
-            missing.append("Product-specific page title")
+            missing.append("Urune ozel sayfa basligi")
     else:
-        missing.append("Page title")
+        missing.append("Sayfa basligi")
 
     meta_length = len(normalize_text(meta_description))
     if meta_length >= MIN_USEFUL_META_DESCRIPTION_CHARS:
         points += 1.0 if meta_length <= MAX_USEFUL_META_DESCRIPTION_CHARS else 0.85
-        reasons.append("Meta description gives usable retrieval context.")
+        reasons.append("Meta aciklama kullanilabilir retrieval baglami sagliyor.")
     elif meta_length > 0:
         points += 0.45
-        missing.append("More descriptive meta description")
+        missing.append("Daha aciklayici meta aciklama")
     else:
-        missing.append("Meta description")
+        missing.append("Meta aciklama")
 
     if _has_text(heading_text) and _shares_anchor(heading_text, anchors):
         points += 0.8
-        reasons.append("Headings reinforce the product identity.")
+        reasons.append("Basliklar urun kimligini destekliyor.")
     elif _has_text(heading_text):
         points += 0.4
-        missing.append("Product-specific H1/H2 headings")
+        missing.append("Urune ozel H1/H2 basliklari")
     else:
-        missing.append("Product page headings")
+        missing.append("Urun sayfasi basliklari")
 
     return _component(
         "page_metadata",
@@ -397,61 +397,61 @@ def _score_product_field_presence(product: ProductInput) -> ScoreComponentResult
 
     if _is_useful_title(product.title):
         points += 0.5
-        reasons.append("Product title is present and specific enough for retrieval.")
+        reasons.append("Ürün başlığı mevcut ve retrieval için yeterince spesifik.")
     elif _has_text(product.title):
         points += 0.25
-        missing.append("More specific product title")
+        missing.append("Daha spesifik ürün başlığı")
     else:
-        missing.append("Product title")
+        missing.append("Ürün başlığı")
 
     description_text = _join_text(product.description, product.short_description)
     if len(normalize_text(description_text)) >= MIN_USEFUL_DESCRIPTION_CHARS:
         points += 0.5
-        reasons.append("Product description gives retrieval context.")
+        reasons.append("Ürün açıklaması retrieval bağlamı sağlıyor.")
     elif _has_text(description_text):
         points += 0.25
-        missing.append("Richer product description")
+        missing.append("Daha zengin ürün açıklaması")
     else:
-        missing.append("Product description")
+        missing.append("Ürün açıklaması")
 
     commerce_points = 0.0
     if _has_text(product.price):
         commerce_points += 0.2
     else:
-        missing.append("Product price")
+        missing.append("Ürün fiyatı")
     if _has_text(product.currency):
         commerce_points += 0.15
     else:
-        missing.append("Product currency")
+        missing.append("Ürün para birimi")
     if product.availability != "unknown":
         commerce_points += 0.15
     else:
-        missing.append("Product availability")
+        missing.append("Ürün stok durumu")
 
     if commerce_points > 0:
-        reasons.append("Commerce facts are available as retrieval signals.")
+        reasons.append("Ticari bilgiler retrieval sinyali olarak kullanılabiliyor.")
     points += commerce_points
 
     qualifier_points = 0.0
     if _has_text(product.brand):
         qualifier_points += 0.15
     else:
-        missing.append("Product brand")
+        missing.append("Ürün markası")
     if _has_text(product.category):
         qualifier_points += 0.15
     else:
-        missing.append("Product category")
+        missing.append("Ürün kategorisi")
     if product.image_urls:
         qualifier_points += 0.1
     else:
-        missing.append("Product image")
+        missing.append("Ürün görseli")
     if product.attributes:
         qualifier_points += 0.1
     else:
-        missing.append("Product attributes")
+        missing.append("Ürün özellikleri")
 
     if qualifier_points > 0:
-        reasons.append("Product qualifiers such as brand, category, images, or attributes exist.")
+        reasons.append("Marka, kategori, görsel veya özellik gibi ürün sinyalleri mevcut.")
     points += qualifier_points
 
     return _component(
@@ -538,15 +538,15 @@ def _choose_recommended_action(
     by_name = {component.name: component for component in components}
     semantic_component = by_name[SEMANTIC_COMPONENT_NAME]
     if all(_component_ratio(component) >= 0.95 for component in components):
-        return "Maintain current crawlability, metadata, and Turkish retrieval signals."
+        return "Mevcut crawl erişimini, metadata yapısını ve Türkçe retrieval sinyallerini koruyun."
     if _component_ratio(by_name["crawl_accessibility"]) < 0.8:
-        return "Fix crawl access, robots/indexability, and canonical URL signals first."
+        return "Önce crawl erişimini, robots/indexlenebilirlik durumunu ve canonical URL sinyallerini düzeltin."
     if _component_ratio(by_name["content_extraction"]) < 0.75:
-        return "Expose richer visible product text, structured data, and image signals."
+        return "Daha zengin görünür ürün metni, yapılandırılmış veri ve görsel sinyalleri ekleyin."
     if _component_ratio(by_name["page_metadata"]) < 0.75:
-        return "Improve page title, meta description, and H1/H2 product alignment."
+        return "Sayfa başlığını, meta açıklamayı ve H1/H2 ürün uyumunu iyileştirin."
     if _component_ratio(by_name[SEMANTIC_COMPONENT_NAME]) < 0.75:
-        return "Strengthen Turkish buyer-intent relevance in title, metadata, and body text."
+        return "Başlıkta, metadata alanlarında ve gövde metninde Türkçe alıcı niyeti uyumunu güçlendirin."
     return DEFAULT_LAYER_RECOMMENDED_ACTIONS[RETRIEVAL_LAYER]
 
 

@@ -10,6 +10,7 @@ from ai.api_contracts.geo_analysis_output import GeoAnalysisOutput
 from ai.api_contracts.product_input import ProductInput
 from ai.geo_engine.constants import (
     EXPECTED_LAYER_ORDER,
+    LAYER_DISPLAY_NAMES,
     MAX_MAIN_PROBLEMS,
     WEAK_LAYER_SCORE_THRESHOLD,
 )
@@ -220,7 +221,8 @@ def _choose_recommended_action(layers: Sequence[LayerScoreResult]) -> str:
     weakest_layer = min(layers, key=lambda layer: layer.score)
     if weakest_layer.recommended_next_action:
         return weakest_layer.recommended_next_action
-    return f"Improve {weakest_layer.layer} first."
+    layer_label = LAYER_DISPLAY_NAMES.get(weakest_layer.layer, weakest_layer.layer)
+    return f"Once {layer_label} katmanini iyilestirin."
 
 
 def _limit(values: Sequence[str], *, limit: int) -> list[str]:
