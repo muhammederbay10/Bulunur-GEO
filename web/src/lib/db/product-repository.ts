@@ -4,6 +4,8 @@ import type { ScrapePreviewRow } from "@/lib/db/scrape-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ShopifyProductUpsert } from "@/lib/shopify/product-mapper";
+import { productInputSchema } from "@/lib/validation/ai-contract";
+import type { ProductAnalysisContext, ProductAnalysisDetail } from "@/types/analysis";
 import type { NativeFallbackImportItem } from "@/types/native-url-import";
 import type {
   CatalogDashboardSummary,
@@ -11,6 +13,7 @@ import type {
   ProductListSourceFilter,
   ProductListStatusFilter,
   ProductSourceSummary,
+  ProductSource,
   ProductSummary,
 } from "@/types/product";
 
@@ -29,6 +32,40 @@ type ProductRow = {
   updated_at: string;
 };
 
+type ProductAnalysisRow = {
+  id: string;
+  external_id: string | null;
+  external_handle: string | null;
+  store_id: string;
+  source: ProductSource;
+  url: string | null;
+  language: string | null;
+  market: string | null;
+  title: string;
+  description: string | null;
+  description_html: string | null;
+  short_description: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  tags: string[] | null;
+  vendor: string | null;
+  product_type: string | null;
+  price_display: string | null;
+  currency: string | null;
+  availability: string | null;
+  brand: string | null;
+  category: string | null;
+  image_urls: string[] | null;
+  attributes: Record<string, unknown> | null;
+  raw_source_payload: Record<string, unknown> | null;
+  raw_extracted: Record<string, unknown> | null;
+  crawl_metadata: Record<string, unknown> | null;
+  workflow_status: ProductSummary["workflowStatus"];
+  latest_score: number | null;
+  last_analyzed_at: string | null;
+  updated_at: string;
+};
+
 type ProductRepositoryResult<T> =
   | { ok: true; data: T }
   | { ok: false; message: string; code?: string; isMissingTable?: boolean };
@@ -44,6 +81,8 @@ type SourceSummaryRow = {
 
 const productSummarySelect =
   "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,updated_at";
+const productAnalysisSelect =
+  "id,external_id,external_handle,store_id,source,url,language,market,title,description,description_html,short_description,seo_title,seo_description,tags,vendor,product_type,price_display,currency,availability,brand,category,image_urls,attributes,raw_source_payload,raw_extracted,crawl_metadata,workflow_status,latest_score,last_analyzed_at,updated_at";
 
 const sourceSummarySelect =
   "id,name,source_type,status,last_sync_at,updated_at";
@@ -220,6 +259,135 @@ function asStringArray(value: unknown): string[] {
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function asOptionalUrl(value: unknown): string | undefined {
+  const stringValue = asString(value);
+
+  if (!stringValue) return undefined;
+
+  try {
+    return new URL(stringValue).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetail {
+  return {
+    id: row.id,
+    storeId: row.store_id,
+    source: row.source,
+    title: row.title,
+    url: row.url ?? undefined,
+    language: row.language ?? "tr",
+    market: row.market ?? "TR",
+    description: row.description ?? undefined,
+    descriptionHtml: row.description_html ?? undefined,
+    shortDescription: row.short_description ?? undefined,
+    seoTitle: row.seo_title ?? undefined,
+    seoDescription: row.seo_description ?? undefined,
+    priceDisplay: row.price_display ?? undefined,
+    currency: row.currency ?? undefined,
+    availability: row.availability ?? undefined,
+    brand: row.brand ?? undefined,
+    category: row.category ?? undefined,
+    imageUrls: row.image_urls ?? [],
+    tags: row.tags ?? [],
+    vendor: row.vendor ?? undefined,
+    productType: row.product_type ?? undefined,
+    workflowStatus: row.workflow_status,
+    latestScore: row.latest_score ?? undefined,
+    lastAnalyzedAt: row.last_analyzed_at ?? undefined,
+    updatedAt: row.updated_at,
+  };
+}
+
+function buildProductInput(row: ProductAnalysisRow) {
+  const attributes = asRecord(row.attributes);
+  const rawSourcePayload = asRecord(row.raw_source_payload);
+  const rawExtracted = asRecord(row.raw_extracted);
+  const crawlMetadata = asRecord(row.crawl_metadata);
+  const detectedSchema =
+    rawExtracted.detectedSchema ?? rawExtracted.detected_schema ?? [];
+  const pageTitle =
+    rawExtracted.pageTitle ?? rawExtracted.page_title ?? row.seo_title;
+  const metaDescription =
+    rawExtracted.metaDescription ??
+    rawExtracted.meta_description ??
+    row.seo_description;
+  const canonicalUrl =
+    asOptionalUrl(crawlMetadata.canonicalUrl) ??
+    asOptionalUrl(crawlMetadata.canonical_url) ??
+    asOptionalUrl(row.url);
+  const enrichedAttributes = {
+    ...attributes,
+    externalId: row.external_id,
+    externalHandle: row.external_handle,
+    vendor: row.vendor,
+    productType: row.product_type,
+    seoTitle: row.seo_title,
+    seoDescription: row.seo_description,
+    tags: row.tags ?? [],
+  };
+  const rawExtractedPayload = {
+    ...rawExtracted,
+    pageTitle,
+    metaDescription,
+    detectedSchema,
+    rawSourcePayload,
+  };
+  const crawlMetadataPayload = {
+    crawlStatus: asString(crawlMetadata.crawlStatus) ?? "unknown",
+    httpStatusCode: asNumber(crawlMetadata.httpStatusCode) ?? undefined,
+    accessible:
+      typeof crawlMetadata.accessible === "boolean"
+        ? crawlMetadata.accessible
+        : undefined,
+    blocked:
+      typeof crawlMetadata.blocked === "boolean"
+        ? crawlMetadata.blocked
+        : undefined,
+    contentExtracted:
+      typeof crawlMetadata.contentExtracted === "boolean"
+        ? crawlMetadata.contentExtracted
+        : undefined,
+    canonicalUrl,
+    robotsAllowed:
+      typeof crawlMetadata.robotsAllowed === "boolean"
+        ? crawlMetadata.robotsAllowed
+        : undefined,
+    imagesAccessible:
+      typeof crawlMetadata.imagesAccessible === "boolean"
+        ? crawlMetadata.imagesAccessible
+        : undefined,
+    crawledAt: asString(crawlMetadata.crawledAt) ?? undefined,
+  };
+
+  return productInputSchema.parse({
+    productId: row.id,
+    storeId: row.store_id,
+    source: row.source,
+    url: asOptionalUrl(row.url),
+    language: row.language ?? "tr",
+    market: row.market ?? "TR",
+    title: row.title,
+    description: row.description ?? row.description_html ?? undefined,
+    shortDescription: row.short_description ?? undefined,
+    price: row.price_display ?? undefined,
+    currency: row.currency ?? undefined,
+    availability: row.availability ?? undefined,
+    brand: row.brand ?? row.vendor ?? undefined,
+    category: row.category ?? row.product_type ?? undefined,
+    imageUrls: (row.image_urls ?? []).map(asOptionalUrl).filter(Boolean),
+    attributes: enrichedAttributes,
+    rawExtracted: rawExtractedPayload,
+    crawlMetadata: crawlMetadataPayload,
+  });
 }
 
 function getNormalizedPayload(row: ScrapePreviewRow): Record<string, unknown> {
@@ -414,6 +582,67 @@ export async function getCatalogDashboardForCurrentUser(): Promise<CatalogDashbo
   }
 
   return result.data;
+}
+
+export async function getProductAnalysisContextForCurrentUser(
+  productId: string,
+): Promise<ProductRepositoryResult<ProductAnalysisContext>> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      ok: false,
+      message: "Oturum gerekli.",
+      code: "unauthorized",
+    };
+  }
+
+  return getProductAnalysisContextForProfile({
+    profileId: user.id,
+    productId,
+  });
+}
+
+export async function getProductAnalysisContextForProfile(params: {
+  profileId: string;
+  productId: string;
+}): Promise<ProductRepositoryResult<ProductAnalysisContext>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(productAnalysisSelect)
+    .eq("id", params.productId)
+    .eq("profile_id", params.profileId)
+    .maybeSingle<ProductAnalysisRow>();
+
+  if (error) {
+    const isMissingTable = isMissingProductTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Urun analiz verisi okunamadi.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  if (!data) {
+    return {
+      ok: false,
+      message: "Urun bulunamadi veya bu hesaba ait degil.",
+      code: "product_not_found",
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      product: mapProductAnalysisDetail(data),
+      productInput: buildProductInput(data),
+    },
+  };
 }
 
 export async function upsertShopifyProducts(

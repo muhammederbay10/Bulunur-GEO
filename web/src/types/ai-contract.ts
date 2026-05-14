@@ -12,10 +12,12 @@ export const crawlMetadataSchema = z.object({
   crawledAt: z.string().optional(),
 });
 
+const scoreValueSchema = z.number().min(0).max(100);
+
 export const productInputSchema = z.object({
   productId: z.string(),
   storeId: z.string(),
-  source: z.string(),
+  source: z.enum(["shopify", "native", "woocommerce"]),
   url: z.string().url().optional(),
   language: z.string().default("tr"),
   market: z.string().default("TR"),
@@ -34,8 +36,8 @@ export const productInputSchema = z.object({
 });
 
 export const geoScoreLayerSchema = z.object({
-  score: z.number(),
-  maxScore: z.number(),
+  score: scoreValueSchema,
+  maxScore: scoreValueSchema,
   weightedPoints: z.number(),
   maxWeightedPoints: z.number(),
   reasons: z.array(z.string()).default([]),
@@ -43,7 +45,7 @@ export const geoScoreLayerSchema = z.object({
 });
 
 export const geoAnalysisOutputSchema = z.object({
-  overallScore: z.number(),
+  overallScore: scoreValueSchema,
   scores: z.object({
     retrieval: geoScoreLayerSchema,
     machineUnderstanding: geoScoreLayerSchema,

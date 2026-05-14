@@ -1,19 +1,50 @@
-import { Gauge } from "lucide-react";
+import { notFound } from "next/navigation";
 
-import { PhasePlaceholder } from "@/components/phase-placeholder";
+import { ProductAnalysisPage } from "@/features/analysis/components/product-analysis-page";
+import { getLatestProductAnalysis } from "@/lib/db/analysis-repository";
+import { getCurrentUser } from "@/lib/db/profile-repository";
+import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
 
-export default function ProductDetailPage() {
+type ProductDetailPageProps = {
+  params: Promise<{
+    productId: string;
+  }>;
+};
+
+export default async function ProductDetailPage({
+  params,
+}: ProductDetailPageProps) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    notFound();
+  }
+
+  const { productId } = await params;
+  const [productResult, analysisResult] = await Promise.all([
+    getProductAnalysisContextForProfile({
+      profileId: user.id,
+      productId,
+    }),
+    getLatestProductAnalysis({
+      profileId: user.id,
+      productId,
+    }),
+  ]);
+
+  if (!productResult.ok) {
+    if (productResult.code === "product_not_found") {
+      notFound();
+    }
+
+    throw new Error(productResult.message);
+  }
+
   return (
-    <PhasePlaceholder
-      icon={Gauge}
-      title="Ürün analiz rota temeli"
-      description="Faz 7 ve 8'de analiz, eksik bilgi soruları, optimizasyon ve önce/sonra sonuçları bu sayfaya bağlanacak."
-      items={[
-        "AI işi çalışırken ürün kimliği ve mevcut içerik önizlemesi görünür kalacak.",
-        "Analiz çıktısı bilgilendirme amaçlıdır ve ürünü yeniden yazmaz.",
-        "Optimizasyon çıktısı, satıcı alanları onaylayana kadar taslak sonuç olarak saklanır.",
-        "AI çağrıları sunucudan sunucuya API sözleşmesini izlemelidir.",
-      ]}
+    <ProductAnalysisPage
+      product={productResult.data.product}
+      analysis={analysisResult.ok ? analysisResult.data : null}
+      errorMessage={analysisResult.ok ? undefined : analysisResult.message}
     />
   );
 }
