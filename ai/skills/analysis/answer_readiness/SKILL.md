@@ -65,6 +65,8 @@ Bu katman akıcı metni değil, güvenli ve grounded cevap üretilebilirliğini 
 ## Çıktı Formatı
 
 Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kullanma.
+`reasons` en fazla 3 madde ve her madde kısa olmalı.
+`missingSignals` en fazla 3 madde ve her madde kısa olmalı.
 
 ```json
 {
