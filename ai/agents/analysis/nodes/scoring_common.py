@@ -11,7 +11,7 @@ from ai.api_contracts.product_input import ProductInput
 from ai.geo_engine.constants import LAYER_SKILL_MAX_SCORES, LAYER_SKILL_PATHS
 from ai.geo_engine.types import GeminiLayerJudgment, GeoScoreLayer, LayerScoreResult
 from ai.llm.skill_loader import build_skill_prompt, load_skill
-from ai.llm.structured_outputs import parse_json_object
+from ai.llm.structured_outputs import MalformedJSONError, parse_json_object
 
 
 SemanticJudgmentGenerator = Callable[[GeoScoreLayer, str], Any]
@@ -47,7 +47,15 @@ def get_or_create_semantic_judgment(
     if raw_output is None:
         raise ValueError(f"semantic_judgment is required for {layer} scoring")
 
-    parsed = parse_json_object(raw_output)
+    try:
+        parsed = parse_json_object(raw_output)
+    except MalformedJSONError:
+        repair_prompt = build_json_repair_prompt(layer=layer, raw_output=raw_output)
+        repaired_output = invoke_semantic_judgment_generator(state, layer, repair_prompt)
+        if repaired_output is None:
+            raise
+        parsed = parse_json_object(repaired_output)
+
     judgment = coerce_semantic_judgment(layer, parsed)
     return judgment, {
         "layer": layer,
@@ -88,7 +96,16 @@ def build_layer_prompt(
         skill,
         extra_context={
             "semanticEvaluationContext": dict(semantic_context),
-            "outputReminder": "Sadece geçerli JSON döndür.",
+            "outputConstraints": {
+                "maxReasons": 3,
+                "maxMissingSignals": 3,
+                "maxReasonChars": 140,
+                "maxMissingSignalChars": 80,
+            },
+            "outputReminder": (
+                "Tek bir JSON object döndür. Markdown, code fence ve açıklama metni kullanma. "
+                "reasons en fazla 3 kısa madde; missingSignals en fazla 3 kısa madde olmalı."
+            ),
         },
     )
 
@@ -105,8 +122,24 @@ def invoke_semantic_judgment_generator(
 
     from ai.llm.gemini_client import get_gemini_llm
 
-    llm = get_gemini_llm(temperature=0.1, max_tokens=1024, json_mode=True)
+    llm = get_gemini_llm(temperature=0.1, max_tokens=1536, json_mode=True)
     return llm.invoke(prompt)
+
+
+def build_json_repair_prompt(*, layer: GeoScoreLayer, raw_output: Any) -> str:
+    """Ask Gemini to repair malformed output into strict JSON."""
+    return (
+        "Aşağıdaki çıktıyı geçerli JSON object olacak şekilde düzelt.\n"
+        "Kurallar:\n"
+        "- Sadece JSON object döndür.\n"
+        "- Alanlar: score, maxScore, reasons, missingSignals, recommendedNextAction.\n"
+        "- score sayı, maxScore sayı olmalı.\n"
+        "- reasons en fazla 3 kısa madde.\n"
+        "- missingSignals en fazla 3 kısa madde.\n"
+        f"- layer: {layer}\n\n"
+        "Ham çıktı:\n"
+        f"{raw_output}"
+    )
 
 
 def store_layer_score(
@@ -180,6 +213,7 @@ def _default_skill_max_score(layer: GeoScoreLayer) -> float:
 __all__ = [
     "SemanticJudgmentGenerator",
     "build_layer_prompt",
+    "build_json_repair_prompt",
     "coerce_semantic_judgment",
     "get_or_create_semantic_judgment",
     "invoke_semantic_judgment_generator",
