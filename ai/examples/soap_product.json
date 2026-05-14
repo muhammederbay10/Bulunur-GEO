@@ -1,0 +1,101 @@
+{
+  "productId": "woo-soap-lavender-001",
+  "storeId": "demo-store-natural",
+  "source": "woocommerce",
+  "url": "https://demo.bulunur.test/urunler/lavanta-sabunu",
+  "language": "tr",
+  "market": "TR",
+  "title": "Lavanta Kokulu El Yapımı Sabun",
+  "description": "Lavanta kokulu el yapımı sabun, günlük el ve vücut temizliği için hazırlanmış bitkisel yağ bazlı bir sabundur. Lavanta kokusu sayesinde banyoda ferah bir kullanım deneyimi sunar. Hassas cilt iddiası, organik sertifika veya dermatolojik test bilgisi ürün sayfasında belirtilmemiştir.",
+  "shortDescription": "Lavanta kokulu, bitkisel yağ bazlı el yapımı sabun.",
+  "price": "149.00",
+  "currency": "TRY",
+  "availability": "in_stock",
+  "brand": "AtolyeDefne",
+  "category": "Doğal Sabun",
+  "imageUrls": [
+    "https://demo.bulunur.test/images/lavanta-sabunu.jpg"
+  ],
+  "attributes": {
+    "scent": "lavanta",
+    "baseIngredients": "zeytinyağı, hindistan cevizi yağı, lavanta esansı",
+    "usageArea": "el ve vücut temizliği",
+    "skinTypeClaim": "belirtilmemiş",
+    "certification": "belirtilmemiş"
+  },
+  "rawExtracted": {
+    "pageTitle": "Lavanta Kokulu El Yapımı Sabun | AtolyeDefne",
+    "metaDescription": "Lavanta kokulu bitkisel yağ bazlı el yapımı sabun. Günlük el ve vücut temizliği için uygundur.",
+    "headings": {
+      "h1": [
+        "Lavanta Kokulu El Yapımı Sabun"
+      ],
+      "h2": [
+        "Ürün Açıklaması",
+        "İçerik",
+        "Kullanım Önerisi"
+      ]
+    },
+    "bodyText": "Lavanta kokulu el yapımı sabun zeytinyağı, hindistan cevizi yağı ve lavanta esansı ile hazırlanır. Günlük el ve vücut temizliği için kullanılabilir. Ürün sayfasında gramaj, üretim yöntemi, cilt tipi uygunluğu, sertifika ve son kullanma tarihi bilgisi bulunmamaktadır.",
+    "detectedSchema": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Lavanta Kokulu El Yapımı Sabun",
+        "brand": {
+          "@type": "Brand",
+          "name": "AtolyeDefne"
+        },
+        "description": "Lavanta kokulu bitkisel yağ bazlı el yapımı sabun.",
+        "offers": {
+          "@type": "Offer",
+          "price": "149.00",
+          "priceCurrency": "TRY",
+          "availability": "https://schema.org/InStock",
+          "url": "https://demo.bulunur.test/urunler/lavanta-sabunu"
+        }
+      }
+    ]
+  },
+  "crawlMetadata": {
+    "productUrl": "https://demo.bulunur.test/urunler/lavanta-sabunu",
+    "crawlStatus": "success",
+    "httpStatusCode": 200,
+    "accessible": true,
+    "blocked": false,
+    "contentExtracted": true,
+    "canonicalUrl": "https://demo.bulunur.test/urunler/lavanta-sabunu",
+    "robotsAllowed": true,
+    "indexable": true,
+    "pageTitle": "Lavanta Kokulu El Yapımı Sabun | AtolyeDefne",
+    "metaDescription": "Lavanta kokulu bitkisel yağ bazlı el yapımı sabun. Günlük el ve vücut temizliği için uygundur.",
+    "headings": {
+      "h1": [
+        "Lavanta Kokulu El Yapımı Sabun"
+      ],
+      "h2": [
+        "Ürün Açıklaması",
+        "İçerik",
+        "Kullanım Önerisi"
+      ]
+    },
+    "detectedStructuredData": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Lavanta Kokulu El Yapımı Sabun",
+        "offers": {
+          "@type": "Offer",
+          "price": "149.00",
+          "priceCurrency": "TRY",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ],
+    "imageUrls": [
+      "https://demo.bulunur.test/images/lavanta-sabunu.jpg"
+    ],
+    "imagesAccessible": true,
+    "crawledAt": "2026-05-11T18:35:00+03:00"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "productId": "maxi-airfryer-5000",
+  "storeId": "demo-store-kitchen",
+  "source": "shopify",
+  "url": "https://demo.bulunur.test/urunler/kompakt-airfryer-5000",
+  "language": "tr",
+  "market": "TR",
+  "title": "Kompakt Airfryer 5000 5 Litre",
+  "description": "Kompakt Airfryer 5000, az yağ ile çıtır sonuç almak isteyen ev kullanıcıları için geliştirilmiş 5 litrelik dijital hava fritözüdür. 8 hazır pişirme programı, çıkarılabilir yapışmaz sepeti ve 80-200 derece arası sıcaklık ayarı ile patates, tavuk, sebze ve atıştırmalık tariflerinde pratik kullanım sağlar. 3-4 kişilik aile kullanımı için uygundur ve küçük mutfak tezgahlarında fazla yer kaplamayacak şekilde tasarlanmıştır.",
+  "shortDescription": "5 litrelik dijital airfryer; küçük mutfaklar ve 3-4 kişilik aileler için pratik sıcak hava fritözü.",
+  "price": "2499.90",
+  "currency": "TRY",
+  "availability": "in_stock",
+  "brand": "MutfakPro",
+  "category": "Airfryer",
+  "imageUrls": [
+    "https://demo.bulunur.test/images/kompakt-airfryer-5000-front.jpg",
+    "https://demo.bulunur.test/images/kompakt-airfryer-5000-basket.jpg"
+  ],
+  "attributes": {
+    "capacity": "5 litre",
+    "power": "1500 W",
+    "programCount": "8",
+    "temperatureRange": "80-200 derece",
+    "basketMaterial": "yapışmaz kaplama",
+    "suitableFor": "3-4 kişilik aile kullanımı",
+    "color": "siyah",
+    "warranty": "2 yıl"
+  },
+  "rawExtracted": {
+    "pageTitle": "Kompakt Airfryer 5000 5 Litre | MutfakPro",
+    "metaDescription": "5 litrelik dijital airfryer, 8 programlı sıcak hava fritözü. Küçük mutfaklar ve 3-4 kişilik aileler için uygundur.",
+    "headings": {
+      "h1": [
+        "Kompakt Airfryer 5000 5 Litre"
+      ],
+      "h2": [
+        "Ürün Özellikleri",
+        "Kimler İçin Uygun?",
+        "Kutu İçeriği"
+      ]
+    },
+    "bodyText": "Kompakt Airfryer 5000 5 litre kapasiteye sahiptir. Dijital ekran üzerinden 8 hazır program seçilebilir. 1500 W güç, 80-200 derece sıcaklık aralığı ve çıkarılabilir yapışmaz sepet ile günlük kullanım için tasarlanmıştır. 3-4 kişilik aileler, küçük mutfaklar ve hızlı akşam yemeği hazırlamak isteyen kullanıcılar için uygundur. Ürün 2 yıl garantilidir.",
+    "detectedSchema": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Kompakt Airfryer 5000 5 Litre",
+        "brand": {
+          "@type": "Brand",
+          "name": "MutfakPro"
+        },
+        "image": [
+          "https://demo.bulunur.test/images/kompakt-airfryer-5000-front.jpg",
+          "https://demo.bulunur.test/images/kompakt-airfryer-5000-basket.jpg"
+        ],
+        "description": "5 litrelik dijital airfryer; küçük mutfaklar ve 3-4 kişilik aileler için pratik sıcak hava fritözü.",
+        "offers": {
+          "@type": "Offer",
+          "price": "2499.90",
+          "priceCurrency": "TRY",
+          "availability": "https://schema.org/InStock",
+          "url": "https://demo.bulunur.test/urunler/kompakt-airfryer-5000"
+        }
+      }
+    ]
+  },
+  "crawlMetadata": {
+    "productUrl": "https://demo.bulunur.test/urunler/kompakt-airfryer-5000",
+    "crawlStatus": "success",
+    "httpStatusCode": 200,
+    "accessible": true,
+    "blocked": false,
+    "contentExtracted": true,
+    "canonicalUrl": "https://demo.bulunur.test/urunler/kompakt-airfryer-5000",
+    "robotsAllowed": true,
+    "indexable": true,
+    "pageTitle": "Kompakt Airfryer 5000 5 Litre | MutfakPro",
+    "metaDescription": "5 litrelik dijital airfryer, 8 programlı sıcak hava fritözü. Küçük mutfaklar ve 3-4 kişilik aileler için uygundur.",
+    "headings": {
+      "h1": [
+        "Kompakt Airfryer 5000 5 Litre"
+      ],
+      "h2": [
+        "Ürün Özellikleri",
+        "Kimler İçin Uygun?",
+        "Kutu İçeriği"
+      ]
+    },
+    "detectedStructuredData": [
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Kompakt Airfryer 5000 5 Litre",
+        "offers": {
+          "@type": "Offer",
+          "price": "2499.90",
+          "priceCurrency": "TRY",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    ],
+    "imageUrls": [
+      "https://demo.bulunur.test/images/kompakt-airfryer-5000-front.jpg",
+      "https://demo.bulunur.test/images/kompakt-airfryer-5000-basket.jpg"
+    ],
+    "imagesAccessible": true,
+    "crawledAt": "2026-05-11T18:20:00+03:00"
+  }
+}
