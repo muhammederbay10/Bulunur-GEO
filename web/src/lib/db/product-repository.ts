@@ -5,7 +5,14 @@ import { getCurrentUser } from "@/lib/db/profile-repository";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ShopifyProductUpsert } from "@/lib/shopify/product-mapper";
 import type { NativeFallbackImportItem } from "@/types/native-url-import";
-import type { ProductSummary } from "@/types/product";
+import type {
+  CatalogDashboardSummary,
+  ProductListFilters,
+  ProductListSourceFilter,
+  ProductListStatusFilter,
+  ProductSourceSummary,
+  ProductSummary,
+} from "@/types/product";
 
 type ProductRow = {
   id: string;
@@ -26,11 +33,29 @@ type ProductRepositoryResult<T> =
   | { ok: true; data: T }
   | { ok: false; message: string; code?: string; isMissingTable?: boolean };
 
+type SourceSummaryRow = {
+  id: string;
+  name: string;
+  source_type: ProductSourceSummary["sourceType"];
+  status: string;
+  last_sync_at: string | null;
+  updated_at: string;
+};
+
 const productSummarySelect =
   "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,updated_at";
 
+const sourceSummarySelect =
+  "id,name,source_type,status,last_sync_at,updated_at";
 const shopifyProductSyncSelect = "id,external_id";
 const nativeProductImportSelect = "id,url";
+const defaultCatalogMetrics = {
+  totalProducts: 0,
+  analyzedProducts: 0,
+  optimizedProducts: 0,
+  waitingProducts: 0,
+  lowScoreProducts: 0,
+};
 
 function productStorageSetupMessage() {
   return "Urun tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
@@ -56,6 +81,120 @@ function mapProductSummary(row: ProductRow): ProductSummary {
     workflowStatus: row.workflow_status,
     updatedAt: row.updated_at,
   };
+}
+
+function mapSourceSummary(row: SourceSummaryRow): ProductSourceSummary {
+  return {
+    id: row.id,
+    name: row.name,
+    sourceType: row.source_type,
+    status: row.status,
+    lastSyncAt: row.last_sync_at ?? undefined,
+    updatedAt: row.updated_at,
+  };
+}
+
+function normalizeStatusFilter(
+  value?: ProductListStatusFilter,
+): ProductListStatusFilter {
+  if (
+    value === "waiting" ||
+    value === "analyzed" ||
+    value === "optimized" ||
+    value === "low_score"
+  ) {
+    return value;
+  }
+
+  return "all";
+}
+
+function normalizeSourceFilter(
+  value?: ProductListSourceFilter,
+): ProductListSourceFilter {
+  if (value === "shopify" || value === "native" || value === "woocommerce") {
+    return value;
+  }
+
+  return "all";
+}
+
+function normalizedProductFilters(filters?: ProductListFilters) {
+  return {
+    source: normalizeSourceFilter(filters?.source),
+    status: normalizeStatusFilter(filters?.status),
+  };
+}
+
+function statusFilterValues(status: ProductListStatusFilter) {
+  if (status === "analyzed") {
+    return ["analyzed", "optimization_running"];
+  }
+
+  if (status === "optimized") {
+    return ["optimized", "published"];
+  }
+
+  return [];
+}
+
+async function countProductsForProfile(
+  supabase: ReturnType<typeof createAdminClient>,
+  profileId: string,
+  filters?: ProductListFilters,
+): Promise<ProductRepositoryResult<number>> {
+  const { source, status } = normalizedProductFilters(filters);
+  let query = supabase
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profileId);
+
+  if (source !== "all") {
+    query = query.eq("source", source);
+  }
+
+  if (status === "waiting") {
+    query = query.eq("workflow_status", "not_analyzed");
+  } else if (status === "analyzed" || status === "optimized") {
+    query = query.in("workflow_status", statusFilterValues(status));
+  } else if (status === "low_score") {
+    query = query.not("latest_score", "is", null).lt("latest_score", 60);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    const isMissingTable = isMissingProductTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Katalog ozeti okunamadi.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  return { ok: true, data: count ?? 0 };
+}
+
+function latestTimestamp(values: Array<string | undefined>) {
+  let latest: string | undefined;
+  let latestTime = 0;
+
+  for (const value of values) {
+    if (!value) continue;
+
+    const time = new Date(value).getTime();
+
+    if (Number.isFinite(time) && time > latestTime) {
+      latest = value;
+      latestTime = time;
+    }
+  }
+
+  return latest;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -231,17 +370,47 @@ function buildNativeFallbackProductPayload(params: {
   };
 }
 
-export async function listProductsForCurrentUser(): Promise<ProductSummary[]> {
+export async function listProductsForCurrentUser(
+  filters?: ProductListFilters,
+): Promise<ProductSummary[]> {
   const user = await getCurrentUser();
 
   if (!user) {
     return [];
   }
 
-  const result = await listProductsForProfile(user.id);
+  const result = await listProductsForProfile(user.id, filters);
 
   if (!result.ok) {
     return [];
+  }
+
+  return result.data;
+}
+
+export async function getCatalogDashboardForCurrentUser(): Promise<CatalogDashboardSummary> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      metrics: defaultCatalogMetrics,
+      recentProducts: [],
+      attentionProducts: [],
+      sources: [],
+    };
+  }
+
+  const result = await getCatalogDashboardForProfile(user.id);
+
+  if (!result.ok) {
+    return {
+      metrics: defaultCatalogMetrics,
+      recentProducts: [],
+      attentionProducts: [],
+      sources: [],
+      errorMessage: result.message,
+      isMissingTable: result.isMissingTable,
+    };
   }
 
   return result.data;
@@ -611,12 +780,28 @@ export async function upsertNativeProductsFromFallbackItems(params: {
 
 export async function listProductsForProfile(
   profileId: string,
+  filters?: ProductListFilters,
 ): Promise<ProductRepositoryResult<ProductSummary[]>> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+  const { source, status } = normalizedProductFilters(filters);
+  let query = supabase
     .from("products")
     .select(productSummarySelect)
-    .eq("profile_id", profileId)
+    .eq("profile_id", profileId);
+
+  if (source !== "all") {
+    query = query.eq("source", source);
+  }
+
+  if (status === "waiting") {
+    query = query.eq("workflow_status", "not_analyzed");
+  } else if (status === "analyzed" || status === "optimized") {
+    query = query.in("workflow_status", statusFilterValues(status));
+  } else if (status === "low_score") {
+    query = query.not("latest_score", "is", null).lt("latest_score", 60);
+  }
+
+  const { data, error } = await query
     .order("updated_at", { ascending: false })
     .limit(100)
     .returns<ProductRow[]>();
@@ -637,6 +822,126 @@ export async function listProductsForProfile(
   return {
     ok: true,
     data: (data ?? []).map(mapProductSummary),
+  };
+}
+
+export async function getCatalogDashboardForProfile(
+  profileId: string,
+): Promise<ProductRepositoryResult<CatalogDashboardSummary>> {
+  const supabase = createAdminClient();
+  const [
+    totalProducts,
+    analyzedProducts,
+    optimizedProducts,
+    waitingProducts,
+    lowScoreProducts,
+    recentProductsResult,
+    attentionProductsResult,
+    sourcesResult,
+  ] = await Promise.all([
+    countProductsForProfile(supabase, profileId),
+    countProductsForProfile(supabase, profileId, { status: "analyzed" }),
+    countProductsForProfile(supabase, profileId, { status: "optimized" }),
+    countProductsForProfile(supabase, profileId, { status: "waiting" }),
+    countProductsForProfile(supabase, profileId, { status: "low_score" }),
+    supabase
+      .from("products")
+      .select(productSummarySelect)
+      .eq("profile_id", profileId)
+      .order("updated_at", { ascending: false })
+      .limit(5)
+      .returns<ProductRow[]>(),
+    supabase
+      .from("products")
+      .select(productSummarySelect)
+      .eq("profile_id", profileId)
+      .eq("workflow_status", "not_analyzed")
+      .order("updated_at", { ascending: false })
+      .limit(5)
+      .returns<ProductRow[]>(),
+    supabase
+      .from("stores")
+      .select(sourceSummarySelect)
+      .eq("profile_id", profileId)
+      .order("updated_at", { ascending: false })
+      .limit(6)
+      .returns<SourceSummaryRow[]>(),
+  ]);
+
+  const countResults = [
+    totalProducts,
+    analyzedProducts,
+    optimizedProducts,
+    waitingProducts,
+    lowScoreProducts,
+  ];
+  const failedCount = countResults.find((result) => !result.ok);
+
+  if (failedCount && !failedCount.ok) {
+    return failedCount;
+  }
+
+  if (recentProductsResult.error) {
+    const isMissingTable = isMissingProductTable(recentProductsResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Son urunler okunamadi.",
+      code: recentProductsResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  if (attentionProductsResult.error) {
+    const isMissingTable = isMissingProductTable(attentionProductsResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Dikkat isteyen urunler okunamadi.",
+      code: attentionProductsResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  if (sourcesResult.error) {
+    const isMissingTable = isMissingProductTable(sourcesResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Kaynak ozeti okunamadi.",
+      code: sourcesResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  const sources = (sourcesResult.data ?? []).map(mapSourceSummary);
+  const recentProducts = (recentProductsResult.data ?? []).map(mapProductSummary);
+  const attentionProducts = (attentionProductsResult.data ?? []).map(mapProductSummary);
+
+  return {
+    ok: true,
+    data: {
+      metrics: {
+        totalProducts: totalProducts.ok ? totalProducts.data : 0,
+        analyzedProducts: analyzedProducts.ok ? analyzedProducts.data : 0,
+        optimizedProducts: optimizedProducts.ok ? optimizedProducts.data : 0,
+        waitingProducts: waitingProducts.ok ? waitingProducts.data : 0,
+        lowScoreProducts: lowScoreProducts.ok ? lowScoreProducts.data : 0,
+      },
+      recentProducts,
+      attentionProducts,
+      sources,
+      lastCatalogActivityAt: latestTimestamp([
+        recentProducts[0]?.updatedAt,
+        ...sources.map((source) => source.lastSyncAt ?? source.updatedAt),
+      ]),
+    },
   };
 }
 

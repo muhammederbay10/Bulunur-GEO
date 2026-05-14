@@ -2,13 +2,20 @@ import { Suspense } from "react";
 import { Package } from "lucide-react";
 
 import { ProductList } from "@/features/products/components/product-list";
+import { ProductFilters } from "@/features/products/components/product-filters";
 import { listProductsForCurrentUser } from "@/lib/db/product-repository";
+import type {
+  ProductListSourceFilter,
+  ProductListStatusFilter,
+} from "@/types/product";
 
 type ProductsSearchParams = {
   shopify_connected?: string;
   shopify_sync?: string;
   product_count?: string;
   shop?: string;
+  status?: string;
+  source?: string;
 };
 
 type ProductsPageProps = {
@@ -51,13 +58,39 @@ function getShopifyNotice(params?: ProductsSearchParams) {
   };
 }
 
+function normalizeStatusFilter(value?: string): ProductListStatusFilter {
+  if (
+    value === "waiting" ||
+    value === "analyzed" ||
+    value === "optimized" ||
+    value === "low_score"
+  ) {
+    return value;
+  }
+
+  return "all";
+}
+
+function normalizeSourceFilter(value?: string): ProductListSourceFilter {
+  if (value === "shopify" || value === "native" || value === "woocommerce") {
+    return value;
+  }
+
+  return "all";
+}
+
 async function ProductsContent({
   searchParams,
 }: {
   searchParams?: Promise<ProductsSearchParams>;
 }) {
   const params = await searchParams;
-  const products = await listProductsForCurrentUser();
+  const activeStatus = normalizeStatusFilter(params?.status);
+  const activeSource = normalizeSourceFilter(params?.source);
+  const products = await listProductsForCurrentUser({
+    status: activeStatus,
+    source: activeSource,
+  });
   const shopifyNotice = getShopifyNotice(params);
 
   return (
@@ -82,8 +115,8 @@ async function ProductsContent({
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
             Shopify veya web sitesi kaynaklarindan iceri alinan urunler burada
-            listelenir. Analiz ve iyilestirme adimlari sonraki fazlarda bu
-            katalogdan baslar.
+            listelenir. Analiz bekleyen, optimize edilen veya dusuk skorlu
+            urunleri secerek siradaki calisma adimini belirleyin.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
@@ -92,6 +125,10 @@ async function ProductsContent({
         </div>
       </section>
 
+      <ProductFilters
+        activeStatus={activeStatus}
+        activeSource={activeSource}
+      />
       <ProductList products={products} />
     </div>
   );
