@@ -21,6 +21,7 @@ from ai.turkish_nlp.intent_expansion import (
     get_product_anchor_terms,
     group_intent_variants,
     merge_intent_variants,
+    normalize_category_label,
     sanitize_llm_intent_variants,
 )
 from ai.turkish_nlp.normalize import normalize_text, unique_normalized_terms
@@ -95,7 +96,13 @@ def expand_turkish_intents(state: AnalysisGraphState) -> AnalysisGraphState:
         brand=product.brand,
         attributes=product.attributes,
     )
-    product_anchor = detected_category or local_result.detected_category or product.title
+    clean_anchor = (
+        normalize_category_label(detected_category)
+        or local_result.detected_category
+        or normalize_category_label(product.category)
+        or product.title
+    )
+    product_anchor = clean_anchor
     seed_examples = flatten_buyer_pattern_examples(product_anchor)
     llm_output, llm_error = _generate_llm_intents(
         state=state,
@@ -105,9 +112,9 @@ def expand_turkish_intents(state: AnalysisGraphState) -> AnalysisGraphState:
     )
 
     anchor_terms = get_product_anchor_terms(
-        detected_category or local_result.detected_category,
+        clean_anchor or local_result.detected_category,
         title=product.title,
-        category=detected_category,
+        category=clean_anchor,
     )
     llm_variants = _extract_llm_variants(llm_output)
     sanitized_llm_variants = sanitize_llm_intent_variants(
@@ -120,11 +127,11 @@ def expand_turkish_intents(state: AnalysisGraphState) -> AnalysisGraphState:
         max_variants=DEFAULT_MAX_INTENTS,
     )
     final_category = (
-        normalize_text(llm_output.detected_category)
+        normalize_category_label(llm_output.detected_category)
         if llm_output and llm_output.detected_category
         else local_result.detected_category
     )
-    final_category = final_category or state.get("detected_category")
+    final_category = final_category or normalize_category_label(state.get("detected_category"))
     missing_signals = _dedupe_text(
         [
             *local_result.missing_signals,

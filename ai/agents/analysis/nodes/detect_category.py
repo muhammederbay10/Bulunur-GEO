@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from ai.agents.analysis.state import AnalysisGraphState
 from ai.api_contracts.product_input import ProductInput
 from ai.llm.structured_outputs import parse_json_object
-from ai.turkish_nlp.intent_expansion import detect_intent_category
+from ai.turkish_nlp.intent_expansion import detect_intent_category, normalize_category_label
 from ai.turkish_nlp.normalize import normalize_text, tokenize
 
 
@@ -283,7 +283,7 @@ def _title_category_confidence(title: str | None, category: str) -> float:
 
 
 def _normalize_free_text_category(category: str | None) -> str | None:
-    normalized = normalize_text(category)
+    normalized = normalize_category_label(category)
     if not normalized or normalized in TOO_GENERIC_CATEGORY_LABELS:
         return None
     return normalized
