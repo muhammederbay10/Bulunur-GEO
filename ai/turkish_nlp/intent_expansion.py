@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -29,6 +30,17 @@ IntentGroupName = Literal[
 
 DEFAULT_MAX_INTENTS = 12
 GENERAL_PRODUCT_CATEGORY = "general_product"
+_CATEGORY_STOPWORDS = {
+    "fritoz",
+    "fritözü",
+    "fritozu",
+    "hava",
+    "airfryer",
+    "air",
+    "kulaklik",
+    "kulaklık",
+    "sabun",
+}
 
 _GENERIC_ECOMMERCE_TERMS = (
     "ürün",
@@ -139,6 +151,7 @@ def expand_buyer_intents(
 def normalize_category_label(category: str | None) -> str | None:
     """Return a clean category label without forcing it into a fixed taxonomy."""
     normalized = normalize_text(category)
+    normalized = _strip_category_noise(normalized)
     if not normalized or _looks_too_broad(normalized):
         return None
     return normalized
@@ -241,10 +254,22 @@ def merge_intent_variants(
     *,
     max_variants: int = DEFAULT_MAX_INTENTS,
 ) -> list[str]:
-    """Merge local and LLM variants with local patterns kept as the baseline."""
+    """Merge local and LLM variants while preserving room for generic LLM phrasing."""
     if max_variants <= 0:
         return []
-    return unique_normalized_terms([*local_variants, *llm_variants])[:max_variants]
+
+    local_unique = unique_normalized_terms(local_variants)
+    llm_unique = unique_normalized_terms(llm_variants)
+    local_head_count = min(len(local_unique), max(4, max_variants // 2))
+
+    merged = unique_normalized_terms(
+        [
+            *local_unique[:local_head_count],
+            *llm_unique,
+            *local_unique[local_head_count:],
+        ]
+    )
+    return merged[:max_variants]
 
 
 def group_intent_variants(
@@ -344,7 +369,7 @@ def _first_meaningful_title_phrase(title: str | None) -> str | None:
     ]
     if not tokens:
         return None
-    return " ".join(tokens[:3])
+    return normalize_category_label(" ".join(tokens[:3]))
 
 
 def _is_useful_attribute_key(key: str) -> bool:
@@ -354,13 +379,51 @@ def _is_useful_attribute_key(key: str) -> bool:
 def _looks_too_broad(variant: str) -> bool:
     tokens = tokenize(variant)
     if len(tokens) < 2:
-        return True
+        return tokens[0] not in _CATEGORY_STOPWORDS if tokens else True
     return normalize_for_matching(variant) in {
         "en iyi urun",
         "urun onerisi",
         "fiyat",
         "kampanya",
     }
+
+
+def _strip_category_noise(value: str) -> str:
+    if not value:
+        return value
+
+    tokens = tokenize(value, fold_diacritics=False)
+    if not tokens:
+        return ""
+
+    cleaned_tokens: list[str] = []
+    for token in tokens:
+        if _is_modelish_token(token) and cleaned_tokens:
+            continue
+        cleaned_tokens.append(token)
+
+    while len(cleaned_tokens) > 1 and _is_trailing_noise_token(cleaned_tokens[-1]):
+        cleaned_tokens.pop()
+
+    return " ".join(cleaned_tokens).strip()
+
+
+def _is_modelish_token(token: str) -> bool:
+    normalized = normalize_for_matching(token)
+    if normalized.isdigit():
+        return True
+    if re.fullmatch(r"[a-z]*\d+[a-z\d-]*", normalized):
+        return True
+    return False
+
+
+def _is_trailing_noise_token(token: str) -> bool:
+    normalized = normalize_for_matching(token)
+    if normalized.isdigit():
+        return True
+    if normalized in {"lt", "l", "w", "cm", "mm", "kg", "gr", "ml"}:
+        return True
+    return False
 
 
 def _matches_anchor(variant: str, anchor_terms: Iterable[str]) -> bool:
