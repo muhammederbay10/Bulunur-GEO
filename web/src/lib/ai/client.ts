@@ -90,7 +90,7 @@ async function postToAiService(params: {
     if (!response.ok) {
       throw new AiServiceError({
         code: "ai_service_request_failed",
-        message: "AI servisi analiz istegini kabul etmedi.",
+        message: "AI servisi istegi kabul etmedi.",
         status: response.status,
       });
     }
@@ -104,7 +104,7 @@ async function postToAiService(params: {
     if (error instanceof Error && error.name === "AbortError") {
       throw new AiServiceError({
         code: "ai_service_timeout",
-        message: "AI analizi zaman asimina ugradi. Birazdan tekrar deneyin.",
+        message: "AI istegi zaman asimina ugradi. Birazdan tekrar deneyin.",
         status: 504,
       });
     }
@@ -141,12 +141,21 @@ export async function analyzeProduct(
 }
 
 export async function improveProduct(
-  productInput: ProductInput,
+  params: {
+    productInput: ProductInput;
+    analysis: GeoAnalysisOutput;
+    userFacts?: Record<string, unknown>;
+  },
 ): Promise<GeoImprovementOutput> {
-  const parsedInput = productInputSchema.parse(productInput);
+  const parsedInput = productInputSchema.parse(params.productInput);
+  const parsedAnalysis = geoAnalysisOutputSchema.parse(params.analysis);
   const payload = await postToAiService({
     path: "/ai/improve-product",
-    body: parsedInput,
+    body: {
+      product_input: parsedInput,
+      analysis: parsedAnalysis,
+      user_facts: params.userFacts ?? null,
+    },
   });
   const parsedOutput = geoImprovementOutputSchema.safeParse(payload);
 

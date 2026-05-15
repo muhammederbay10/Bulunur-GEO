@@ -1,4 +1,9 @@
-import type { GeoAnalysisOutput, ProductInput } from "@/types/ai-contract";
+import type {
+  GeoAnalysisOutput,
+  GeoImprovementOutput,
+  ProductInput,
+  UserFactQuestion,
+} from "@/types/ai-contract";
 import type { ProductSource, ProductWorkflowStatus } from "@/types/product";
 
 export type ProductAnalysisStatus = "queued" | "running" | "succeeded" | "failed";
@@ -64,6 +69,47 @@ export type AnalyzeProductApiResponse =
       productId: string;
       analysisId: string;
       analysis: GeoAnalysisOutput;
+    }
+  | {
+      ok: false;
+      error: string;
+      message: string;
+    };
+
+export type OptimizationResultStatus =
+  | "draft"
+  | "needs_user_input"
+  | "ready_for_review"
+  | "approved"
+  | "exported"
+  | "published"
+  | "failed";
+
+export type OptimizationResultRecord = {
+  id: string;
+  analysisId: string;
+  status: OptimizationResultStatus;
+  selectedStrategies: Array<{ name: string; reason: string }>;
+  needsUserInput: UserFactQuestion[];
+  userConfirmedFacts: Record<string, unknown>;
+  generated: Record<string, unknown>;
+  validation: Record<string, unknown>;
+  scoreEstimate: Record<string, unknown>;
+  beforeAfter: Record<string, unknown>;
+  rawOutput?: GeoImprovementOutput;
+  errorCode?: string;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ImproveProductApiResponse =
+  | {
+      ok: true;
+      productId: string;
+      optimizationResultId: string;
+      status: OptimizationResultStatus;
+      improvement: GeoImprovementOutput;
     }
   | {
       ok: false;

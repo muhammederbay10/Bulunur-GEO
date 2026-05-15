@@ -2,16 +2,27 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRightLeft,
   CheckCircle2,
   ExternalLink,
   Gauge,
   Package,
+  ShieldAlert,
+  WandSparkles,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnalyzeProductButton } from "@/features/analysis/components/analyze-product-button";
-import type { ProductAnalysisDetail, ProductAnalysisRecord } from "@/types/analysis";
+import {
+  ImproveProductButton,
+  MissingFactsForm,
+} from "@/features/optimization/components/improve-product-controls";
+import type {
+  OptimizationResultRecord,
+  ProductAnalysisDetail,
+  ProductAnalysisRecord,
+} from "@/types/analysis";
 
 const sourceLabels = {
   shopify: "Shopify",
@@ -215,14 +226,231 @@ function AnalysisList({
   );
 }
 
-export function ProductAnalysisPage({
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asText(value: unknown) {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  return null;
+}
+
+function OptimizationPanel({
   product,
   analysis,
-  errorMessage,
+  optimization,
 }: {
   product: ProductAnalysisDetail;
   analysis: ProductAnalysisRecord | null;
+  optimization: OptimizationResultRecord | null;
+}) {
+  const canOptimize = analysis?.status === "succeeded" && Boolean(analysis.rawOutput);
+
+  if (optimization?.status === "needs_user_input") {
+    return (
+      <section className="seller-surface p-5">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">Eksik bilgi gerekiyor</h2>
+        </div>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          AI bu urunu guvenli sekilde iyilestirmeden once bazi bilgileri
+          dogrulamak istiyor. Bilmediginiz alanlari bos birakabilirsiniz.
+        </p>
+        <div className="mt-5">
+          <MissingFactsForm
+            productId={product.id}
+            questions={optimization.needsUserInput}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="seller-surface p-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-medium text-primary">AI optimizasyonu</p>
+          <h2 className="mt-2 text-xl font-semibold">
+            Analizden guvenli iyilestirme taslagi olustur
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Cikti taslak olarak kaydedilir. Onay ve yayinlama sonraki fazda
+            ayrica yapilir; urun otomatik degismez.
+          </p>
+        </div>
+        <ImproveProductButton
+          productId={product.id}
+          disabled={!canOptimize || product.workflowStatus === "optimization_running"}
+        />
+      </div>
+    </section>
+  );
+}
+
+function StrategyRail({
+  optimization,
+}: {
+  optimization: OptimizationResultRecord | null;
+}) {
+  if (!optimization || optimization.selectedStrategies.length === 0) return null;
+
+  return (
+    <section className="seller-surface p-5">
+      <div className="flex items-center gap-2">
+        <WandSparkles className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold">Secilen stratejiler</h2>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {optimization.selectedStrategies.map((strategy) => (
+          <div
+            key={`${strategy.name}-${strategy.reason}`}
+            className="rounded-md border border-border bg-background p-4"
+          >
+            <p className="text-sm font-medium">{strategy.name}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {strategy.reason}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BeforeAfterPanel({
+  optimization,
+}: {
+  optimization: OptimizationResultRecord | null;
+}) {
+  if (!optimization || optimization.status !== "ready_for_review") {
+    return null;
+  }
+
+  const beforeAfterEntries = Object.entries(optimization.beforeAfter).flatMap(
+    ([field, value]) => (isRecord(value) ? [{ field, value }] : []),
+  );
+  const validationWarnings = Array.isArray(optimization.validation.warnings)
+    ? optimization.validation.warnings.filter(
+        (item): item is string => typeof item === "string",
+      )
+    : [];
+  const beforeScore = asText(optimization.scoreEstimate.before);
+  const afterScore = asText(optimization.scoreEstimate.after);
+
+  return (
+    <section className="ai-engine-panel p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-primary">
+            Kayitli optimizasyon sonucu
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold">
+            Once/sonra taslagi hazir
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
+            Bu sonuc kaydedildi ama henuz yayinlanmadi. Alan bazli onay,
+            kopyalama ve publish akislari sonraki fazda eklenecek.
+          </p>
+        </div>
+        {beforeScore && afterScore ? (
+          <Badge variant="secondary">
+            Skor tahmini: {beforeScore} {"->"} {afterScore}
+          </Badge>
+        ) : null}
+      </div>
+
+      {validationWarnings.length > 0 ? (
+        <div className="mt-5 rounded-md border border-primary/40 bg-primary/10 p-4">
+          <p className="text-sm font-medium">Dogrulama uyarilari</p>
+          <ul className="mt-2 grid gap-1 text-sm text-[#f8f7f5]">
+            {validationWarnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <div className="mt-6 grid gap-4">
+        {beforeAfterEntries.map(({ field, value }) => (
+          <div
+            key={field}
+            className="grid gap-3 rounded-md border border-[#4b3828] bg-[#24180f] p-4 lg:grid-cols-2"
+          >
+            <div>
+              <p className="text-xs uppercase text-[#d8d1c8]">{field} once</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+                {asText(value.before) ?? "Bos"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-primary">{field} sonra</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+                {asText(value.after) ?? "Bos"}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GeneratedContentPanel({
+  optimization,
+}: {
+  optimization: OptimizationResultRecord | null;
+}) {
+  if (!optimization || optimization.status !== "ready_for_review") {
+    return null;
+  }
+
+  const generatedEntries = Object.entries(optimization.generated).filter(
+    ([, value]) => asText(value) || Array.isArray(value) || isRecord(value),
+  );
+
+  if (generatedEntries.length === 0) return null;
+
+  return (
+    <section className="seller-surface p-5">
+      <div className="flex items-center gap-2">
+        <ArrowRightLeft className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold">Uretilen taslak alanlar</h2>
+      </div>
+      <div className="mt-4 grid gap-3">
+        {generatedEntries.map(([field, value]) => (
+          <div
+            key={field}
+            className="rounded-md border border-border bg-background p-4"
+          >
+            <p className="text-sm font-medium">{field}</p>
+            <pre className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
+              {asText(value) ?? JSON.stringify(value, null, 2)}
+            </pre>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function ProductAnalysisPage({
+  product,
+  analysis,
+  optimization,
+  errorMessage,
+  optimizationErrorMessage,
+}: {
+  product: ProductAnalysisDetail;
+  analysis: ProductAnalysisRecord | null;
+  optimization: OptimizationResultRecord | null;
   errorMessage?: string;
+  optimizationErrorMessage?: string;
 }) {
   const latestOutput = analysis?.rawOutput;
 
@@ -241,6 +469,11 @@ export function ProductAnalysisPage({
       {errorMessage ? (
         <section className="rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm">
           {errorMessage}
+        </section>
+      ) : null}
+      {optimizationErrorMessage ? (
+        <section className="rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm">
+          {optimizationErrorMessage}
         </section>
       ) : null}
 
@@ -295,6 +528,11 @@ export function ProductAnalysisPage({
               />
             </div>
           </section>
+          <OptimizationPanel
+            product={product}
+            analysis={analysis}
+            optimization={optimization}
+          />
         </div>
       </section>
 
@@ -334,6 +572,10 @@ export function ProductAnalysisPage({
           </p>
         )}
       </section>
+
+      <StrategyRail optimization={optimization} />
+      <BeforeAfterPanel optimization={optimization} />
+      <GeneratedContentPanel optimization={optimization} />
     </div>
   );
 }
