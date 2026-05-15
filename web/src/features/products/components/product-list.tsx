@@ -21,6 +21,16 @@ const workflowLabels = {
   failed: "Hata var",
 };
 
+const workflowActionLabels = {
+  not_analyzed: "Analiz Et",
+  analysis_running: "Analizi Gor",
+  analyzed: "Analizi Gor",
+  optimization_running: "Sonucu Gor",
+  optimized: "Sonucu Gor",
+  published: "Sonucu Gor",
+  failed: "Detay",
+};
+
 const availabilityLabels: Record<string, string> = {
   source_disconnected: "Bagli kaynak yok",
   in_stock: "Stokta",
@@ -64,12 +74,11 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
             <Package className="h-6 w-6" />
           </div>
           <h2 className="mt-5 text-2xl font-semibold">
-            Henuz urun iceri alinmadi
+            Bu filtrede urun bulunmuyor
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Shopify baglantisini tamamladiktan sonra urunler otomatik olarak
-            burada listelenir. Baglanti kurulduysa kaynak ekranindan tekrar
-            senkronize edebilirsiniz.
+            Kaynaklar ekranindan Shopify senkronizasyonu yapabilir, web sitesi
+            URLi taratabilir ya da dosya/manual urun aktarimi kullanabilirsiniz.
           </p>
           <Button asChild className="mt-6 gap-2">
             <Link href="/sources">
@@ -138,7 +147,7 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
 
             <Button asChild variant="outline" size="sm" className="gap-2">
               <Link href={`/products/${product.id}`}>
-                Detay
+                {workflowActionLabels[product.workflowStatus]}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>

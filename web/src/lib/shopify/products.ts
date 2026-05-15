@@ -1,7 +1,11 @@
 import "server-only";
 
 import { shopifyAdminGraphqlRequest } from "@/lib/shopify/client";
-import type { ShopifyProduct } from "@/types/shopify";
+import type {
+  ShopifyProduct,
+  ShopifyProductUpdateInput,
+  ShopifyProductUpdateResult,
+} from "@/types/shopify";
 
 const SHOPIFY_PRODUCTS_PAGE_SIZE = 50;
 const SHOPIFY_PRODUCTS_MAX_PAGES = 2;
@@ -44,6 +48,31 @@ const SHOPIFY_PRODUCTS_QUERY = `
   }
 `;
 
+const UPDATE_PRODUCT_MUTATION = `
+  mutation UpdateProduct($product: ProductUpdateInput!) {
+    productUpdate(product: $product) {
+      product {
+        id
+        title
+        descriptionHtml
+        handle
+        status
+        vendor
+        productType
+        tags
+        seo {
+          title
+          description
+        }
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
 type ShopifyProductsQueryResponse = {
   products: {
     nodes: ShopifyProduct[];
@@ -52,6 +81,10 @@ type ShopifyProductsQueryResponse = {
       endCursor: string | null;
     };
   };
+};
+
+type ShopifyProductUpdateGraphQLResponse = {
+  productUpdate?: ShopifyProductUpdateResult;
 };
 
 export type FetchShopifyProductsResult = {
@@ -97,4 +130,30 @@ export async function fetchShopifyProducts({
     hasNextPage,
     lastCursor: cursor,
   };
+}
+
+export async function updateShopifyProduct({
+  shop,
+  accessToken,
+  product,
+}: {
+  shop: string;
+  accessToken: string;
+  product: ShopifyProductUpdateInput;
+}): Promise<ShopifyProductUpdateResult> {
+  const data =
+    await shopifyAdminGraphqlRequest<ShopifyProductUpdateGraphQLResponse>({
+      shop,
+      accessToken,
+      query: UPDATE_PRODUCT_MUTATION,
+      variables: {
+        product,
+      },
+    });
+
+  if (!data.productUpdate) {
+    throw new Error("Shopify product update result missing.");
+  }
+
+  return data.productUpdate;
 }

@@ -58,6 +58,38 @@ export type ShopifyPublishableField =
   | "seo.title"
   | "seo.description";
 
+export type ShopifyProductUpdateInput = {
+  id: string;
+  title?: string;
+  descriptionHtml?: string;
+  tags?: string[];
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+  };
+};
+
+export type ShopifyProductUpdateResult = {
+  product: {
+    id: string;
+    title: string;
+    descriptionHtml: string | null;
+    handle: string;
+    status: string | null;
+    vendor: string | null;
+    productType: string | null;
+    tags: string[];
+    seo: {
+      title: string | null;
+      description: string | null;
+    } | null;
+  } | null;
+  userErrors: Array<{
+    field: string[] | null;
+    message: string;
+  }>;
+};
+
 export type ShopifyConnectionSummary = {
   id: string;
   profileId: string;

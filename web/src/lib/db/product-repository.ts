@@ -4,8 +4,18 @@ import type { ScrapePreviewRow } from "@/lib/db/scrape-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ShopifyProductUpsert } from "@/lib/shopify/product-mapper";
+import { productInputSchema } from "@/lib/validation/ai-contract";
+import type { ProductAnalysisContext, ProductAnalysisDetail } from "@/types/analysis";
 import type { NativeFallbackImportItem } from "@/types/native-url-import";
-import type { ProductSummary } from "@/types/product";
+import type {
+  CatalogDashboardSummary,
+  ProductListFilters,
+  ProductListSourceFilter,
+  ProductListStatusFilter,
+  ProductSourceSummary,
+  ProductSource,
+  ProductSummary,
+} from "@/types/product";
 
 type ProductRow = {
   id: string;
@@ -22,15 +32,69 @@ type ProductRow = {
   updated_at: string;
 };
 
+type ProductAnalysisRow = {
+  id: string;
+  external_id: string | null;
+  external_handle: string | null;
+  store_id: string;
+  source: ProductSource;
+  url: string | null;
+  language: string | null;
+  market: string | null;
+  title: string;
+  description: string | null;
+  description_html: string | null;
+  short_description: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  tags: string[] | null;
+  vendor: string | null;
+  product_type: string | null;
+  price_display: string | null;
+  currency: string | null;
+  availability: string | null;
+  brand: string | null;
+  category: string | null;
+  image_urls: string[] | null;
+  attributes: Record<string, unknown> | null;
+  raw_source_payload: Record<string, unknown> | null;
+  raw_extracted: Record<string, unknown> | null;
+  crawl_metadata: Record<string, unknown> | null;
+  workflow_status: ProductSummary["workflowStatus"];
+  latest_score: number | null;
+  last_analyzed_at: string | null;
+  updated_at: string;
+};
+
 type ProductRepositoryResult<T> =
   | { ok: true; data: T }
   | { ok: false; message: string; code?: string; isMissingTable?: boolean };
 
+type SourceSummaryRow = {
+  id: string;
+  name: string;
+  source_type: ProductSourceSummary["sourceType"];
+  status: string;
+  last_sync_at: string | null;
+  updated_at: string;
+};
+
 const productSummarySelect =
   "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,updated_at";
+const productAnalysisSelect =
+  "id,external_id,external_handle,store_id,source,url,language,market,title,description,description_html,short_description,seo_title,seo_description,tags,vendor,product_type,price_display,currency,availability,brand,category,image_urls,attributes,raw_source_payload,raw_extracted,crawl_metadata,workflow_status,latest_score,last_analyzed_at,updated_at";
 
+const sourceSummarySelect =
+  "id,name,source_type,status,last_sync_at,updated_at";
 const shopifyProductSyncSelect = "id,external_id";
 const nativeProductImportSelect = "id,url";
+const defaultCatalogMetrics = {
+  totalProducts: 0,
+  analyzedProducts: 0,
+  optimizedProducts: 0,
+  waitingProducts: 0,
+  lowScoreProducts: 0,
+};
 
 function productStorageSetupMessage() {
   return "Urun tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
@@ -58,6 +122,120 @@ function mapProductSummary(row: ProductRow): ProductSummary {
   };
 }
 
+function mapSourceSummary(row: SourceSummaryRow): ProductSourceSummary {
+  return {
+    id: row.id,
+    name: row.name,
+    sourceType: row.source_type,
+    status: row.status,
+    lastSyncAt: row.last_sync_at ?? undefined,
+    updatedAt: row.updated_at,
+  };
+}
+
+function normalizeStatusFilter(
+  value?: ProductListStatusFilter,
+): ProductListStatusFilter {
+  if (
+    value === "waiting" ||
+    value === "analyzed" ||
+    value === "optimized" ||
+    value === "low_score"
+  ) {
+    return value;
+  }
+
+  return "all";
+}
+
+function normalizeSourceFilter(
+  value?: ProductListSourceFilter,
+): ProductListSourceFilter {
+  if (value === "shopify" || value === "native" || value === "woocommerce") {
+    return value;
+  }
+
+  return "all";
+}
+
+function normalizedProductFilters(filters?: ProductListFilters) {
+  return {
+    source: normalizeSourceFilter(filters?.source),
+    status: normalizeStatusFilter(filters?.status),
+  };
+}
+
+function statusFilterValues(status: ProductListStatusFilter) {
+  if (status === "analyzed") {
+    return ["analyzed", "optimization_running"];
+  }
+
+  if (status === "optimized") {
+    return ["optimized", "published"];
+  }
+
+  return [];
+}
+
+async function countProductsForProfile(
+  supabase: ReturnType<typeof createAdminClient>,
+  profileId: string,
+  filters?: ProductListFilters,
+): Promise<ProductRepositoryResult<number>> {
+  const { source, status } = normalizedProductFilters(filters);
+  let query = supabase
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profileId);
+
+  if (source !== "all") {
+    query = query.eq("source", source);
+  }
+
+  if (status === "waiting") {
+    query = query.eq("workflow_status", "not_analyzed");
+  } else if (status === "analyzed" || status === "optimized") {
+    query = query.in("workflow_status", statusFilterValues(status));
+  } else if (status === "low_score") {
+    query = query.not("latest_score", "is", null).lt("latest_score", 60);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    const isMissingTable = isMissingProductTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Katalog ozeti okunamadi.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  return { ok: true, data: count ?? 0 };
+}
+
+function latestTimestamp(values: Array<string | undefined>) {
+  let latest: string | undefined;
+  let latestTime = 0;
+
+  for (const value of values) {
+    if (!value) continue;
+
+    const time = new Date(value).getTime();
+
+    if (Number.isFinite(time) && time > latestTime) {
+      latest = value;
+      latestTime = time;
+    }
+  }
+
+  return latest;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -81,6 +259,136 @@ function asStringArray(value: unknown): string[] {
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function asOptionalUrl(value: unknown): string | undefined {
+  const stringValue = asString(value);
+
+  if (!stringValue) return undefined;
+
+  try {
+    return new URL(stringValue).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetail {
+  return {
+    id: row.id,
+    externalId: row.external_id ?? undefined,
+    storeId: row.store_id,
+    source: row.source,
+    title: row.title,
+    url: row.url ?? undefined,
+    language: row.language ?? "tr",
+    market: row.market ?? "TR",
+    description: row.description ?? undefined,
+    descriptionHtml: row.description_html ?? undefined,
+    shortDescription: row.short_description ?? undefined,
+    seoTitle: row.seo_title ?? undefined,
+    seoDescription: row.seo_description ?? undefined,
+    priceDisplay: row.price_display ?? undefined,
+    currency: row.currency ?? undefined,
+    availability: row.availability ?? undefined,
+    brand: row.brand ?? undefined,
+    category: row.category ?? undefined,
+    imageUrls: row.image_urls ?? [],
+    tags: row.tags ?? [],
+    vendor: row.vendor ?? undefined,
+    productType: row.product_type ?? undefined,
+    workflowStatus: row.workflow_status,
+    latestScore: row.latest_score ?? undefined,
+    lastAnalyzedAt: row.last_analyzed_at ?? undefined,
+    updatedAt: row.updated_at,
+  };
+}
+
+function buildProductInput(row: ProductAnalysisRow) {
+  const attributes = asRecord(row.attributes);
+  const rawSourcePayload = asRecord(row.raw_source_payload);
+  const rawExtracted = asRecord(row.raw_extracted);
+  const crawlMetadata = asRecord(row.crawl_metadata);
+  const detectedSchema =
+    rawExtracted.detectedSchema ?? rawExtracted.detected_schema ?? [];
+  const pageTitle =
+    rawExtracted.pageTitle ?? rawExtracted.page_title ?? row.seo_title;
+  const metaDescription =
+    rawExtracted.metaDescription ??
+    rawExtracted.meta_description ??
+    row.seo_description;
+  const canonicalUrl =
+    asOptionalUrl(crawlMetadata.canonicalUrl) ??
+    asOptionalUrl(crawlMetadata.canonical_url) ??
+    asOptionalUrl(row.url);
+  const enrichedAttributes = {
+    ...attributes,
+    externalId: row.external_id,
+    externalHandle: row.external_handle,
+    vendor: row.vendor,
+    productType: row.product_type,
+    seoTitle: row.seo_title,
+    seoDescription: row.seo_description,
+    tags: row.tags ?? [],
+  };
+  const rawExtractedPayload = {
+    ...rawExtracted,
+    pageTitle,
+    metaDescription,
+    detectedSchema,
+    rawSourcePayload,
+  };
+  const crawlMetadataPayload = {
+    crawlStatus: asString(crawlMetadata.crawlStatus) ?? "unknown",
+    httpStatusCode: asNumber(crawlMetadata.httpStatusCode) ?? undefined,
+    accessible:
+      typeof crawlMetadata.accessible === "boolean"
+        ? crawlMetadata.accessible
+        : undefined,
+    blocked:
+      typeof crawlMetadata.blocked === "boolean"
+        ? crawlMetadata.blocked
+        : undefined,
+    contentExtracted:
+      typeof crawlMetadata.contentExtracted === "boolean"
+        ? crawlMetadata.contentExtracted
+        : undefined,
+    canonicalUrl,
+    robotsAllowed:
+      typeof crawlMetadata.robotsAllowed === "boolean"
+        ? crawlMetadata.robotsAllowed
+        : undefined,
+    imagesAccessible:
+      typeof crawlMetadata.imagesAccessible === "boolean"
+        ? crawlMetadata.imagesAccessible
+        : undefined,
+    crawledAt: asString(crawlMetadata.crawledAt) ?? undefined,
+  };
+
+  return productInputSchema.parse({
+    productId: row.id,
+    storeId: row.store_id,
+    source: row.source,
+    url: asOptionalUrl(row.url),
+    language: row.language ?? "tr",
+    market: row.market ?? "TR",
+    title: row.title,
+    description: row.description ?? row.description_html ?? undefined,
+    shortDescription: row.short_description ?? undefined,
+    price: row.price_display ?? undefined,
+    currency: row.currency ?? undefined,
+    availability: row.availability ?? undefined,
+    brand: row.brand ?? row.vendor ?? undefined,
+    category: row.category ?? row.product_type ?? undefined,
+    imageUrls: (row.image_urls ?? []).map(asOptionalUrl).filter(Boolean),
+    attributes: enrichedAttributes,
+    rawExtracted: rawExtractedPayload,
+    crawlMetadata: crawlMetadataPayload,
+  });
 }
 
 function getNormalizedPayload(row: ScrapePreviewRow): Record<string, unknown> {
@@ -231,20 +539,111 @@ function buildNativeFallbackProductPayload(params: {
   };
 }
 
-export async function listProductsForCurrentUser(): Promise<ProductSummary[]> {
+export async function listProductsForCurrentUser(
+  filters?: ProductListFilters,
+): Promise<ProductSummary[]> {
   const user = await getCurrentUser();
 
   if (!user) {
     return [];
   }
 
-  const result = await listProductsForProfile(user.id);
+  const result = await listProductsForProfile(user.id, filters);
 
   if (!result.ok) {
     return [];
   }
 
   return result.data;
+}
+
+export async function getCatalogDashboardForCurrentUser(): Promise<CatalogDashboardSummary> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      metrics: defaultCatalogMetrics,
+      recentProducts: [],
+      attentionProducts: [],
+      sources: [],
+    };
+  }
+
+  const result = await getCatalogDashboardForProfile(user.id);
+
+  if (!result.ok) {
+    return {
+      metrics: defaultCatalogMetrics,
+      recentProducts: [],
+      attentionProducts: [],
+      sources: [],
+      errorMessage: result.message,
+      isMissingTable: result.isMissingTable,
+    };
+  }
+
+  return result.data;
+}
+
+export async function getProductAnalysisContextForCurrentUser(
+  productId: string,
+): Promise<ProductRepositoryResult<ProductAnalysisContext>> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      ok: false,
+      message: "Oturum gerekli.",
+      code: "unauthorized",
+    };
+  }
+
+  return getProductAnalysisContextForProfile({
+    profileId: user.id,
+    productId,
+  });
+}
+
+export async function getProductAnalysisContextForProfile(params: {
+  profileId: string;
+  productId: string;
+}): Promise<ProductRepositoryResult<ProductAnalysisContext>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(productAnalysisSelect)
+    .eq("id", params.productId)
+    .eq("profile_id", params.profileId)
+    .maybeSingle<ProductAnalysisRow>();
+
+  if (error) {
+    const isMissingTable = isMissingProductTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Urun analiz verisi okunamadi.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  if (!data) {
+    return {
+      ok: false,
+      message: "Urun bulunamadi veya bu hesaba ait degil.",
+      code: "product_not_found",
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      product: mapProductAnalysisDetail(data),
+      productInput: buildProductInput(data),
+    },
+  };
 }
 
 export async function upsertShopifyProducts(
@@ -611,12 +1010,28 @@ export async function upsertNativeProductsFromFallbackItems(params: {
 
 export async function listProductsForProfile(
   profileId: string,
+  filters?: ProductListFilters,
 ): Promise<ProductRepositoryResult<ProductSummary[]>> {
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+  const { source, status } = normalizedProductFilters(filters);
+  let query = supabase
     .from("products")
     .select(productSummarySelect)
-    .eq("profile_id", profileId)
+    .eq("profile_id", profileId);
+
+  if (source !== "all") {
+    query = query.eq("source", source);
+  }
+
+  if (status === "waiting") {
+    query = query.eq("workflow_status", "not_analyzed");
+  } else if (status === "analyzed" || status === "optimized") {
+    query = query.in("workflow_status", statusFilterValues(status));
+  } else if (status === "low_score") {
+    query = query.not("latest_score", "is", null).lt("latest_score", 60);
+  }
+
+  const { data, error } = await query
     .order("updated_at", { ascending: false })
     .limit(100)
     .returns<ProductRow[]>();
@@ -637,6 +1052,126 @@ export async function listProductsForProfile(
   return {
     ok: true,
     data: (data ?? []).map(mapProductSummary),
+  };
+}
+
+export async function getCatalogDashboardForProfile(
+  profileId: string,
+): Promise<ProductRepositoryResult<CatalogDashboardSummary>> {
+  const supabase = createAdminClient();
+  const [
+    totalProducts,
+    analyzedProducts,
+    optimizedProducts,
+    waitingProducts,
+    lowScoreProducts,
+    recentProductsResult,
+    attentionProductsResult,
+    sourcesResult,
+  ] = await Promise.all([
+    countProductsForProfile(supabase, profileId),
+    countProductsForProfile(supabase, profileId, { status: "analyzed" }),
+    countProductsForProfile(supabase, profileId, { status: "optimized" }),
+    countProductsForProfile(supabase, profileId, { status: "waiting" }),
+    countProductsForProfile(supabase, profileId, { status: "low_score" }),
+    supabase
+      .from("products")
+      .select(productSummarySelect)
+      .eq("profile_id", profileId)
+      .order("updated_at", { ascending: false })
+      .limit(5)
+      .returns<ProductRow[]>(),
+    supabase
+      .from("products")
+      .select(productSummarySelect)
+      .eq("profile_id", profileId)
+      .eq("workflow_status", "not_analyzed")
+      .order("updated_at", { ascending: false })
+      .limit(5)
+      .returns<ProductRow[]>(),
+    supabase
+      .from("stores")
+      .select(sourceSummarySelect)
+      .eq("profile_id", profileId)
+      .order("updated_at", { ascending: false })
+      .limit(6)
+      .returns<SourceSummaryRow[]>(),
+  ]);
+
+  const countResults = [
+    totalProducts,
+    analyzedProducts,
+    optimizedProducts,
+    waitingProducts,
+    lowScoreProducts,
+  ];
+  const failedCount = countResults.find((result) => !result.ok);
+
+  if (failedCount && !failedCount.ok) {
+    return failedCount;
+  }
+
+  if (recentProductsResult.error) {
+    const isMissingTable = isMissingProductTable(recentProductsResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Son urunler okunamadi.",
+      code: recentProductsResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  if (attentionProductsResult.error) {
+    const isMissingTable = isMissingProductTable(attentionProductsResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Dikkat isteyen urunler okunamadi.",
+      code: attentionProductsResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  if (sourcesResult.error) {
+    const isMissingTable = isMissingProductTable(sourcesResult.error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Kaynak ozeti okunamadi.",
+      code: sourcesResult.error.code,
+      isMissingTable,
+    };
+  }
+
+  const sources = (sourcesResult.data ?? []).map(mapSourceSummary);
+  const recentProducts = (recentProductsResult.data ?? []).map(mapProductSummary);
+  const attentionProducts = (attentionProductsResult.data ?? []).map(mapProductSummary);
+
+  return {
+    ok: true,
+    data: {
+      metrics: {
+        totalProducts: totalProducts.ok ? totalProducts.data : 0,
+        analyzedProducts: analyzedProducts.ok ? analyzedProducts.data : 0,
+        optimizedProducts: optimizedProducts.ok ? optimizedProducts.data : 0,
+        waitingProducts: waitingProducts.ok ? waitingProducts.data : 0,
+        lowScoreProducts: lowScoreProducts.ok ? lowScoreProducts.data : 0,
+      },
+      recentProducts,
+      attentionProducts,
+      sources,
+      lastCatalogActivityAt: latestTimestamp([
+        recentProducts[0]?.updatedAt,
+        ...sources.map((source) => source.lastSyncAt ?? source.updatedAt),
+      ]),
+    },
   };
 }
 
