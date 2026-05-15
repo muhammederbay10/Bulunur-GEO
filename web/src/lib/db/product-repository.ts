@@ -280,6 +280,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetail {
   return {
     id: row.id,
+    externalId: row.external_id ?? undefined,
     storeId: row.store_id,
     source: row.source,
     title: row.title,

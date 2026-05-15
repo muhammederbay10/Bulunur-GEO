@@ -5,7 +5,9 @@ import type { GeoImprovementOutput } from "@/types/ai-contract";
 import type {
   OptimizationResultRecord,
   OptimizationResultStatus,
+  ReviewActionRecord,
 } from "@/types/analysis";
+import type { ShopifyPublishableField } from "@/types/shopify";
 
 type OptimizationRepositoryResult<T> =
   | { ok: true; data: T }
@@ -29,8 +31,16 @@ type OptimizationResultRow = {
   updated_at: string;
 };
 
+type ReviewActionRow = {
+  field_path: ShopifyPublishableField;
+  decision: "approved" | "rejected";
+  approved_value: unknown;
+  reason: string | null;
+};
+
 const optimizationSelect =
   "id,analysis_id,status,selected_strategies,needs_user_input,user_confirmed_facts,generated,validation,score_estimate,before_after,raw_output,error_code,error_message,created_at,updated_at";
+const reviewActionSelect = "field_path,decision,approved_value,reason";
 
 function optimizationStorageSetupMessage() {
   return "Optimizasyon tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
@@ -153,6 +163,38 @@ export async function getLatestOptimizationResult(params: {
   return {
     ok: true,
     data: data ? mapOptimizationRow(data) : null,
+  };
+}
+
+export async function getReviewActionsForOptimization(params: {
+  profileId: string;
+  optimizationResultId: string;
+}): Promise<OptimizationRepositoryResult<ReviewActionRecord[]>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("review_actions")
+    .select(reviewActionSelect)
+    .eq("profile_id", params.profileId)
+    .eq("optimization_result_id", params.optimizationResultId)
+    .returns<ReviewActionRow[]>();
+
+  if (error) {
+    return {
+      ok: false,
+      message: "Onay durumlari okunamadi.",
+      code: error.code,
+      status: 400,
+    };
+  }
+
+  return {
+    ok: true,
+    data: (data ?? []).map((row) => ({
+      fieldPath: row.field_path,
+      decision: row.decision,
+      approvedValue: row.approved_value,
+      reason: row.reason ?? undefined,
+    })),
   };
 }
 
@@ -345,4 +387,72 @@ export function normalizeUserFacts(
   }
 
   return normalized;
+}
+
+export async function saveReviewActions(params: {
+  profileId: string;
+  storeId: string;
+  productId: string;
+  optimizationResultId: string;
+  actions: ReviewActionRecord[];
+}): Promise<OptimizationRepositoryResult<{ savedCount: number }>> {
+  if (params.actions.length === 0) {
+    return {
+      ok: false,
+      message: "Yayinlamak icin en az bir alan onaylanmali.",
+      code: "no_approved_fields",
+      status: 400,
+    };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("review_actions").upsert(
+    params.actions.map((action) => ({
+      profile_id: params.profileId,
+      store_id: params.storeId,
+      product_id: params.productId,
+      optimization_result_id: params.optimizationResultId,
+      field_path: action.fieldPath,
+      decision: action.decision,
+      approved_value: action.approvedValue ?? null,
+      reason: action.reason ?? null,
+    })),
+    { onConflict: "optimization_result_id,field_path" },
+  );
+
+  if (error) {
+    return {
+      ok: false,
+      message: "Alan onaylari kaydedilemedi.",
+      code: error.code,
+      status: 500,
+    };
+  }
+
+  const hasApprovedFields = params.actions.some(
+    (action) => action.decision === "approved",
+  );
+  const { error: statusError } = await supabase
+    .from("optimization_results")
+    .update({ status: hasApprovedFields ? "approved" : "ready_for_review" })
+    .eq("id", params.optimizationResultId)
+    .eq("profile_id", params.profileId)
+    .eq("store_id", params.storeId)
+    .eq("product_id", params.productId);
+
+  if (statusError) {
+    return {
+      ok: false,
+      message: "Optimizasyon onay durumu guncellenemedi.",
+      code: statusError.code,
+      status: 500,
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      savedCount: params.actions.length,
+    },
+  };
 }

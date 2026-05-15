@@ -5,6 +5,7 @@ import type {
   UserFactQuestion,
 } from "@/types/ai-contract";
 import type { ProductSource, ProductWorkflowStatus } from "@/types/product";
+import type { ShopifyPublishableField } from "@/types/shopify";
 
 export type ProductAnalysisStatus = "queued" | "running" | "succeeded" | "failed";
 
@@ -32,6 +33,7 @@ export type ProductAnalysisRecord = {
 
 export type ProductAnalysisDetail = {
   id: string;
+  externalId?: string;
   storeId: string;
   source: ProductSource;
   title: string;
@@ -110,6 +112,28 @@ export type ImproveProductApiResponse =
       optimizationResultId: string;
       status: OptimizationResultStatus;
       improvement: GeoImprovementOutput;
+    }
+  | {
+      ok: false;
+      error: string;
+      message: string;
+    };
+
+export type ReviewDecision = "approved" | "rejected";
+
+export type ReviewActionRecord = {
+  fieldPath: ShopifyPublishableField;
+  decision: ReviewDecision;
+  approvedValue?: unknown;
+  reason?: string;
+};
+
+export type PublishProductApiResponse =
+  | {
+      ok: true;
+      productId: string;
+      publishJobId: string;
+      publishedFields: ShopifyPublishableField[];
     }
   | {
       ok: false;

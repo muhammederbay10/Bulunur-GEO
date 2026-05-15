@@ -18,6 +18,8 @@ import {
   ImproveProductButton,
   MissingFactsForm,
 } from "@/features/optimization/components/improve-product-controls";
+import { ShopifyPublishControls } from "@/features/publishing/components/shopify-publish-controls";
+import { getShopifyPublishableFieldCandidates } from "@/lib/publishing/fields";
 import type {
   OptimizationResultRecord,
   ProductAnalysisDetail,
@@ -354,8 +356,9 @@ function BeforeAfterPanel({
             Once/sonra taslagi hazir
           </h2>
           <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
-            Bu sonuc kaydedildi ama henuz yayinlanmadi. Alan bazli onay,
-            kopyalama ve publish akislari sonraki fazda eklenecek.
+            Bu sonuc kaydedildi. Shopify urunlerinde sadece sizin sectiginiz
+            guvenli alanlar kopyalanabilir, disari aktarilabilir veya
+            Shopify&apos;a yayinlanabilir.
           </p>
         </div>
         {beforeScore && afterScore ? (
@@ -396,6 +399,42 @@ function BeforeAfterPanel({
             </div>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function ShopifyReviewPublishPanel({
+  product,
+  optimization,
+}: {
+  product: ProductAnalysisDetail;
+  optimization: OptimizationResultRecord | null;
+}) {
+  if (
+    product.source !== "shopify" ||
+    !optimization ||
+    (optimization.status !== "ready_for_review" &&
+      optimization.status !== "approved" &&
+      optimization.status !== "published")
+  ) {
+    return null;
+  }
+
+  const fields = getShopifyPublishableFieldCandidates(optimization);
+
+  return (
+    <section className="seller-surface p-5">
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold">Onayla, aktar veya yayinla</h2>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        Bu bolum yalnizca Shopify urunlerinde gorunur. Urun otomatik
+        degismez; once alanlari secmeniz, sonra Shopify&apos;a yayinlamaniz gerekir.
+      </p>
+      <div className="mt-5">
+        <ShopifyPublishControls productId={product.id} fields={fields} />
       </div>
     </section>
   );
@@ -576,6 +615,10 @@ export function ProductAnalysisPage({
       <StrategyRail optimization={optimization} />
       <BeforeAfterPanel optimization={optimization} />
       <GeneratedContentPanel optimization={optimization} />
+      <ShopifyReviewPublishPanel
+        product={product}
+        optimization={optimization}
+      />
     </div>
   );
 }
