@@ -61,8 +61,8 @@ Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kul
       "question": "Bu ürün kimler için uygundur?",
       "answer": "Cevap yalnızca doğrulanmış ürün özellikleri ve kullanım bağlamına dayanır.",
       "sourceFacts": [
-        "Ürün tipi",
-        "Doğrulanmış kullanım amacı"
+        "görünür ürün tipi ifadesi",
+        "görünür kullanım amacı veya doğrulanmış attribute değeri"
       ]
     }
   ],
@@ -75,3 +75,16 @@ Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kul
   "recommendedNextAction": "Doğrulanmış ürün gerçeklerinden 3 ila 6 güvenli FAQ yayınla."
 }
 ```
+
+`sourceFacts` içine genel etiket değil, cevapta dayandığın somut doğrulanmış gerçek veya görünür ifade yaz.
+
+Yanlış örnek:
+
+- `Ürün tipi`
+- `Doğrulanmış kullanım amacı`
+
+Doğru örnek:
+
+- `Çelik Su Isıtıcı`
+- `Mutfak kullanımı`
+- `5 litre kapasite`
