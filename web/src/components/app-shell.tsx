@@ -1,21 +1,7 @@
 import Link from "next/link";
-import {
-  History,
-  LayoutDashboard,
-  Package,
-  Settings,
-  Store,
-} from "lucide-react";
 
 import { SidebarAccountCard } from "@/components/sidebar-account-card";
-
-const navItems = [
-  { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
-  { href: "/products", label: "Urunler", icon: Package },
-  { href: "/sources", label: "Kaynaklar", icon: Store },
-  { href: "/history", label: "Gecmis", icon: History },
-  { href: "/settings", label: "Ayarlar", icon: Settings },
-];
+import { SidebarNav } from "@/components/sidebar-nav";
 
 export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -36,18 +22,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
             </div>
           </Link>
 
-          <nav className="mt-8 grid gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-lg border border-transparent px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-border hover:bg-card hover:text-primary"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <SidebarNav />
 
           <div className="mt-auto pt-5">
             <SidebarAccountCard />
