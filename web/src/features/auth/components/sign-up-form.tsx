@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +15,8 @@ import {
   type NativeSourceFormState,
   type ShopifySourceFormState,
 } from "@/features/sources/actions";
-import { SourceChoiceSelector, type SourceChoice } from "@/features/sources/components/source-choice-selector";
+import { CompactSourceSetupForm } from "@/features/sources/components/compact-source-setup-form";
+import type { SourceChoice } from "@/features/sources/components/source-choice-selector";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +75,6 @@ export function SignUpForm({
     saveShopifySource,
     shopifyInitialState,
   );
-  const sourcePending = nativePending || shopifyPending;
 
   useEffect(() => {
     if (onboardingState.status === "success") {
@@ -305,78 +305,23 @@ export function SignUpForm({
         ) : null}
 
         {activeStep === 2 ? (
-          <div className="mx-auto grid w-full max-w-lg gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            {onboardingState.status === "success" ? (
-              <div className="rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Magaza bilgileri kaydedildi. Simdi urun kaynaginizi secin.
-                </div>
-              </div>
-            ) : null}
-
-            <SourceChoiceSelector
-              value={sourceChoice}
-              onChange={setSourceChoice}
-              disabled={sourcePending}
-            />
-
-            {sourceChoice === "shopify" ? (
-              <form action={shopifyAction} className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="shopDomain">Shopify alan adi</Label>
-                  <Input id="shopDomain" name="shopDomain" placeholder="magazam.myshopify.com" />
-                  <FieldError errors={shopifyState.fieldErrors?.shopDomain} />
-                </div>
-                {shopifyState.status === "error" && shopifyState.message ? (
-                  <p className="text-sm text-destructive">{shopifyState.message}</p>
-                ) : null}
-                <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
-                  <Button type="button" variant="outline" className="gap-2" onClick={() => setActiveStep(1)}>
-                    <ArrowLeft className="h-4 w-4" />
-                    Geri
-                  </Button>
-                  <Button type="submit" className="gap-2" disabled={sourcePending}>
-                    {shopifyPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Kaydet ve Shopify&apos;a baglan
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              <form action={nativeAction} className="grid gap-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="storeName">Kaynak adi</Label>
-                    <Input id="storeName" name="storeName" defaultValue={businessName} />
-                    <FieldError errors={nativeState.fieldErrors?.storeName} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="websiteUrl">Web sitesi URL</Label>
-                    <Input id="websiteUrl" name="websiteUrl" type="url" placeholder="https://magazam.com" />
-                    <FieldError errors={nativeState.fieldErrors?.websiteUrl} />
-                  </div>
-                </div>
-                {nativeState.status === "error" && nativeState.message ? (
-                  <p className="text-sm text-destructive">{nativeState.message}</p>
-                ) : null}
-                {nativeState.status === "success" ? (
-                  <p className="text-sm text-primary">{nativeState.message}</p>
-                ) : null}
-                <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:justify-between">
-                  <Button type="button" variant="outline" className="gap-2" onClick={() => setActiveStep(1)}>
-                    <ArrowLeft className="h-4 w-4" />
-                    Geri
-                  </Button>
-                  <Button type="submit" className="gap-2" disabled={sourcePending}>
-                    {nativePending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Web sitesi kaynagini kaydet
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </form>
-            )}
-          </div>
+          <CompactSourceSetupForm
+            businessName={businessName}
+            nativeAction={nativeAction}
+            nativePending={nativePending}
+            nativeState={nativeState}
+            onBack={() => setActiveStep(1)}
+            onSourceChoiceChange={setSourceChoice}
+            shopifyAction={shopifyAction}
+            shopifyPending={shopifyPending}
+            shopifyState={shopifyState}
+            sourceChoice={sourceChoice}
+            successNotice={
+              onboardingState.status === "success"
+                ? "Magaza bilgileri kaydedildi. Simdi urun kaynaginizi secin."
+                : undefined
+            }
+          />
         ) : null}
 
         <div className="mt-5 border-t border-border pt-4 text-center text-sm text-muted-foreground">

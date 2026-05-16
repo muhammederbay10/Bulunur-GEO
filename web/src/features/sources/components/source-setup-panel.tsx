@@ -145,13 +145,10 @@ export function SourceSetupPanel({
       ) : null}
 
       <section className="mx-auto grid w-full max-w-2xl gap-4">
-        <div className="seller-surface p-5 md:p-6">
-          <div className="mb-4">
+        <div className="grid gap-3">
+          <div>
             <p className="mono-label text-primary">Kaynak turu</p>
             <h2 className="mt-1 text-xl font-semibold">Baglanti yontemini secin</h2>
-            <p className="mt-1 text-sm leading-5 text-muted-foreground">
-              Seciminize gore ayni kurulum formu burada acilir.
-            </p>
           </div>
           <SourceChoiceSelector
             value={sourceChoice}
