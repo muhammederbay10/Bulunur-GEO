@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { AlertTriangle, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -15,6 +15,7 @@ import type { UserProfile } from "@/types/profile";
 import type { SourceStore } from "@/types/source";
 
 import { NativeSourceForm } from "./native-source-form";
+import { SourceChoiceSelector, type SourceChoice } from "./source-choice-selector";
 import { ShopifySourceForm } from "./shopify-source-form";
 import { SourceSetupHeader } from "./source-setup-header";
 import { SourceSetupSuccess } from "./source-setup-success";
@@ -46,6 +47,12 @@ export function SourceSetupPanel({
   shopifyNotice,
 }: SourceSetupPanelProps) {
   const router = useRouter();
+  const [sourceChoice, setSourceChoice] = useState<SourceChoice>(() =>
+    stores.some((store) => store.sourceType === "native") &&
+    !stores.some((store) => store.sourceType === "shopify")
+      ? "native"
+      : "shopify",
+  );
   const [nativeState, nativeAction, nativePending] = useActionState(
     saveNativeSource,
     nativeInitialState,
@@ -137,22 +144,40 @@ export function SourceSetupPanel({
         </div>
       ) : null}
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <ShopifySourceForm
-          action={shopifyAction}
-          disabled={formsDisabled}
-          pending={shopifyPending}
-          state={shopifyState}
-          store={shopifyStore}
-        />
-        <NativeSourceForm
-          action={nativeAction}
-          disabled={formsDisabled}
-          pending={nativePending}
-          profile={profile}
-          state={nativeState}
-          store={nativeStore}
-        />
+      <section className="mx-auto grid w-full max-w-2xl gap-4">
+        <div className="seller-surface p-5 md:p-6">
+          <div className="mb-4">
+            <p className="mono-label text-primary">Kaynak turu</p>
+            <h2 className="mt-1 text-xl font-semibold">Baglanti yontemini secin</h2>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              Seciminize gore ayni kurulum formu burada acilir.
+            </p>
+          </div>
+          <SourceChoiceSelector
+            value={sourceChoice}
+            onChange={setSourceChoice}
+            disabled={formsDisabled || nativePending || shopifyPending}
+          />
+        </div>
+
+        {sourceChoice === "shopify" ? (
+          <ShopifySourceForm
+            action={shopifyAction}
+            disabled={formsDisabled}
+            pending={shopifyPending}
+            state={shopifyState}
+            store={shopifyStore}
+          />
+        ) : (
+          <NativeSourceForm
+            action={nativeAction}
+            disabled={formsDisabled}
+            pending={nativePending}
+            profile={profile}
+            state={nativeState}
+            store={nativeStore}
+          />
+        )}
       </section>
 
       {setupMode ? (

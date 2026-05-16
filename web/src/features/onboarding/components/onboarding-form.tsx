@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, Loader2, Store } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Store } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   type NativeSourceFormState,
   type ShopifySourceFormState,
 } from "@/features/sources/actions";
+import { SourceChoiceSelector, type SourceChoice } from "@/features/sources/components/source-choice-selector";
 import type { UserProfile } from "@/types/profile";
 
 const onboardingInitialState: OnboardingFormState = { status: "idle" };
@@ -61,7 +62,7 @@ export function OnboardingForm({
   const [businessCategory, setBusinessCategory] = useState(
     profile?.businessCategory ?? "",
   );
-  const [sourceChoice, setSourceChoice] = useState<"shopify" | "native">("shopify");
+  const [sourceChoice, setSourceChoice] = useState<SourceChoice>("shopify");
   const [onboardingState, onboardingAction, onboardingPending] = useActionState(
     saveOnboardingProfile,
     onboardingInitialState,
@@ -214,38 +215,11 @@ export function OnboardingForm({
                 Magaza bilgileri kaydedildi. Simdi urun kaynaginizi secin.
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <button
-                type="button"
-                className={
-                  sourceChoice === "shopify"
-                    ? "rounded-xl border border-primary bg-primary/10 p-4 text-left"
-                    : "rounded-xl border border-border bg-muted/50 p-4 text-left transition hover:border-primary/50"
-                }
-                onClick={() => setSourceChoice("shopify")}
-              >
-                <Store className="h-8 w-8 text-primary" />
-                <h3 className="mt-3 text-base font-semibold">Shopify</h3>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  Shopify magazanizi baglayin ve urunleri senkronize edin.
-                </p>
-              </button>
-              <button
-                type="button"
-                className={
-                  sourceChoice === "native"
-                    ? "rounded-xl border border-primary bg-primary/10 p-4 text-left"
-                    : "rounded-xl border border-border bg-muted/50 p-4 text-left transition hover:border-primary/50"
-                }
-                onClick={() => setSourceChoice("native")}
-              >
-                <Globe2 className="h-8 w-8 text-primary" />
-                <h3 className="mt-3 text-base font-semibold">Native web sitesi</h3>
-                <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  Kendi web siteniz icin URL veya dosya aktarim kaynagi olusturun.
-                </p>
-              </button>
-            </div>
+            <SourceChoiceSelector
+              value={sourceChoice}
+              onChange={setSourceChoice}
+              disabled={sourcePending}
+            />
 
             {sourceChoice === "shopify" ? (
               <form action={shopifyAction} className="grid gap-4">

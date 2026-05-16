@@ -29,17 +29,17 @@ export function NativeSourceForm({
   return (
     <form
       action={action}
-      className="seller-surface group relative overflow-hidden p-8 text-center transition hover:border-primary/60 hover:shadow-primary-soft focus-within:border-primary/60"
+      className="seller-surface group relative overflow-hidden p-5 transition hover:border-primary/60 hover:shadow-primary-soft focus-within:border-primary/60 md:p-6"
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/80 to-transparent opacity-0 transition group-hover:opacity-100" />
       <fieldset className="flex flex-col gap-5" disabled={disabled || pending}>
-        <div className="relative flex flex-col items-center gap-5">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-primary transition group-hover:scale-105">
-            <Globe2 className="h-10 w-10" />
+        <div className="relative flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-primary transition group-hover:scale-105">
+            <Globe2 className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-semibold">Web Sitemden Urun Ekle</h2>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            <h2 className="text-xl font-semibold">Web Sitemden Urun Ekle</h2>
+            <p className="mt-2 text-sm leading-5 text-muted-foreground">
               Shopify kullanmiyorsaniz web siteniz icin bir urun kaynagi
               olusturun. URL, dosya veya manuel aktarim sonraki adimda ayni
               kaynaga yazilir.

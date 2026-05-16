@@ -43,17 +43,31 @@ export function LoginForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="seller-surface p-8 md:p-10">
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold">Giris yap</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Paneli kullanmaya devam etmek icin hesabinizla giris yapin.
-          </p>
+    <div className={cn("mx-auto w-full max-w-2xl", className)} {...props}>
+      <section className="seller-surface overflow-hidden p-5 md:p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="mono-label text-primary">Adim 1 / 1</p>
+            <h1 className="mt-1 text-xl font-semibold">Giris</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Paneli kullanmaya devam edin.
+            </p>
+          </div>
+          <span className="h-2 w-10 rounded-full bg-primary" />
         </div>
 
-        <form onSubmit={handleLogin}>
-          <div className="flex flex-col gap-6">
+        <form
+          onSubmit={handleLogin}
+          className="mx-auto grid w-full max-w-lg gap-4 animate-in fade-in slide-in-from-right-4 duration-300"
+        >
+          <div>
+            <h2 className="text-xl font-semibold">Hesabiniza giris yapin</h2>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              Kayitli e-posta ve sifrenizle satici paneline devam edin.
+            </p>
+          </div>
+
+          <div className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="email">E-posta adresi</Label>
               <Input
@@ -84,26 +98,25 @@ export function LoginForm({
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+          </div>
 
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-            <Button type="submit" className="w-full gap-2 py-6" disabled={isLoading}>
+          <div className="flex justify-end border-t border-border pt-4">
+            <Button type="submit" className="gap-2" disabled={isLoading}>
               {isLoading ? "Giris yapiliyor..." : "Giris yap"}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          <div className="border-t border-border pt-4 text-center text-sm text-muted-foreground">
             Hesabin yok mu?{" "}
-            <Link
-              href="/auth/sign-up"
-              className="font-semibold text-primary transition hover:text-foreground"
-            >
-              Kayit ol
-            </Link>
+            <Button asChild variant="link" className="h-auto px-1 py-0 align-baseline">
+              <Link href="/auth/sign-up">Kayit ol</Link>
+            </Button>
           </div>
         </form>
-      </div>
+      </section>
     </div>
   );
 }
