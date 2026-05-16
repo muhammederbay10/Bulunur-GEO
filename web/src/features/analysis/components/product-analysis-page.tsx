@@ -173,7 +173,7 @@ function AnalysisStatusPanel({
           return (
             <div
               key={item.key}
-              className="rounded-lg border border-[#0a5c45] bg-[#07503d] p-4"
+              className="rounded-lg border border-white/15 bg-black/10 p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium">{item.label}</p>
@@ -383,7 +383,7 @@ function BeforeAfterPanel({
         {beforeAfterEntries.map(({ field, value }) => (
           <div
             key={field}
-            className="grid gap-3 rounded-lg border border-[#0a5c45] bg-[#07503d] p-4 lg:grid-cols-2"
+            className="grid gap-3 rounded-lg border border-white/15 bg-black/10 p-4 lg:grid-cols-2"
           >
             <div>
               <p className="text-xs uppercase text-white/70">{field} once</p>

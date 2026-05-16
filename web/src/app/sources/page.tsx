@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { SourceSetupPanel } from "@/features/sources/components/source-setup-panel";
 import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
@@ -119,7 +120,10 @@ async function SourcesContent({
           <p className="text-xl font-semibold text-primary">AI Gorunurluk</p>
           <p className="mono-label text-muted-foreground">E-ticaret paneli</p>
         </div>
-        <LogoutButton variant="outline" size="sm" />
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <LogoutButton variant="outline" size="sm" />
+        </div>
       </header>
       <div className="mx-auto w-full max-w-5xl px-5 py-12 md:py-20">
         {panel}

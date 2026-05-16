@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
 import {
@@ -56,7 +57,10 @@ export default function OnboardingPage() {
           <p className="text-xl font-semibold text-primary">AI Gorunurluk</p>
           <p className="mono-label text-muted-foreground">Onboarding</p>
         </div>
-        <LogoutButton variant="outline" size="sm" />
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <LogoutButton variant="outline" size="sm" />
+        </div>
       </header>
       <div className="mx-auto w-full max-w-7xl px-5 py-10">
         <Suspense fallback={<OnboardingFallback />}>
