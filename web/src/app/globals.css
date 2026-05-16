@@ -1,4 +1,4 @@
-/* @tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -6,53 +6,79 @@
   :root {
     --font-space-grotesk: "Space Grotesk";
     --font-space-mono: "Space Mono";
-    --background: 22 100% 98%;
-    --foreground: 25 30% 11%;
+
+    /* Shopify green + white base */
+    --background: 0 0% 100%;
+    --foreground: 160 44% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 25 30% 11%;
+    --card-foreground: 160 44% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 25 30% 11%;
+    --popover-foreground: 160 44% 10%;
+
+    /* Primary: Shopify Green */
     --primary: 165 100% 25%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 28 52% 91%;
-    --secondary-foreground: 28 24% 23%;
-    --muted: 26 54% 94%;
-    --muted-foreground: 25 18% 33%;
-    --accent: 29 90% 55%;
-    --accent-foreground: 25 30% 11%;
+
+    /* Secondary: white/green support */
+    --secondary: 150 38% 95%;
+    --secondary-foreground: 160 44% 16%;
+
+    /* Muted elements */
+    --muted: 150 38% 96%;
+    --muted-foreground: 160 17% 34%;
+
+    /* Accent: Shopify Green */
+    --accent: 165 100% 25%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Destructive & States */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 25 33% 79%;
-    --input: 25 33% 79%;
-    --ring: 29 90% 55%;
-    --chart-1: 29 90% 55%;
-    --chart-2: 198 100% 28%;
-    --chart-3: 25 30% 11%;
-    --chart-4: 35 89% 55%;
+    --border: 150 20% 84%;
+    --input: 150 20% 84%;
+    --ring: 165 100% 25%;
+
+    /* Charts */
+    --chart-1: 165 100% 25%;
+    --chart-2: 151 58% 40%;
+    --chart-3: 160 44% 10%;
+    --chart-4: 142 45% 55%;
     --chart-5: 0 78% 60%;
+
     --radius: 0.75rem;
   }
+
   .dark {
-    --background: 30 36% 10%;
-    --foreground: 40 18% 97%;
-    --card: 29 41% 7%;
+    --background: 160 44% 8%;
+    --foreground: 0 0% 98%;
+    --card: 160 42% 10%;
     --card-foreground: 0 0% 98%;
-    --popover: 29 41% 7%;
+    --popover: 160 42% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 29 90% 55%;
-    --primary-foreground: 30 36% 10%;
-    --secondary: 30 26% 14%;
+
+    /* Primary: Shopify Green */
+    --primary: 165 100% 25%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 160 32% 14%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 30 20% 16%;
-    --muted-foreground: 35 10% 67%;
-    --accent: 29 90% 55%;
-    --accent-foreground: 30 36% 10%;
+
+    /* Muted elements */
+    --muted: 160 28% 15%;
+    --muted-foreground: 150 13% 70%;
+
+    --accent: 165 100% 25%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Destructive & States */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 24%;
     --input: 0 0% 24%;
-    --ring: 29 90% 55%;
-    --chart-1: 29 90% 55%;
+    --ring: 165 100% 25%;
+
+    /* Charts */
+    --chart-1: 165 100% 25%;
     --chart-2: 142 50% 42%;
     --chart-3: 40 18% 97%;
     --chart-4: 280 65% 60%;
@@ -89,7 +115,7 @@
   }
 
   .ai-engine-panel {
-    @apply rounded-xl border border-[#4b3828] bg-[#1a120b] text-[#fff8f5] shadow-industrial-panel;
+    @apply rounded-xl border border-[#0a5c45] bg-[#063f32] text-white shadow-industrial-panel;
   }
 
   .surface-muted {
@@ -114,178 +140,6 @@
       90deg,
       transparent,
       hsl(var(--primary) / 0.22),
-      transparent
-    );
-    content: "";
-    inset: 0;
-    pointer-events: none;
-    position: absolute;
-    transform: translateX(-100%);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .scanline::after {
-      animation: scanline-pass 4s ease-in-out infinite;
-    }
-  }
-}
-
-@keyframes scanline-pass {
-  0% {
-    transform: translateX(-100%);
-  }
-  45%,
-  100% {
-    transform: translateX(100%);
-  }
-} */
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
-    --font-space-grotesk: "Space Grotesk";
-    --font-space-mono: "Space Mono";
-
-    /* Base background & foreground */
-    --background: 22 100% 98%;
-    --foreground: 25 30% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 25 30% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 25 30% 11%;
-
-    /* Primary: Shopify Green */
-    --primary: 165 100% 25%;
-    --primary-foreground: 0 0% 98%;
-
-    /* Secondary: Soft warm tone */
-    --secondary: 28 52% 91%;
-    --secondary-foreground: 28 24% 23%;
-
-    /* Muted elements */
-    --muted: 26 54% 94%;
-    --muted-foreground: 25 18% 33%;
-
-    /* Accent: AI Safety Orange */
-    --accent: 29 90% 55%;
-    --accent-foreground: 25 30% 11%;
-
-    /* Destructive & States */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 25 33% 79%;
-    --input: 25 33% 79%;
-    --ring: 165 100% 25%; /* Matched to Primary Green */
-
-    /* Charts */
-    --chart-1: 165 100% 25%;
-    --chart-2: 198 100% 28%;
-    --chart-3: 25 30% 11%;
-    --chart-4: 35 89% 55%;
-    --chart-5: 0 78% 60%;
-
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    /* Base background & foreground */
-    --background: 30 36% 10%;
-    --foreground: 40 18% 97%;
-    --card: 29 41% 7%;
-    --card-foreground: 0 0% 98%;
-    --popover: 29 41% 7%;
-    --popover-foreground: 0 0% 98%;
-
-    /* Primary: Shopify Green */
-    --primary: 165 100% 25%;
-    --primary-foreground: 0 0% 98%;
-
-    /* Secondary */
-    --secondary: 30 26% 14%;
-    --secondary-foreground: 0 0% 98%;
-
-    /* Muted elements */
-    --muted: 30 20% 16%;
-    --muted-foreground: 35 10% 67%;
-
-    /* Accent: AI Safety Orange */
-    --accent: 29 90% 55%;
-    --accent-foreground: 30 36% 10%;
-
-    /* Destructive & States */
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 24%;
-    --input: 0 0% 24%;
-    --ring: 165 100% 25%; /* Matched to Primary Green */
-
-    /* Charts */
-    --chart-1: 165 100% 25%;
-    --chart-2: 142 50% 42%;
-    --chart-3: 40 18% 97%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 0 78% 60%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
-  }
-}
-
-@layer components {
-  .industrial-grid {
-    background-image:
-      linear-gradient(hsl(var(--border) / 0.11) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--border) / 0.11) 1px, transparent 1px);
-    background-size: 44px 44px;
-  }
-
-  .industrial-panel {
-    @apply rounded-xl border border-border/70 bg-card shadow-industrial-panel;
-  }
-
-  .seller-surface {
-    @apply rounded-xl border border-border/70 bg-card shadow-sm;
-  }
-
-  .ai-engine-panel {
-    @apply rounded-xl border border-[#4b3828] bg-[#1a120b] text-[#fff8f5] shadow-industrial-panel;
-  }
-
-  .surface-muted {
-    @apply rounded-lg border border-border/70 bg-muted/70;
-  }
-
-  .mono-label {
-    @apply font-mono text-xs font-semibold uppercase tracking-wider;
-  }
-
-  .page-enter {
-    @apply animate-in fade-in slide-in-from-bottom-3 duration-500;
-  }
-
-  .scanline {
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Swapped to use --accent (Orange) so the AI scanner effect keeps the AI brand identity */
-  .scanline::after {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--accent) / 0.22),
       transparent
     );
     content: "";

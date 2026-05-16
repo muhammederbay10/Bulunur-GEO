@@ -78,7 +78,7 @@ function ScoreBar({ value }: { value?: number }) {
   const score = typeof value === "number" ? value : 0;
 
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-[#3a2a1c]">
+    <div className="h-2 overflow-hidden rounded-full bg-white/15">
       <div
         className="h-full rounded-full bg-primary"
         style={{ width: `${Math.min(Math.max(score, 0), 100)}%` }}
@@ -119,7 +119,7 @@ function AnalysisStatusPanel({
       <section className="ai-engine-panel p-6">
         <p className="mono-label text-primary">AI analiz hazir</p>
         <h2 className="mt-3 text-2xl font-semibold">Ilk skor bekleniyor</h2>
-        <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
+        <p className="mt-3 text-sm leading-6 text-white/75">
           Bu urun icin henuz analiz yok. Analiz baslatildiginda backend,
           urunun normalize edilmis verisini API sozlesmesindeki ProductInput
           sekliyle AI servisine gonderecek.
@@ -136,7 +136,7 @@ function AnalysisStatusPanel({
           <p className="mono-label">Analiz tamamlanamadi</p>
         </div>
         <h2 className="mt-3 text-2xl font-semibold">Tekrar denenebilir</h2>
-        <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
+        <p className="mt-3 text-sm leading-6 text-white/75">
           {analysis.errorMessage ??
             "AI servisi beklenen analiz sonucunu dondurmedi."}
         </p>
@@ -155,14 +155,14 @@ function AnalysisStatusPanel({
           </p>
           <h2 className="mt-3 text-6xl font-bold leading-none">
             {typeof overallScore === "number" ? overallScore : "--"}
-            <span className="text-2xl text-[#d8d1c8]">/100</span>
+            <span className="text-2xl text-white/70">/100</span>
           </h2>
         </div>
         <Badge variant="secondary">
           {analysis.status === "running" ? "Calisiyor" : "Kaydedildi"}
         </Badge>
       </div>
-      <p className="mt-4 text-sm leading-6 text-[#d8d1c8]">
+      <p className="mt-4 text-sm leading-6 text-white/75">
         {analysis.recommendedAction ??
           "Analiz sonucu urunu yeniden yazmaz; sadece zayif sinyalleri ve siradaki guvenli adimi gosterir."}
       </p>
@@ -173,7 +173,7 @@ function AnalysisStatusPanel({
           return (
             <div
               key={item.key}
-              className="rounded-lg border border-[#4b3828] bg-[#24180f] p-4"
+              className="rounded-lg border border-[#0a5c45] bg-[#07503d] p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium">{item.label}</p>
@@ -184,7 +184,7 @@ function AnalysisStatusPanel({
               <div className="mt-3">
                 <ScoreBar value={value} />
               </div>
-              <p className="mt-3 text-xs leading-5 text-[#d8d1c8]">
+              <p className="mt-3 text-xs leading-5 text-white/70">
                 {item.note}
               </p>
             </div>
@@ -355,7 +355,7 @@ function BeforeAfterPanel({
           <h2 className="mt-3 text-2xl font-semibold">
             Once/sonra taslagi hazir
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
+          <p className="mt-3 text-sm leading-6 text-white/75">
             Bu sonuc kaydedildi. Shopify urunlerinde sadece sizin sectiginiz
             guvenli alanlar kopyalanabilir, disari aktarilabilir veya
             Shopify&apos;a yayinlanabilir.
@@ -371,7 +371,7 @@ function BeforeAfterPanel({
       {validationWarnings.length > 0 ? (
         <div className="mt-5 rounded-md border border-primary/40 bg-primary/10 p-4">
           <p className="text-sm font-medium">Dogrulama uyarilari</p>
-          <ul className="mt-2 grid gap-1 text-sm text-[#f8f7f5]">
+          <ul className="mt-2 grid gap-1 text-sm text-white">
             {validationWarnings.map((warning) => (
               <li key={warning}>{warning}</li>
             ))}
@@ -383,10 +383,10 @@ function BeforeAfterPanel({
         {beforeAfterEntries.map(({ field, value }) => (
           <div
             key={field}
-            className="grid gap-3 rounded-lg border border-[#4b3828] bg-[#24180f] p-4 lg:grid-cols-2"
+            className="grid gap-3 rounded-lg border border-[#0a5c45] bg-[#07503d] p-4 lg:grid-cols-2"
           >
             <div>
-              <p className="text-xs uppercase text-[#d8d1c8]">{field} once</p>
+              <p className="text-xs uppercase text-white/70">{field} once</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
                 {asText(value.before) ?? "Bos"}
               </p>

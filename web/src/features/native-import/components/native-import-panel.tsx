@@ -243,7 +243,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
               ? "mt-5 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
               : notice.kind === "warning"
                 ? "mt-5 rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground"
-                : "mt-5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-900 dark:text-emerald-100"
+                : "mt-5 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary"
           }
         >
           {notice.message}

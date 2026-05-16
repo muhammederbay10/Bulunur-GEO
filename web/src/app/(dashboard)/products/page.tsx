@@ -100,7 +100,7 @@ async function ProductsContent({
           className={
             shopifyNotice.tone === "warning"
               ? "rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground"
-              : "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-900 dark:text-emerald-100"
+              : "rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary"
           }
         >
           {shopifyNotice.message}

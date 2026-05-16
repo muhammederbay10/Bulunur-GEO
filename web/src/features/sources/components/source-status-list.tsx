@@ -228,7 +228,7 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
             ) : null}
 
             {store.connection?.status === "connected" ? (
-              <p className="mt-3 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
+              <p className="mt-3 flex items-center gap-2 text-sm text-primary">
                 <CheckCircle2 className="h-4 w-4" />
                 Shopify bagli. Urunler otomatik senkronize edilir; gerekirse
                 tekrar senkronize edebilirsiniz.
