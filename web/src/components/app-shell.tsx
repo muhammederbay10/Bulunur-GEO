@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import {
   History,
   LayoutDashboard,
@@ -8,10 +7,7 @@ import {
   Store,
 } from "lucide-react";
 
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { AuthButton } from "@/features/auth/components/auth-button";
-import { hasRequiredPublicEnv } from "@/lib/env/public";
+import { SidebarAccountCard } from "@/components/sidebar-account-card";
 
 const navItems = [
   { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
@@ -52,6 +48,10 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
               </Link>
             ))}
           </nav>
+
+          <div className="mt-auto pt-5">
+            <SidebarAccountCard />
+          </div>
         </aside>
 
         <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
@@ -64,16 +64,6 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
                 <p className="text-sm text-muted-foreground">
                   Urunlerinizi iceri alin, analiz edin ve guvenle iyilestirin.
                 </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeSwitcher />
-                {hasRequiredPublicEnv ? (
-                  <Suspense>
-                    <AuthButton />
-                  </Suspense>
-                ) : (
-                  <EnvVarWarning />
-                )}
               </div>
             </div>
           </header>
