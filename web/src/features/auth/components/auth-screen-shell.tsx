@@ -2,12 +2,13 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 
 type AuthScreenShellProps = {
   children: React.ReactNode;
+  wide?: boolean;
 };
 
-export function AuthScreenShell({ children }: AuthScreenShellProps) {
+export function AuthScreenShell({ children, wide = false }: AuthScreenShellProps) {
   return (
-    <main className="relative flex min-h-svh w-full items-center justify-center overflow-hidden bg-background p-5 text-foreground md:p-10">
-      <div className="absolute right-5 top-5 z-20 md:right-10 md:top-10">
+    <main className="relative flex h-svh w-full items-center justify-center overflow-hidden bg-background p-4 text-foreground md:p-6">
+      <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
         <ThemeSwitcher />
       </div>
       <div
@@ -19,9 +20,9 @@ export function AuthScreenShell({ children }: AuthScreenShellProps) {
         }}
       />
 
-      <div className="relative z-10 w-full max-w-[440px]">
-        <div className="mb-10 text-center">
-          <h1 className="text-5xl font-bold leading-none text-primary">
+      <div className={wide ? "relative z-10 w-full max-w-6xl" : "relative z-10 w-full max-w-[440px]"}>
+        <div className={wide ? "mb-5 text-center" : "mb-8 text-center"}>
+          <h1 className={wide ? "text-3xl font-bold leading-none text-primary" : "text-5xl font-bold leading-none text-primary"}>
             AI Gorunurluk
           </h1>
           <p className="mono-label mt-3 text-muted-foreground">
