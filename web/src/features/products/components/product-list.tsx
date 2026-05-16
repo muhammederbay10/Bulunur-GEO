@@ -67,10 +67,10 @@ function ProductImage({ product }: { product: ProductSummary }) {
 
 export function ProductList({ products }: { products: ProductSummary[] }) {
   if (!products.length) {
-    return (
-      <section className="seller-surface p-8">
+  return (
+    <section className="seller-surface p-8">
         <div className="mx-auto max-w-xl text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted text-primary">
             <Package className="h-6 w-6" />
           </div>
           <h2 className="mt-5 text-2xl font-semibold">
@@ -92,40 +92,32 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
   }
 
   return (
-    <section className="grid gap-3">
-      {products.map((product) => (
-        <article
-          key={product.id}
-          className={
-            product.availability === "source_disconnected"
-              ? "rounded-lg border border-border bg-muted/40 p-4"
-              : "rounded-lg border border-border bg-card p-4"
-          }
-        >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-4">
+    <section className="seller-surface overflow-hidden">
+      <div className="hidden grid-cols-12 gap-4 border-b border-border bg-muted/80 px-4 py-3 mono-label text-muted-foreground md:grid">
+        <div className="col-span-5">Urun</div>
+        <div className="col-span-2">Kaynak</div>
+        <div className="col-span-2 text-center">Durum</div>
+        <div className="col-span-1 text-center">Skor</div>
+        <div className="col-span-2 text-right">Eylem</div>
+      </div>
+      <div className="divide-y divide-border">
+        {products.map((product) => (
+          <article
+            key={product.id}
+            className={
+              product.availability === "source_disconnected"
+                ? "bg-muted/40 px-4 py-4"
+                : "bg-card px-4 py-4 transition hover:bg-muted/60"
+            }
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-center">
+              <div className="flex min-w-0 items-center gap-4 md:col-span-5">
               <ProductImage product={product} />
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="break-words text-base font-semibold">
+                <div className="flex flex-wrap items-center gap-2 md:block">
+                  <h2 className="break-words text-base font-semibold transition group-hover:text-primary">
                     {product.title}
                   </h2>
-                  <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
-                  <Badge variant="outline">
-                    {workflowLabels[product.workflowStatus]}
-                  </Badge>
-                  {product.availability ? (
-                    <Badge
-                      variant={
-                        product.availability === "source_disconnected"
-                          ? "outline"
-                          : "secondary"
-                      }
-                    >
-                      {availabilityLabels[product.availability] ??
-                        product.availability}
-                    </Badge>
-                  ) : null}
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5">
@@ -133,11 +125,6 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
                     {product.priceDisplay ?? "Fiyat bilgisi yok"}
                   </span>
                   <span>Guncellendi: {formatDate(product.updatedAt)}</span>
-                  {typeof product.latestScore === "number" ? (
-                    <span>Skor: {product.latestScore}/100</span>
-                  ) : (
-                    <span>Skor bekliyor</span>
-                  )}
                   {product.availability === "source_disconnected" ? (
                     <span>Shopify API islemleri kapali</span>
                   ) : null}
@@ -145,15 +132,58 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
               </div>
             </div>
 
-            <Button asChild variant="outline" size="sm" className="gap-2">
+              <div className="flex flex-wrap gap-2 md:col-span-2">
+                <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
+                {product.availability ? (
+                  <Badge
+                    variant={
+                      product.availability === "source_disconnected"
+                        ? "outline"
+                        : "secondary"
+                    }
+                  >
+                    {availabilityLabels[product.availability] ??
+                      product.availability}
+                  </Badge>
+                ) : null}
+              </div>
+
+              <div className="md:col-span-2 md:flex md:justify-center">
+                <Badge variant="outline">
+                  {workflowLabels[product.workflowStatus]}
+                </Badge>
+              </div>
+
+              <div className="md:col-span-1 md:flex md:justify-center">
+                {typeof product.latestScore === "number" ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-12 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${product.latestScore}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold">
+                      {product.latestScore}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+
+              <div className="md:col-span-2 md:flex md:justify-end">
+                <Button asChild variant="outline" size="sm" className="w-full gap-2 md:w-auto">
               <Link href={`/products/${product.id}`}>
                 {workflowActionLabels[product.workflowStatus]}
                 <ArrowRight className="h-4 w-4" />
               </Link>
-            </Button>
-          </div>
-        </article>
-      ))}
+                </Button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

@@ -76,7 +76,9 @@ export default {
       },
       boxShadow: {
         "industrial-panel":
-          "0 1px 0 hsl(var(--foreground) / 0.06), 0 20px 60px hsl(30 36% 10% / 0.16)",
+          "0 1px 0 hsl(var(--foreground) / 0.05), 0 18px 48px hsl(25 30% 11% / 0.11)",
+        "primary-soft":
+          "0 8px 28px hsl(var(--accent) / 0.20)",
       },
     },
   },

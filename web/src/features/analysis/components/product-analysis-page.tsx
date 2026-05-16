@@ -117,7 +117,7 @@ function AnalysisStatusPanel({
   if (!analysis) {
     return (
       <section className="ai-engine-panel p-6">
-        <p className="text-sm font-medium text-primary">AI analiz hazir</p>
+        <p className="mono-label text-primary">AI analiz hazir</p>
         <h2 className="mt-3 text-2xl font-semibold">Ilk skor bekleniyor</h2>
         <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
           Bu urun icin henuz analiz yok. Analiz baslatildiginda backend,
@@ -133,7 +133,7 @@ function AnalysisStatusPanel({
       <section className="ai-engine-panel p-6">
         <div className="flex items-center gap-2 text-primary">
           <AlertTriangle className="h-5 w-5" />
-          <p className="text-sm font-medium">Analiz tamamlanamadi</p>
+          <p className="mono-label">Analiz tamamlanamadi</p>
         </div>
         <h2 className="mt-3 text-2xl font-semibold">Tekrar denenebilir</h2>
         <p className="mt-3 text-sm leading-6 text-[#d8d1c8]">
@@ -150,10 +150,10 @@ function AnalysisStatusPanel({
     <section className="ai-engine-panel p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-primary">
+          <p className="mono-label text-primary">
             AI gorunurluk skoru
           </p>
-          <h2 className="mt-3 text-5xl font-semibold">
+          <h2 className="mt-3 text-6xl font-bold leading-none">
             {typeof overallScore === "number" ? overallScore : "--"}
             <span className="text-2xl text-[#d8d1c8]">/100</span>
           </h2>
@@ -173,7 +173,7 @@ function AnalysisStatusPanel({
           return (
             <div
               key={item.key}
-              className="rounded-md border border-[#4b3828] bg-[#24180f] p-4"
+              className="rounded-lg border border-[#4b3828] bg-[#24180f] p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium">{item.label}</p>
@@ -205,14 +205,14 @@ function AnalysisList({
   items: string[];
 }) {
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <h2 className="text-lg font-semibold">{title}</h2>
       {items.length > 0 ? (
         <ul className="mt-4 grid gap-2">
           {items.map((item) => (
             <li
               key={item}
-              className="flex gap-3 rounded-md border border-border bg-background p-3 text-sm"
+              className="flex gap-3 rounded-lg border border-border bg-background/70 p-3 text-sm"
             >
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <span>{item}</span>
@@ -220,7 +220,7 @@ function AnalysisList({
           ))}
         </ul>
       ) : (
-        <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+        <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
           {emptyText}
         </p>
       )}
@@ -254,7 +254,7 @@ function OptimizationPanel({
 
   if (optimization?.status === "needs_user_input") {
     return (
-      <section className="seller-surface p-5">
+      <section className="seller-surface p-5 md:p-6">
         <div className="flex items-center gap-2">
           <ShieldAlert className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Eksik bilgi gerekiyor</h2>
@@ -274,10 +274,10 @@ function OptimizationPanel({
   }
 
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">AI optimizasyonu</p>
+          <p className="mono-label text-primary">AI optimizasyonu</p>
           <h2 className="mt-2 text-xl font-semibold">
             Analizden guvenli iyilestirme taslagi olustur
           </h2>
@@ -303,7 +303,7 @@ function StrategyRail({
   if (!optimization || optimization.selectedStrategies.length === 0) return null;
 
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <div className="flex items-center gap-2">
         <WandSparkles className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">Secilen stratejiler</h2>
@@ -312,7 +312,7 @@ function StrategyRail({
         {optimization.selectedStrategies.map((strategy) => (
           <div
             key={`${strategy.name}-${strategy.reason}`}
-            className="rounded-md border border-border bg-background p-4"
+            className="rounded-lg border border-border bg-background/70 p-4"
           >
             <p className="text-sm font-medium">{strategy.name}</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -349,7 +349,7 @@ function BeforeAfterPanel({
     <section className="ai-engine-panel p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-primary">
+          <p className="mono-label text-primary">
             Kayitli optimizasyon sonucu
           </p>
           <h2 className="mt-3 text-2xl font-semibold">
@@ -383,7 +383,7 @@ function BeforeAfterPanel({
         {beforeAfterEntries.map(({ field, value }) => (
           <div
             key={field}
-            className="grid gap-3 rounded-md border border-[#4b3828] bg-[#24180f] p-4 lg:grid-cols-2"
+            className="grid gap-3 rounded-lg border border-[#4b3828] bg-[#24180f] p-4 lg:grid-cols-2"
           >
             <div>
               <p className="text-xs uppercase text-[#d8d1c8]">{field} once</p>
@@ -424,7 +424,7 @@ function ShopifyReviewPublishPanel({
   const fields = getShopifyPublishableFieldCandidates(optimization);
 
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">Onayla, aktar veya yayinla</h2>
@@ -456,7 +456,7 @@ function GeneratedContentPanel({
   if (generatedEntries.length === 0) return null;
 
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <div className="flex items-center gap-2">
         <ArrowRightLeft className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">Uretilen taslak alanlar</h2>
@@ -465,7 +465,7 @@ function GeneratedContentPanel({
         {generatedEntries.map(([field, value]) => (
           <div
             key={field}
-            className="rounded-md border border-border bg-background p-4"
+            className="rounded-lg border border-border bg-background/70 p-4"
           >
             <p className="text-sm font-medium">{field}</p>
             <pre className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
@@ -494,7 +494,7 @@ export function ProductAnalysisPage({
   const latestOutput = analysis?.rawOutput;
 
   return (
-    <div className="grid gap-6">
+    <div className="page-enter grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button asChild variant="outline" size="sm">
           <Link href="/products">
@@ -547,10 +547,10 @@ export function ProductAnalysisPage({
 
         <div className="grid gap-5">
           <AnalysisStatusPanel analysis={analysis} />
-          <section className="seller-surface p-5">
+          <section className="seller-surface p-5 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm font-medium text-primary">
+                <p className="mono-label text-primary">
                   Tek urun analizi
                 </p>
                 <h2 className="mt-2 text-xl font-semibold">
@@ -588,7 +588,7 @@ export function ProductAnalysisPage({
         />
       </section>
 
-      <section className="seller-surface p-5">
+      <section className="seller-surface p-5 md:p-6">
         <div className="flex items-center gap-2">
           <Gauge className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Alim niyeti varyantlari</h2>
@@ -605,7 +605,7 @@ export function ProductAnalysisPage({
             ))}
           </div>
         ) : (
-          <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+          <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             Analizden sonra AI tarafindan gorulen arama/alim niyetleri burada
             listelenir.
           </p>

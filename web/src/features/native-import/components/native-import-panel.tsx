@@ -216,14 +216,14 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
   }
 
   return (
-    <section className="seller-surface p-5">
+    <section className="seller-surface p-5 md:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Globe2 className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-primary">
+            <Globe2 className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-medium text-primary">Native import</p>
+            <p className="mono-label text-primary">Native import</p>
             <h2 className="mt-1 text-xl font-semibold">
               Web sitesi urunlerini ice aktar
             </h2>
@@ -251,7 +251,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
       ) : null}
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-lg border border-border bg-background/70 p-4">
+        <div className="rounded-xl border border-border bg-background/70 p-4">
           <div className="grid gap-3">
             <Label htmlFor="native-listing-url">Urun liste URL</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -282,7 +282,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
             <Label htmlFor="native-direct-urls">Tekil urun URLleri</Label>
             <textarea
               id="native-direct-urls"
-              className="min-h-24 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="min-h-24 rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
               value={directUrls}
               onChange={(event) => setDirectUrls(event.target.value)}
               placeholder="Her satira bir urun URLsi"
@@ -351,7 +351,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                   return (
                     <article
                       key={item.id}
-                      className="rounded-lg border border-border bg-background p-3"
+                      className="rounded-lg border border-border bg-background/70 p-3"
                     >
                       <div className="flex gap-3">
                         <Checkbox
@@ -402,7 +402,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
         <div className="grid gap-5">
           <form
             action={handleFallbackSubmit}
-            className="rounded-lg border border-border bg-background/70 p-4"
+            className="rounded-xl border border-border bg-background/70 p-4"
           >
             <input type="hidden" name="mode" value="file" />
             <div className="flex items-start gap-3">
@@ -435,7 +435,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
 
           <form
             action={handleFallbackSubmit}
-            className="rounded-lg border border-border bg-background/70 p-4"
+            className="rounded-xl border border-border bg-background/70 p-4"
           >
             <input type="hidden" name="mode" value="manual" />
             <h3 className="font-semibold">Manuel urun ekle</h3>
@@ -453,7 +453,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                 <textarea
                   id="manual-description"
                   name="description"
-                  className="min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="min-h-20 rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">

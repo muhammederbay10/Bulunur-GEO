@@ -31,22 +31,26 @@ export function ShopifySourceForm({
   const isConnected = store?.connection?.status === "connected";
 
   return (
-    <form action={action} className="seller-surface p-5">
+    <form
+      action={action}
+      className="seller-surface group relative overflow-hidden p-8 text-center transition hover:border-primary/60 hover:shadow-primary-soft focus-within:border-primary/60"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/80 to-transparent opacity-0 transition group-hover:opacity-100" />
       <fieldset className="flex flex-col gap-5" disabled={disabled || pending}>
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Store className="h-5 w-5" />
+        <div className="relative flex flex-col items-center gap-5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-primary transition group-hover:scale-105">
+            <Store className="h-10 w-10" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Shopify Magazami Bagla</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <h2 className="text-2xl font-semibold">Shopify Magazami Bagla</h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Shopify urunlerinizi otomatik iceri almak icin myshopify.com
               alan adinizi girin ve yetki ekranini tamamlayin.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-2">
+        <div className="relative grid gap-2 text-left">
           <Label htmlFor="shopDomain">Shopify alan adi</Label>
           <Input
             id="shopDomain"
@@ -62,10 +66,12 @@ export function ShopifySourceForm({
           <FieldError errors={state.fieldErrors?.shopDomain} />
         </div>
 
-        <FeedbackMessage status={state.status} message={state.message} />
+        <div className="relative">
+          <FeedbackMessage status={state.status} message={state.message} />
+        </div>
 
         {canStartOAuth ? (
-          <Button asChild className="w-full gap-2" variant="outline">
+          <Button asChild className="relative w-full gap-2" variant="outline">
             <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain as string)}`}>
               <ExternalLink className="h-4 w-4" />
               Shopify yetkisini tamamla
@@ -73,7 +79,11 @@ export function ShopifySourceForm({
           </Button>
         ) : null}
 
-        <Button type="submit" className="w-full gap-2" disabled={disabled || pending}>
+        <Button
+          type="submit"
+          className="relative w-full gap-2"
+          disabled={disabled || pending}
+        >
           {pending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : isConnected ? (

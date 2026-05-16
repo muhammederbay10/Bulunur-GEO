@@ -94,7 +94,7 @@ async function ProductsContent({
   const shopifyNotice = getShopifyNotice(params);
 
   return (
-    <div className="grid gap-6">
+    <div className="page-enter grid gap-6">
       {shopifyNotice ? (
         <div
           className={
@@ -107,10 +107,10 @@ async function ProductsContent({
         </div>
       ) : null}
 
-      <section className="flex flex-col gap-4 border-b border-border pb-5 md:flex-row md:items-end md:justify-between">
+      <section className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">Urunler</p>
-          <h1 className="mt-2 text-3xl font-semibold">
+          <p className="mono-label text-primary">Urunler</p>
+          <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">
             Senkronize katalog
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -119,7 +119,7 @@ async function ProductsContent({
             urunleri secerek siradaki calisma adimini belirleyin.
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground shadow-sm">
           <Package className="h-4 w-4" />
           {products.length} urun
         </div>

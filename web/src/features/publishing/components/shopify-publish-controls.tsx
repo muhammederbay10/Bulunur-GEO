@@ -127,7 +127,7 @@ export function ShopifyPublishControls({
         {fields.map((field) => (
           <label
             key={field.field}
-            className="grid gap-3 rounded-md border border-border bg-background p-4"
+            className="grid gap-3 rounded-lg border border-border bg-background/70 p-4 transition hover:bg-muted/70"
           >
             <div className="flex items-start gap-3">
               <Checkbox
@@ -148,7 +148,7 @@ export function ShopifyPublishControls({
                 </div>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase text-muted-foreground">
+                    <p className="mono-label text-muted-foreground">
                       Once
                     </p>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
@@ -156,7 +156,7 @@ export function ShopifyPublishControls({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-primary">Sonra</p>
+                    <p className="mono-label text-primary">Sonra</p>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm">
                       {formatValue(field.value)}
                     </p>

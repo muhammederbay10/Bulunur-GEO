@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { NativeImportPanel } from "@/features/native-import/components/native-import-panel";
@@ -137,7 +137,7 @@ export function SourceSetupPanel({
         </div>
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid gap-6 lg:grid-cols-2">
         <ShopifySourceForm
           action={shopifyAction}
           disabled={formsDisabled}
@@ -155,6 +155,19 @@ export function SourceSetupPanel({
         />
       </section>
 
+      {setupMode ? (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            className="mono-label inline-flex items-center gap-2 text-muted-foreground transition hover:text-primary"
+          >
+            <HelpCircle className="h-5 w-5" />
+            Yardima mi ihtiyaciniz var?
+          </button>
+        </div>
+      ) : null}
+
+      {!setupMode ? (
       <section className="seller-surface p-5">
         <div className="mb-4 flex items-start gap-3">
           <AlertTriangle className="mt-1 h-5 w-5 text-primary" />
@@ -168,8 +181,9 @@ export function SourceSetupPanel({
         </div>
         <SourceStatusList stores={stores} />
       </section>
+      ) : null}
 
-      {nativeStore?.status === "active" ? (
+      {!setupMode && nativeStore?.status === "active" ? (
         <NativeImportPanel store={nativeStore} />
       ) : null}
     </div>

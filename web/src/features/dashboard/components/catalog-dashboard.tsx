@@ -53,7 +53,7 @@ function formatDate(value?: string) {
 
 function ProductMiniRow({ product }: { product: ProductSummary }) {
   return (
-    <li className="flex items-center justify-between gap-4 rounded-md border border-border bg-background px-3 py-3">
+    <li className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background/70 px-4 py-3 transition hover:bg-muted">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{product.title}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -73,7 +73,7 @@ function ProductMiniRow({ product }: { product: ProductSummary }) {
 
 function SourceRow({ source }: { source: ProductSourceSummary }) {
   return (
-    <li className="flex items-center justify-between gap-4 rounded-md border border-border bg-background px-3 py-3">
+    <li className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background/70 px-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{source.name}</p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -126,20 +126,20 @@ export function CatalogDashboard({
   const hasProducts = summary.metrics.totalProducts > 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="page-enter flex flex-col gap-8">
       {summary.errorMessage ? (
         <section className="rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground">
           {summary.errorMessage}
         </section>
       ) : null}
 
-      <section className="seller-surface p-6">
-        <p className="text-sm font-medium text-primary">
+      <section className="seller-surface overflow-hidden p-6 md:p-8">
+        <p className="mono-label text-primary">
           Katalog kontrol merkezi
         </p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-semibold tracking-normal md:text-4xl">
+            <h1 className="text-3xl font-bold leading-tight tracking-normal md:text-5xl">
               Bugun hangi urune odaklanalim?
             </h1>
             <p className="mt-3 leading-7 text-muted-foreground">
@@ -175,19 +175,24 @@ export function CatalogDashboard({
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <Link
             key={metric.label}
             href={metric.href}
-            className="seller-surface p-4 transition hover:border-primary/40"
+            className="seller-surface group relative overflow-hidden p-5 transition hover:border-primary/50 hover:shadow-primary-soft"
           >
+            <div className="absolute right-0 top-0 h-24 w-24 translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 blur-2xl opacity-0 transition group-hover:opacity-100" />
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">{metric.label}</p>
-                <p className="mt-3 text-4xl font-semibold">{metric.value}</p>
+                <p className="mono-label text-muted-foreground">{metric.label}</p>
+                <p className="mt-4 text-5xl font-bold leading-none">
+                  {metric.value}
+                </p>
               </div>
-              <metric.icon className="h-5 w-5 text-muted-foreground" />
+              <div className="rounded-lg bg-muted p-3 text-primary">
+                <metric.icon className="h-5 w-5" />
+              </div>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
               {metric.note}
@@ -197,7 +202,7 @@ export function CatalogDashboard({
       </section>
 
       <section className="grid gap-5 xl:grid-cols-2">
-        <div className="seller-surface p-5">
+        <div className="seller-surface p-5 md:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold">Analiz bekleyenler</h2>
@@ -216,14 +221,14 @@ export function CatalogDashboard({
               ))}
             </ul>
           ) : (
-            <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+            <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
               Analiz bekleyen urun bulunmuyor. Yeni urun iceri aldiginizda
               burada gorunur.
             </p>
           )}
         </div>
 
-        <div className="seller-surface p-5">
+        <div className="seller-surface p-5 md:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold">Son urun hareketleri</h2>
@@ -242,14 +247,14 @@ export function CatalogDashboard({
               ))}
             </ul>
           ) : (
-            <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+            <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
               Henuz urun hareketi yok. Kaynak ekleyerek katalog olusturun.
             </p>
           )}
         </div>
       </section>
 
-      <section className="seller-surface p-5">
+      <section className="seller-surface p-5 md:p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">Kaynak durumu</h2>
@@ -268,7 +273,7 @@ export function CatalogDashboard({
             ))}
           </ul>
         ) : (
-          <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+          <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
             Henuz kaynak yok. Shopify baglayin veya web sitenizden urun ekleyin.
           </p>
         )}

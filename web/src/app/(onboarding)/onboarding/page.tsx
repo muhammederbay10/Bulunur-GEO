@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
+import { LogoutButton } from "@/features/auth/components/logout-button";
 import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
 import {
   getCurrentUser,
@@ -49,8 +50,15 @@ async function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <main className="min-h-screen bg-background p-5">
-      <div className="mx-auto w-full max-w-7xl py-10">
+    <main className="min-h-screen bg-background">
+      <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 py-3 backdrop-blur md:px-10">
+        <div>
+          <p className="text-xl font-semibold text-primary">AI Gorunurluk</p>
+          <p className="mono-label text-muted-foreground">Onboarding</p>
+        </div>
+        <LogoutButton variant="outline" size="sm" />
+      </header>
+      <div className="mx-auto w-full max-w-7xl px-5 py-10">
         <Suspense fallback={<OnboardingFallback />}>
           <OnboardingContent />
         </Suspense>

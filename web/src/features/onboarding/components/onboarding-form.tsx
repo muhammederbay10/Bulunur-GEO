@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { ArrowRight, CheckCircle2, Globe2, Store } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, Store } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,21 @@ type OnboardingFormProps = {
   setupMessage?: string;
 };
 
+const steps = [
+  {
+    title: "Kimlik",
+    note: "Panelde kimin calistigini bilelim.",
+  },
+  {
+    title: "Magaza",
+    note: "Isletme baglamini hazirlayalim.",
+  },
+  {
+    title: "Pazar",
+    note: "TR odakli analiz ayarini netlestirelim.",
+  },
+];
+
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) {
     return null;
@@ -33,10 +48,13 @@ export function OnboardingForm({
   setupMessage,
 }: OnboardingFormProps) {
   const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
   const [state, formAction, pending] = useActionState(
     saveOnboardingProfile,
     initialState,
   );
+  const isLastStep = activeStep === steps.length - 1;
+  const isDisabled = !databaseReady || pending || state.status === "success";
 
   useEffect(() => {
     if (state.status === "success" && state.redirectTo) {
@@ -49,40 +67,82 @@ export function OnboardingForm({
   }, [router, state.redirectTo, state.status]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <form action={formAction} className="seller-surface p-6">
-        <fieldset
-          className="flex flex-col gap-6"
-          disabled={!databaseReady || pending || state.status === "success"}
-        >
-          <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium text-primary">
-              İşletmenizi tanıyalım
-            </p>
-            <h1 className="text-3xl font-semibold tracking-normal">
-              Sadece temel bilgileri alalım
-            </h1>
-            <p className="max-w-2xl leading-7 text-muted-foreground">
-              Ürün kaynağınızı bir sonraki adımda seçeceksiniz. Bu ekranda
-              yalnızca işletme bağlamını hazırlıyoruz; ürünlerinizde veya
-              mağazanızda hiçbir değişiklik yapılmaz.
-            </p>
+    <div className="page-enter mx-auto grid max-w-5xl gap-8 lg:grid-cols-[340px_1fr]">
+      <aside className="seller-surface p-6 md:p-8">
+        <p className="mono-label text-primary">Onboarding</p>
+        <h1 className="mt-4 text-3xl font-bold leading-tight md:text-4xl">
+          Magazanizi tanimlayalim
+        </h1>
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          Bu akista yalnizca temel isletme bilgilerini aliyoruz. Urun kaynagi
+          secimi sonraki ekranda yapilacak.
+        </p>
+
+        <div className="mt-8 grid gap-3">
+          {steps.map((step, index) => (
+            <button
+              key={step.title}
+              type="button"
+              className={
+                activeStep === index
+                  ? "rounded-xl border border-primary bg-primary/10 p-4 text-left"
+                  : "rounded-xl border border-border bg-muted/60 p-4 text-left text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
+              }
+              onClick={() => setActiveStep(index)}
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-card font-mono text-xs font-bold text-primary">
+                  {index + 1}
+                </span>
+                <div>
+                  <p className="font-semibold">{step.title}</p>
+                  <p className="mt-1 text-xs leading-5">{step.note}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <form action={formAction} className="seller-surface overflow-hidden p-6 md:p-8">
+        <fieldset className="flex min-h-[520px] flex-col" disabled={isDisabled}>
+          <div className="mb-8 flex items-center justify-between gap-4">
+            <div>
+              <p className="mono-label text-primary">
+                Adim {activeStep + 1} / {steps.length}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold">
+                {steps[activeStep].title}
+              </h2>
+            </div>
+            <div className="flex gap-2">
+              {steps.map((step, index) => (
+                <span
+                  key={step.title}
+                  className={
+                    activeStep === index
+                      ? "h-2 w-10 rounded-full bg-primary"
+                      : "h-2 w-6 rounded-full bg-muted"
+                  }
+                />
+              ))}
+            </div>
           </div>
 
           {!databaseReady && setupMessage ? (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+            <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
               {setupMessage}
             </div>
           ) : null}
 
           {state.status === "error" && state.message ? (
-            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+            <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
               {state.message}
             </div>
           ) : null}
 
           {state.status === "success" && state.message ? (
-            <div className="rounded-md border border-primary/50 bg-primary/10 p-4 text-sm text-primary">
+            <div className="mb-6 rounded-lg border border-primary/50 bg-primary/10 p-4 text-sm text-primary">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5" />
                 <span>{state.message}</span>
@@ -90,88 +150,125 @@ export function OnboardingForm({
             </div>
           ) : null}
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="fullName">Ad soyad</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                autoComplete="name"
-                defaultValue={profile?.fullName ?? ""}
-                placeholder="Örn: Ayşe Yılmaz"
-                required
-              />
-              <FieldError errors={state.fieldErrors?.fullName} />
+          <div className="relative flex-1">
+            <div
+              className={
+                activeStep === 0
+                  ? "grid gap-5 animate-in fade-in slide-in-from-right-4 duration-300"
+                  : "hidden"
+              }
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-primary">
+                <Store className="h-8 w-8" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="fullName">Ad soyad</Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  autoComplete="name"
+                  defaultValue={profile?.fullName ?? ""}
+                  placeholder="Orn: Ayse Yilmaz"
+                />
+                <FieldError errors={state.fieldErrors?.fullName} />
+              </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="businessName">İşletme adı</Label>
-              <Input
-                id="businessName"
-                name="businessName"
-                autoComplete="organization"
-                defaultValue={profile?.businessName ?? ""}
-                placeholder="Örn: Kuzey Outdoor"
-                required
-              />
-              <FieldError errors={state.fieldErrors?.businessName} />
+            <div
+              className={
+                activeStep === 1
+                  ? "grid gap-5 animate-in fade-in slide-in-from-right-4 duration-300"
+                  : "hidden"
+              }
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-primary">
+                <Store className="h-8 w-8" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="businessName">Isletme adi</Label>
+                <Input
+                  id="businessName"
+                  name="businessName"
+                  autoComplete="organization"
+                  defaultValue={profile?.businessName ?? ""}
+                  placeholder="Orn: Kuzey Outdoor"
+                />
+                <FieldError errors={state.fieldErrors?.businessName} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="businessCategory">Isletme kategorisi</Label>
+                <Input
+                  id="businessCategory"
+                  name="businessCategory"
+                  defaultValue={profile?.businessCategory ?? ""}
+                  placeholder="Orn: Outdoor ekipmanlari"
+                />
+                <FieldError errors={state.fieldErrors?.businessCategory} />
+              </div>
+            </div>
+
+            <div
+              className={
+                activeStep === 2
+                  ? "grid gap-5 animate-in fade-in slide-in-from-right-4 duration-300"
+                  : "hidden"
+              }
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-primary">
+                <Globe2 className="h-8 w-8" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="marketFocus">Pazar odagi</Label>
+                <Input
+                  id="marketFocus"
+                  name="marketFocus"
+                  defaultValue={profile?.marketFocus ?? "TR"}
+                  placeholder="TR"
+                />
+                <FieldError errors={state.fieldErrors?.marketFocus} />
+              </div>
+              <div className="rounded-xl border border-border bg-muted/60 p-4 text-sm leading-6 text-muted-foreground">
+                Onboarding bitince dogrudan urun kaynagi ekranina gececeksiniz.
+                Shopify veya web sitesi secimini orada yapacaksiniz.
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="businessCategory">İşletme kategorisi</Label>
-              <Input
-                id="businessCategory"
-                name="businessCategory"
-                defaultValue={profile?.businessCategory ?? ""}
-                placeholder="Örn: Outdoor ekipmanları"
-                required
-              />
-              <FieldError errors={state.fieldErrors?.businessCategory} />
-            </div>
+          <div className="mt-8 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2"
+              disabled={activeStep === 0 || isDisabled}
+              onClick={() => setActiveStep((step) => Math.max(step - 1, 0))}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Geri
+            </Button>
 
-            <div className="grid gap-2">
-              <Label htmlFor="marketFocus">Pazar odağı</Label>
-              <Input
-                id="marketFocus"
-                name="marketFocus"
-                defaultValue={profile?.marketFocus ?? "TR"}
-                placeholder="TR"
-                required
-              />
-              <FieldError errors={state.fieldErrors?.marketFocus} />
-            </div>
+            {isLastStep ? (
+              <Button type="submit" className="gap-2" disabled={isDisabled}>
+                {pending || state.status === "success"
+                  ? "Kaynak secimine geciliyor..."
+                  : "Onboarding'i tamamla"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className="gap-2"
+                disabled={isDisabled}
+                onClick={() =>
+                  setActiveStep((step) => Math.min(step + 1, steps.length - 1))
+                }
+              >
+                Devam
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-
-          <Button type="submit" className="w-full gap-2 md:w-auto">
-            {pending || state.status === "success"
-              ? "Kaynak seçimine geçiliyor..."
-              : "Onboarding'i tamamla"}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
         </fieldset>
       </form>
-
-      <aside className="flex flex-col gap-4">
-        <div className="seller-surface p-5">
-          <Store className="h-5 w-5 text-primary" />
-          <h2 className="mt-4 text-lg font-semibold">Sonraki adım net</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Onboarding bitince doğrudan ürün kaynağı ekranına geçeceksiniz.
-            Shopify veya web sitesi seçimini orada yapacaksınız.
-          </p>
-        </div>
-
-        <div className="seller-surface p-5">
-          <Globe2 className="h-5 w-5 text-primary" />
-          <h2 className="mt-4 text-lg font-semibold">Daha az karar</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Website adresi ve kaynak tercihi bu ekrandan kaldırıldı. Bu bilgiler
-            yalnızca gerçekten kullanacağınız kaynak adımında istenecek.
-          </p>
-        </div>
-      </aside>
     </div>
   );
 }
