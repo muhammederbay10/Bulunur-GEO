@@ -17,7 +17,6 @@ import type { SourceStore } from "@/types/source";
 import { NativeSourceForm } from "./native-source-form";
 import { SourceChoiceSelector, type SourceChoice } from "./source-choice-selector";
 import { ShopifySourceForm } from "./shopify-source-form";
-import { SourceSetupHeader } from "./source-setup-header";
 import { SourceSetupSuccess } from "./source-setup-success";
 import { SourceStatusList } from "./source-status-list";
 
@@ -113,9 +112,55 @@ export function SourceSetupPanel({
     );
   }
 
+  const selectedSourceForm =
+    sourceChoice === "shopify" ? (
+      <ShopifySourceForm
+        action={shopifyAction}
+        disabled={formsDisabled}
+        pending={shopifyPending}
+        state={shopifyState}
+        store={shopifyStore}
+      />
+    ) : (
+      <NativeSourceForm
+        action={nativeAction}
+        disabled={formsDisabled}
+        pending={nativePending}
+        profile={profile}
+        state={nativeState}
+        store={nativeStore}
+      />
+    );
+
+  const sourceSelector = (
+    <section className={setupMode ? "mx-auto grid w-full max-w-2xl gap-2" : "grid w-full gap-2"}>
+      <p className="text-sm font-medium text-foreground">Baglanti yontemini secin</p>
+      <SourceChoiceSelector
+        value={sourceChoice}
+        onChange={setSourceChoice}
+        disabled={formsDisabled || nativePending || shopifyPending}
+      />
+    </section>
+  );
+
+  const statusContent = (
+    <section className="seller-surface h-full p-4">
+      <div className="mb-4 flex items-start gap-3">
+        <AlertTriangle className="mt-1 h-5 w-5 text-primary" />
+        <div>
+          <h2 className="text-lg font-semibold">Kaynak durumu</h2>
+          <p className="mt-2 text-sm leading-5 text-muted-foreground">
+            Kayitlar server tarafinda sahiplik kontroluyle olusturulur.
+          </p>
+        </div>
+      </div>
+      <SourceStatusList stores={stores} />
+    </section>
+  );
+
   return (
-    <div className="flex flex-col gap-6">
-      <SourceSetupHeader />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <h1 className="sr-only">Kaynaklar</h1>
 
       {!databaseReady && setupMessage ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -125,8 +170,8 @@ export function SourceSetupPanel({
 
       {databaseReady && !canWriteSources ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          Kaynak kurulumu şu anda kullanılamıyor. Lütfen daha sonra tekrar
-          deneyin veya destek ekibine haber verin.
+          Kaynak kurulumu su anda kullanilamiyor. Lutfen daha sonra tekrar deneyin
+          veya destek ekibine haber verin.
         </div>
       ) : null}
 
@@ -144,38 +189,12 @@ export function SourceSetupPanel({
         </div>
       ) : null}
 
-      <section className="mx-auto grid w-full max-w-2xl gap-4">
-        <div className="grid gap-3">
-          <div>
-            <p className="mono-label text-primary">Kaynak turu</p>
-            <h2 className="mt-1 text-xl font-semibold">Baglanti yontemini secin</h2>
-          </div>
-          <SourceChoiceSelector
-            value={sourceChoice}
-            onChange={setSourceChoice}
-            disabled={formsDisabled || nativePending || shopifyPending}
-          />
-        </div>
-
-        {sourceChoice === "shopify" ? (
-          <ShopifySourceForm
-            action={shopifyAction}
-            disabled={formsDisabled}
-            pending={shopifyPending}
-            state={shopifyState}
-            store={shopifyStore}
-          />
-        ) : (
-          <NativeSourceForm
-            action={nativeAction}
-            disabled={formsDisabled}
-            pending={nativePending}
-            profile={profile}
-            state={nativeState}
-            store={nativeStore}
-          />
-        )}
-      </section>
+      {setupMode ? (
+        <section className="mx-auto grid w-full max-w-2xl gap-4">
+          {sourceSelector}
+          {selectedSourceForm}
+        </section>
+      ) : null}
 
       {setupMode ? (
         <div className="flex justify-center pt-2">
@@ -190,23 +209,16 @@ export function SourceSetupPanel({
       ) : null}
 
       {!setupMode ? (
-      <section className="seller-surface p-5">
-        <div className="mb-4 flex items-start gap-3">
-          <AlertTriangle className="mt-1 h-5 w-5 text-primary" />
-          <div>
-            <h2 className="text-xl font-semibold">Kaynak durumu</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Bu liste yalnızca sizin mağaza/kaynak kayıtlarınızı gösterir.
-              Kayıtlar server tarafında sahiplik kontrolüyle oluşturulur.
-            </p>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.85fr)] lg:items-stretch">
+          <div className="grid h-full gap-4">
+            {sourceSelector}
+            {selectedSourceForm}
+            {nativeStore?.status === "active" ? (
+              <NativeImportPanel store={nativeStore} />
+            ) : null}
           </div>
+          <div className="h-full">{statusContent}</div>
         </div>
-        <SourceStatusList stores={stores} />
-      </section>
-      ) : null}
-
-      {!setupMode && nativeStore?.status === "active" ? (
-        <NativeImportPanel store={nativeStore} />
       ) : null}
     </div>
   );
