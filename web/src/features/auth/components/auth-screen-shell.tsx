@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 type AuthScreenShellProps = {
@@ -8,6 +11,15 @@ type AuthScreenShellProps = {
 export function AuthScreenShell({ children, wide = false }: AuthScreenShellProps) {
   return (
     <main className="relative flex h-svh w-full items-center justify-center overflow-hidden bg-background p-4 text-foreground md:p-6">
+      <div className="absolute left-4 top-4 z-20 md:left-6 md:top-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Ana sayfa
+        </Link>
+      </div>
       <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
         <ThemeSwitcher />
       </div>
