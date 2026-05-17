@@ -585,6 +585,37 @@ export async function getCatalogDashboardForCurrentUser(): Promise<CatalogDashbo
   return result.data;
 }
 
+export async function listProductSourceSummariesForProfile(
+  profileId: string,
+): Promise<ProductRepositoryResult<ProductSourceSummary[]>> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("stores")
+    .select(sourceSummarySelect)
+    .eq("profile_id", profileId)
+    .order("updated_at", { ascending: false })
+    .limit(6)
+    .returns<SourceSummaryRow[]>();
+
+  if (error) {
+    const isMissingTable = isMissingProductTable(error);
+
+    return {
+      ok: false,
+      message: isMissingTable
+        ? productStorageSetupMessage()
+        : "Kaynak ozeti okunamadi.",
+      code: error.code,
+      isMissingTable,
+    };
+  }
+
+  return {
+    ok: true,
+    data: (data ?? []).map(mapSourceSummary),
+  };
+}
+
 export async function getProductAnalysisContextForCurrentUser(
   productId: string,
 ): Promise<ProductRepositoryResult<ProductAnalysisContext>> {

@@ -8,6 +8,7 @@ import {
   hasCompletedOnboarding,
   hasCompletedSourceSetup,
 } from "@/lib/db/profile-repository";
+import { listProductSourceSummariesForProfile } from "@/lib/db/product-repository";
 
 function ProtectedAreaFallback() {
   return (
@@ -49,7 +50,13 @@ async function ProtectedDashboardShell({
     redirect("/sources?setup=1");
   }
 
-  return <AppShell>{children}</AppShell>;
+  const sourcesResult = await listProductSourceSummariesForProfile(user.id);
+
+  return (
+    <AppShell sources={sourcesResult.ok ? sourcesResult.data : []}>
+      {children}
+    </AppShell>
+  );
 }
 
 export default function DashboardGroupLayout({

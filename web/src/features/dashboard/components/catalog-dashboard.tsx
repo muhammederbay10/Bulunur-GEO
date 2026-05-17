@@ -5,7 +5,6 @@ import {
   CircleAlert,
   Clock3,
   Package,
-  RefreshCw,
   Sparkles,
   Store,
 } from "lucide-react";
@@ -14,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
   CatalogDashboardSummary,
-  ProductSourceSummary,
   ProductSummary,
 } from "@/types/product";
 
@@ -22,14 +20,6 @@ const sourceLabels = {
   shopify: "Shopify",
   native: "Web sitesi",
   woocommerce: "WooCommerce",
-};
-
-const sourceStatusLabels: Record<string, string> = {
-  setup_pending: "Kurulum bekliyor",
-  active: "Aktif",
-  syncing: "Senkronize ediliyor",
-  error: "Hata var",
-  disconnected: "Baglanti kesildi",
 };
 
 const workflowLabels = {
@@ -51,40 +41,114 @@ function formatDate(value?: string) {
   }).format(new Date(value));
 }
 
-function ProductMiniRow({ product }: { product: ProductSummary }) {
-  return (
-    <li className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background/70 px-4 py-3 transition hover:bg-muted">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{product.title}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>{sourceLabels[product.source]}</span>
-          <span>{workflowLabels[product.workflowStatus]}</span>
-          {typeof product.latestScore === "number" ? (
-            <span>{product.latestScore}/100</span>
-          ) : null}
-        </div>
+function scoreTone(score?: number) {
+  if (typeof score !== "number") return "bg-muted text-muted-foreground";
+  if (score >= 75) return "bg-primary/10 text-primary";
+  if (score >= 50) return "bg-yellow-500/10 text-yellow-600";
+
+  return "bg-destructive/10 text-destructive";
+}
+
+function ProductThumb({ product }: { product: ProductSummary }) {
+  if (!product.imageUrl) {
+    return (
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
+        <Package className="h-5 w-5" />
       </div>
-      <Button asChild variant="outline" size="sm">
-        <Link href={`/products/${product.id}`}>Ac</Link>
-      </Button>
-    </li>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={product.imageUrl}
+      alt=""
+      className="h-14 w-14 shrink-0 rounded-md border border-border object-cover"
+      loading="lazy"
+    />
   );
 }
 
-function SourceRow({ source }: { source: ProductSourceSummary }) {
+function DashboardProductCard({ product }: { product: ProductSummary }) {
+  const score = product.latestScore;
+  const scoreWidth = typeof score === "number" ? Math.min(Math.max(score, 0), 100) : 0;
+
   return (
-    <li className="flex items-center justify-between gap-4 rounded-lg border border-border bg-background/70 px-4 py-3">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{source.name}</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {sourceLabels[source.sourceType]} - Son hareket:{" "}
-          {formatDate(source.lastSyncAt ?? source.updatedAt)}
-        </p>
+    <Link
+      href={`/products/${product.id}`}
+      className="group grid gap-3 rounded-lg border border-border bg-background/70 p-3 transition hover:border-primary/50 hover:bg-muted/60"
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <ProductThumb product={product} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="line-clamp-2 text-sm font-semibold leading-5 group-hover:text-primary">
+              {product.title}
+            </h3>
+            <span
+              className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${scoreTone(score)}`}
+            >
+              {typeof score === "number" ? score : "-"}
+            </span>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
+            <Badge variant="outline">{workflowLabels[product.workflowStatus]}</Badge>
+          </div>
+        </div>
       </div>
-      <Badge variant={source.status === "active" ? "secondary" : "outline"}>
-        {sourceStatusLabels[source.status] ?? source.status}
-      </Badge>
-    </li>
+
+      <div className="grid gap-2">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary"
+            style={{ width: `${scoreWidth}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span className="truncate">
+            {product.priceDisplay ?? product.availability ?? "Detay bekliyor"}
+          </span>
+          <span className="shrink-0">{formatDate(product.updatedAt)}</span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function ProductCardGroup({
+  title,
+  actionLabel,
+  actionHref,
+  products,
+  emptyText,
+}: {
+  title: string;
+  actionLabel: string;
+  actionHref: string;
+  products: ProductSummary[];
+  emptyText: string;
+}) {
+  return (
+    <section className="seller-surface p-4">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-base font-semibold">{title}</h2>
+        <Button asChild variant="outline" size="sm">
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
+      </div>
+      {products.length > 0 ? (
+        <div className="mt-3 grid gap-2">
+          {products.slice(0, 4).map((product) => (
+            <DashboardProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+          {emptyText}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -97,186 +161,99 @@ export function CatalogDashboard({
     {
       label: "Toplam urun",
       value: summary.metrics.totalProducts,
-      note: "Katalogda kayitli Shopify ve web sitesi urunleri.",
+      note: "Katalogdaki urunler.",
       icon: Package,
       href: "/products",
     },
     {
       label: "Analiz edilen",
       value: summary.metrics.analyzedProducts,
-      note: "AI gorunurluk analizi tamamlanan urunler.",
+      note: "Skoru olusan urunler.",
       icon: Activity,
       href: "/products?status=analyzed",
     },
     {
       label: "Optimize edilen",
       value: summary.metrics.optimizedProducts,
-      note: "Iyilestirme sonucu hazirlanan veya yayinlanan urunler.",
+      note: "Taslagi hazir urunler.",
       icon: Sparkles,
       href: "/products?status=optimized",
     },
     {
       label: "Dikkat isteyen",
       value: summary.metrics.waitingProducts + summary.metrics.lowScoreProducts,
-      note: "Analiz bekleyen veya dusuk skorlu urunler.",
+      note: "Bekleyen veya dusuk skor.",
       icon: CircleAlert,
       href: "/products?status=waiting",
     },
   ];
-  const hasProducts = summary.metrics.totalProducts > 0;
 
   return (
-    <div className="page-enter flex flex-col gap-8">
+    <div className="page-enter flex flex-col gap-5">
       {summary.errorMessage ? (
         <section className="rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground">
           {summary.errorMessage}
         </section>
       ) : null}
 
-      <section className="seller-surface overflow-hidden p-6 md:p-8">
-        <p className="mono-label text-primary">
-          Katalog kontrol merkezi
-        </p>
-        <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold leading-tight tracking-normal md:text-5xl">
-              Bugun hangi urune odaklanalim?
-            </h1>
-            <p className="mt-3 leading-7 text-muted-foreground">
-              Urunlerinizi kaynak, analiz durumu ve son katalog hareketine gore
-              takip edin. Siradaki en guvenli adim urun listesinden bir urun
-              secmek ve analiz akisina hazirlanmak.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" className="gap-2">
-              <Link href="/sources">
-                <RefreshCw className="h-4 w-4" />
-                Kaynaklar
-              </Link>
-            </Button>
-            <Button asChild className="gap-2">
-              <Link href={hasProducts ? "/products" : "/sources"}>
-                {hasProducts ? "Urunleri Gor" : "Urun Iceri Aktar"}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-        <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-2">
-            <Clock3 className="h-4 w-4" />
-            Son katalog hareketi: {formatDate(summary.lastCatalogActivityAt)}
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <Store className="h-4 w-4" />
-            {summary.sources.length} kaynak
-          </span>
-        </div>
-      </section>
-
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <Link
             key={metric.label}
             href={metric.href}
-            className="seller-surface group relative overflow-hidden p-5 transition hover:border-primary/50 hover:shadow-primary-soft"
+            className="seller-surface group relative overflow-hidden p-4 transition hover:border-primary/50 hover:shadow-primary-soft"
           >
             <div className="absolute right-0 top-0 h-24 w-24 translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 blur-2xl opacity-0 transition group-hover:opacity-100" />
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="mono-label text-muted-foreground">{metric.label}</p>
-                <p className="mt-4 text-5xl font-bold leading-none">
+                <p className="mt-3 text-4xl font-bold leading-none">
                   {metric.value}
                 </p>
               </div>
-              <div className="rounded-lg bg-muted p-3 text-primary">
+              <div className="rounded-lg bg-muted p-2.5 text-primary">
                 <metric.icon className="h-5 w-5" />
               </div>
             </div>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 text-sm leading-5 text-muted-foreground">
               {metric.note}
             </p>
           </Link>
         ))}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-2">
-        <div className="seller-surface p-5 md:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold">Analiz bekleyenler</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Katalogda siradaki calisma adaylari.
-              </p>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/products?status=waiting">Tumunu gor</Link>
-            </Button>
-          </div>
-          {summary.attentionProducts.length > 0 ? (
-            <ul className="mt-4 grid gap-2">
-              {summary.attentionProducts.map((product) => (
-                <ProductMiniRow key={product.id} product={product} />
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-              Analiz bekleyen urun bulunmuyor. Yeni urun iceri aldiginizda
-              burada gorunur.
-            </p>
-          )}
-        </div>
-
-        <div className="seller-surface p-5 md:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold">Son urun hareketleri</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                En son senkronize edilen veya guncellenen urunler.
-              </p>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/products">Katalog</Link>
-            </Button>
-          </div>
-          {summary.recentProducts.length > 0 ? (
-            <ul className="mt-4 grid gap-2">
-              {summary.recentProducts.map((product) => (
-                <ProductMiniRow key={product.id} product={product} />
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-              Henuz urun hareketi yok. Kaynak ekleyerek katalog olusturun.
-            </p>
-          )}
-        </div>
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <span className="inline-flex items-center gap-2">
+          <Clock3 className="h-4 w-4 text-primary" />
+          Son hareket: {formatDate(summary.lastCatalogActivityAt)}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <Store className="h-4 w-4 text-primary" />
+          {summary.sources.length} kaynak
+        </span>
+        <Button asChild size="sm" className="gap-2">
+          <Link href="/products">
+            Katalog
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </section>
 
-      <section className="seller-surface p-5 md:p-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">Kaynak durumu</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Shopify ve web sitesi kaynaklarinizin son durumu.
-            </p>
-          </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/sources">Yonet</Link>
-          </Button>
-        </div>
-        {summary.sources.length > 0 ? (
-          <ul className="mt-4 grid gap-2 md:grid-cols-2">
-            {summary.sources.map((source) => (
-              <SourceRow key={source.id} source={source} />
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-4 rounded-lg border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            Henuz kaynak yok. Shopify baglayin veya web sitenizden urun ekleyin.
-          </p>
-        )}
+      <section className="grid gap-4 xl:grid-cols-2">
+        <ProductCardGroup
+          title="Analiz bekleyenler"
+          actionLabel="Tumunu gor"
+          actionHref="/products?status=waiting"
+          products={summary.attentionProducts}
+          emptyText="Analiz bekleyen urun yok."
+        />
+        <ProductCardGroup
+          title="Son urun hareketleri"
+          actionLabel="Katalog"
+          actionHref="/products"
+          products={summary.recentProducts}
+          emptyText="Henuz urun hareketi yok."
+        />
       </section>
     </div>
   );

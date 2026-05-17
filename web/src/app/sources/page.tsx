@@ -110,7 +110,20 @@ async function SourcesContent({
   );
 
   if (!setupMode) {
-    return <AppShell>{panel}</AppShell>;
+    return (
+      <AppShell
+        sources={sourceResult.stores.map((store) => ({
+          id: store.id,
+          name: store.name,
+          sourceType: store.sourceType,
+          status: store.status,
+          lastSyncAt: store.lastSyncAt ?? undefined,
+          updatedAt: store.updatedAt,
+        }))}
+      >
+        {panel}
+      </AppShell>
+    );
   }
 
   return (
