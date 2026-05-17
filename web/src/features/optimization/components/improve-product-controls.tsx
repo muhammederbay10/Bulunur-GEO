@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
-import { Loader2, WandSparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, WandSparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,15 +30,22 @@ async function requestImprovement(
 export function ImproveProductButton({
   productId,
   disabled,
+  hasOptimization,
+  isOptimizationRunning,
+  reviewHref,
 }: {
   productId: string;
   disabled?: boolean;
+  hasOptimization?: boolean;
+  isOptimizationRunning?: boolean;
+  reviewHref?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isBusy = isSubmitting || isPending;
+  const optimizationHref = reviewHref ?? `/products/${productId}/optimization`;
 
   async function handleImprove() {
     setErrorMessage(null);
@@ -54,6 +62,12 @@ export function ImproveProductButton({
       }
 
       startTransition(() => {
+        if (payload.status === "needs_user_input") {
+          router.refresh();
+          return;
+        }
+
+        router.push(optimizationHref);
         router.refresh();
       });
     } catch {
@@ -65,24 +79,64 @@ export function ImproveProductButton({
     }
   }
 
+  if (hasOptimization) {
+    return (
+      <Button asChild className="gap-2">
+        <Link href={optimizationHref}>
+          <CheckCircle2 className="h-4 w-4" />
+          Optimize Edilmis Halini Gor
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
+    );
+  }
+
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-3">
       <Button
         type="button"
         className="gap-2"
-        disabled={disabled || isBusy}
+        disabled={disabled || isBusy || isOptimizationRunning}
         onClick={handleImprove}
       >
-        {isBusy ? (
+        {isBusy || isOptimizationRunning ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <WandSparkles className="h-4 w-4" />
         )}
-        {isBusy ? "Optimizasyon isleniyor" : "Optimize Et"}
+        {isBusy || isOptimizationRunning ? "Optimizasyon Hazirlaniyor" : "Optimize Et"}
       </Button>
+      {isBusy ? <OptimizationLoadingState /> : null}
       {errorMessage ? (
         <p className="text-sm text-destructive">{errorMessage}</p>
       ) : null}
+    </div>
+  );
+}
+
+function OptimizationLoadingState() {
+  const steps = [
+    "Urun icerigi okunuyor",
+    "Gorunurluk sinyalleri isleniyor",
+    "Optimize taslak kaydediliyor",
+  ];
+
+  return (
+    <div className="rounded-lg border border-primary/25 bg-primary/10 p-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-primary">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Optimizasyon hazirlaniyor
+      </div>
+      <div className="mt-3 grid gap-2">
+        {steps.map((step, index) => (
+          <div key={step} className="flex items-center gap-3 text-xs">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {index + 1}
+            </span>
+            <span className="text-muted-foreground">{step}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -169,7 +223,7 @@ export function MissingFactsForm({
           Bilgilerle Optimize Et
         </Button>
         <p className="text-sm text-muted-foreground">
-          Bos birakilan alanlar AI tarafindan uydurulmaz.
+          Bos birakilan alanlar uydurulmaz.
         </p>
       </div>
       {errorMessage ? (
