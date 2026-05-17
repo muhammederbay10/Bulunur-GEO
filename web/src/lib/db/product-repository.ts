@@ -16,6 +16,7 @@ import type {
   ProductSource,
   ProductSummary,
 } from "@/types/product";
+import type { ProductInput } from "@/types/ai-contract";
 
 type ProductRow = {
   id: string;
@@ -277,6 +278,140 @@ function asRecord(value: unknown): Record<string, unknown> {
   return isRecord(value) ? value : {};
 }
 
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+function asRecordArray(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(isRecord);
+}
+
+function asHeadings(value: unknown): Record<string, string[]> {
+  if (!isRecord(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([key, item]) => [key, asStringArray(item)] as const)
+      .filter(([, items]) => items.length > 0),
+  );
+}
+
+function asKnownCrawlStatus(value: unknown) {
+  const status = asString(value);
+
+  if (
+    status === "success" ||
+    status === "partial" ||
+    status === "failed" ||
+    status === "blocked" ||
+    status === "timeout"
+  ) {
+    return status;
+  }
+
+  return null;
+}
+
+function normalizeAiSource(source: ProductSource): "shopify" | "native" | null {
+  if (source === "shopify" || source === "native") {
+    return source;
+  }
+
+  return null;
+}
+
+function normalizeCurrency(value: unknown): string | null {
+  const currency = asString(value);
+
+  if (!currency) return null;
+
+  const normalized = currency.trim().toUpperCase();
+
+  if (normalized === "TL" || normalized === "TRY" || normalized === "₺") {
+    return "TRY";
+  }
+
+  if (normalized === "$") {
+    return "USD";
+  }
+
+  if (normalized === "€") {
+    return "EUR";
+  }
+
+  return /^[A-Z]{3}$/.test(normalized) ? normalized : null;
+}
+
+function normalizeAvailability(value: unknown): {
+  status: "in_stock" | "out_of_stock" | "preorder" | "backorder" | "unknown";
+  rawText?: string;
+} {
+  const rawText = asString(value);
+
+  if (!rawText) {
+    return { status: "unknown" };
+  }
+
+  const normalized = rawText.toLocaleLowerCase("tr-TR");
+
+  if (
+    normalized.includes("ön sipariş") ||
+    normalized.includes("on siparis") ||
+    normalized.includes("preorder")
+  ) {
+    return { status: "preorder", rawText };
+  }
+
+  if (
+    normalized.includes("tedarik") ||
+    normalized.includes("backorder") ||
+    normalized.includes("bekleyen stok")
+  ) {
+    return { status: "backorder", rawText };
+  }
+
+  if (
+    normalized.includes("tükendi") ||
+    normalized.includes("stok yok") ||
+    normalized.includes("mevcut değil") ||
+    normalized.includes("out of stock") ||
+    normalized.includes("sold out")
+  ) {
+    return { status: "out_of_stock", rawText };
+  }
+
+  if (
+    normalized.includes("stokta") ||
+    normalized.includes("mevcut") ||
+    normalized.includes("satışta") ||
+    normalized.includes("available") ||
+    normalized.includes("in stock") ||
+    /\bson\s+\d+\s+adet\b/u.test(normalized)
+  ) {
+    return { status: "in_stock", rawText };
+  }
+
+  return { status: "unknown", rawText };
+}
+
+function firstValidDateString(values: unknown[]) {
+  for (const value of values) {
+    const dateValue = asString(value);
+
+    if (!dateValue) continue;
+
+    const date = new Date(dateValue);
+
+    if (Number.isFinite(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+
+  return new Date().toISOString();
+}
+
 function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetail {
   return {
     id: row.id,
@@ -308,23 +443,139 @@ function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetai
   };
 }
 
-function buildProductInput(row: ProductAnalysisRow) {
+function buildProductInput(
+  row: ProductAnalysisRow,
+): ProductRepositoryResult<ProductInput> {
+  const source = normalizeAiSource(row.source);
+
+  if (!source) {
+    return {
+      ok: false,
+      code: "unsupported_ai_product_source",
+      message: "AI analizi bu urun kaynagi icin henuz desteklenmiyor.",
+    };
+  }
+
   const attributes = asRecord(row.attributes);
   const rawSourcePayload = asRecord(row.raw_source_payload);
   const rawExtracted = asRecord(row.raw_extracted);
   const crawlMetadata = asRecord(row.crawl_metadata);
+  const nestedRobots = asRecord(crawlMetadata.robots);
+  const camelDetectedSchema = asRecordArray(rawExtracted.detectedSchema);
+  const snakeDetectedSchema = asRecordArray(rawExtracted.detected_schema);
   const detectedSchema =
-    rawExtracted.detectedSchema ?? rawExtracted.detected_schema ?? [];
+    camelDetectedSchema.length > 0 ? camelDetectedSchema : snakeDetectedSchema;
   const pageTitle =
-    rawExtracted.pageTitle ?? rawExtracted.page_title ?? row.seo_title;
+    asString(rawExtracted.pageTitle) ??
+    asString(rawExtracted.page_title) ??
+    row.seo_title ??
+    row.title;
   const metaDescription =
-    rawExtracted.metaDescription ??
-    rawExtracted.meta_description ??
+    asString(rawExtracted.metaDescription) ??
+    asString(rawExtracted.meta_description) ??
     row.seo_description;
+  const headings = asHeadings(rawExtracted.headings ?? crawlMetadata.headings);
+  const bodyText =
+    asString(rawExtracted.bodyText) ??
+    asString(rawExtracted.body_text) ??
+    asString(rawExtracted.plainDescription) ??
+    row.description ??
+    row.description_html ??
+    row.short_description ??
+    undefined;
+  const requestedUrl =
+    asOptionalUrl(crawlMetadata.requestedUrl) ??
+    asOptionalUrl(crawlMetadata.requested_url) ??
+    asOptionalUrl(row.url);
+  const finalUrl =
+    asOptionalUrl(crawlMetadata.finalUrl) ??
+    asOptionalUrl(crawlMetadata.final_url);
   const canonicalUrl =
     asOptionalUrl(crawlMetadata.canonicalUrl) ??
     asOptionalUrl(crawlMetadata.canonical_url) ??
-    asOptionalUrl(row.url);
+    finalUrl ??
+    requestedUrl;
+  const productUrl =
+    asOptionalUrl(crawlMetadata.productUrl) ??
+    asOptionalUrl(crawlMetadata.product_url) ??
+    finalUrl ??
+    requestedUrl;
+  const url = productUrl ?? canonicalUrl;
+
+  if (!url) {
+    return {
+      ok: false,
+      code: "ai_product_url_required",
+      message: "AI analizi icin urun URL adresi gerekli.",
+    };
+  }
+
+  const httpStatusCode =
+    asNumber(crawlMetadata.httpStatusCode) ??
+    asNumber(crawlMetadata.http_status_code) ??
+    asNumber(crawlMetadata.httpStatus);
+  const robotsAllowed =
+    asBoolean(crawlMetadata.robotsAllowed) ??
+    asBoolean(crawlMetadata.robots_allowed) ??
+    asBoolean(nestedRobots.allowed) ??
+    undefined;
+  const errorCode = asString(crawlMetadata.errorCode ?? crawlMetadata.error_code);
+  const explicitlyBlocked =
+    asBoolean(crawlMetadata.blocked) ??
+    (robotsAllowed === false ||
+    errorCode === "robots_disallowed" ||
+    errorCode === "blocked_status");
+  const blocked = Boolean(explicitlyBlocked);
+  const accessible =
+    asBoolean(crawlMetadata.accessible) ??
+    (!blocked &&
+      (typeof httpStatusCode === "number"
+        ? httpStatusCode >= 200 && httpStatusCode < 400
+        : Boolean(url)));
+  const extracted =
+    asBoolean(crawlMetadata.contentExtracted) ??
+    asBoolean(crawlMetadata.content_extracted) ??
+    Boolean(row.title || row.description || row.description_html || bodyText);
+  const contentExtracted = accessible ? extracted : false;
+  const wasFetched = Boolean(
+    httpStatusCode ||
+      asString(crawlMetadata.fetchedAt) ||
+      asString(crawlMetadata.fetched_at) ||
+      asString(crawlMetadata.crawledAt) ||
+      asString(crawlMetadata.crawled_at),
+  );
+  const timedOut =
+    errorCode === "timeout" ||
+    asKnownCrawlStatus(crawlMetadata.crawlStatus) === "timeout";
+  let crawlStatus =
+    asKnownCrawlStatus(crawlMetadata.crawlStatus) ??
+    asKnownCrawlStatus(crawlMetadata.crawl_status);
+
+  if (!crawlStatus) {
+    if (timedOut) {
+      crawlStatus = "timeout";
+    } else if (blocked) {
+      crawlStatus = "blocked";
+    } else if (wasFetched && accessible && contentExtracted) {
+      crawlStatus = "success";
+    } else if (url) {
+      crawlStatus = "partial";
+    } else {
+      crawlStatus = "failed";
+    }
+  }
+
+  if (crawlStatus === "success" && (!accessible || !contentExtracted)) {
+    crawlStatus = accessible ? "partial" : "failed";
+  }
+
+  if (blocked && !["blocked", "failed", "partial"].includes(crawlStatus)) {
+    crawlStatus = "blocked";
+  }
+
+  const imageUrls = (row.image_urls ?? []).map(asOptionalUrl).filter(Boolean);
+  const availability = normalizeAvailability(row.availability);
+  const currency = normalizeCurrency(row.currency);
   const enrichedAttributes = {
     ...attributes,
     externalId: row.external_id,
@@ -334,61 +585,103 @@ function buildProductInput(row: ProductAnalysisRow) {
     seoTitle: row.seo_title,
     seoDescription: row.seo_description,
     tags: row.tags ?? [],
+    rawAvailabilityText: availability.rawText,
+    nativeImportMethod:
+      source === "native"
+        ? asString(attributes.fallbackSourceType) ??
+          asString(crawlMetadata.sourceType) ??
+          asString(crawlMetadata.source_type) ??
+          (crawlMetadata.fallback ? "manual" : "url")
+        : undefined,
+    contentType: asString(crawlMetadata.contentType),
   };
   const rawExtractedPayload = {
-    ...rawExtracted,
     pageTitle,
     metaDescription,
+    headings,
+    bodyText,
     detectedSchema,
-    rawSourcePayload,
   };
   const crawlMetadataPayload = {
-    crawlStatus: asString(crawlMetadata.crawlStatus) ?? "unknown",
-    httpStatusCode: asNumber(crawlMetadata.httpStatusCode) ?? undefined,
-    accessible:
-      typeof crawlMetadata.accessible === "boolean"
-        ? crawlMetadata.accessible
-        : undefined,
-    blocked:
-      typeof crawlMetadata.blocked === "boolean"
-        ? crawlMetadata.blocked
-        : undefined,
-    contentExtracted:
-      typeof crawlMetadata.contentExtracted === "boolean"
-        ? crawlMetadata.contentExtracted
-        : undefined,
+    crawlStatus,
+    crawledAt: firstValidDateString([
+      crawlMetadata.crawledAt,
+      crawlMetadata.crawled_at,
+      crawlMetadata.fetchedAt,
+      crawlMetadata.fetched_at,
+      crawlMetadata.importedAt,
+      crawlMetadata.imported_at,
+      row.updated_at,
+    ]),
+    accessible,
+    blocked,
+    contentExtracted,
+    productUrl,
+    httpStatusCode: httpStatusCode ?? undefined,
     canonicalUrl,
-    robotsAllowed:
-      typeof crawlMetadata.robotsAllowed === "boolean"
-        ? crawlMetadata.robotsAllowed
-        : undefined,
+    robotsAllowed,
+    indexable: asBoolean(crawlMetadata.indexable) ?? undefined,
+    pageTitle,
+    metaDescription: metaDescription ?? undefined,
+    headings,
+    detectedStructuredData:
+      asRecordArray(crawlMetadata.detectedStructuredData).length > 0
+        ? asRecordArray(crawlMetadata.detectedStructuredData)
+        : detectedSchema,
+    imageUrls,
     imagesAccessible:
-      typeof crawlMetadata.imagesAccessible === "boolean"
-        ? crawlMetadata.imagesAccessible
-        : undefined,
-    crawledAt: asString(crawlMetadata.crawledAt) ?? undefined,
+      asBoolean(crawlMetadata.imagesAccessible) ??
+      asBoolean(crawlMetadata.images_accessible) ??
+      (imageUrls.length > 0 ? true : undefined),
   };
-
-  return productInputSchema.parse({
+  const parsedInput = productInputSchema.safeParse({
     productId: row.id,
     storeId: row.store_id,
-    source: row.source,
-    url: asOptionalUrl(row.url),
-    language: row.language ?? "tr",
-    market: row.market ?? "TR",
+    source,
+    url,
+    language: "tr",
+    market: "TR",
     title: row.title,
     description: row.description ?? row.description_html ?? undefined,
     shortDescription: row.short_description ?? undefined,
     price: row.price_display ?? undefined,
-    currency: row.currency ?? undefined,
-    availability: row.availability ?? undefined,
+    currency,
+    availability: availability.status,
     brand: row.brand ?? row.vendor ?? undefined,
     category: row.category ?? row.product_type ?? undefined,
-    imageUrls: (row.image_urls ?? []).map(asOptionalUrl).filter(Boolean),
-    attributes: enrichedAttributes,
+    imageUrls,
+    attributes: {
+      ...enrichedAttributes,
+      rawSourcePayload,
+    },
     rawExtracted: rawExtractedPayload,
     crawlMetadata: crawlMetadataPayload,
   });
+
+  if (!parsedInput.success) {
+    console.warn("[ai-contract] product input validation failed", {
+      productId: row.id,
+      storeId: row.store_id,
+      source: row.source,
+      hasUrl: Boolean(url),
+      crawlStatus,
+      issues: parsedInput.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+    });
+
+    return {
+      ok: false,
+      code: "invalid_ai_product_input",
+      message: "Urun AI analiz sozlesmesine hazir degil.",
+    };
+  }
+
+  return {
+    ok: true,
+    data: parsedInput.data,
+  };
 }
 
 function getNormalizedPayload(row: ScrapePreviewRow): Record<string, unknown> {
@@ -668,11 +961,16 @@ export async function getProductAnalysisContextForProfile(params: {
     };
   }
 
+  const productInputResult = buildProductInput(data);
+
   return {
     ok: true,
     data: {
       product: mapProductAnalysisDetail(data),
-      productInput: buildProductInput(data),
+      productInput: productInputResult.ok ? productInputResult.data : undefined,
+      analysisUnavailableMessage: productInputResult.ok
+        ? undefined
+        : productInputResult.message,
     },
   };
 }

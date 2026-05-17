@@ -12,7 +12,7 @@ import type {
   ProductInput,
 } from "@/types/ai-contract";
 
-const AI_REQUEST_TIMEOUT_MS = 30_000;
+const AI_REQUEST_TIMEOUT_MS = 60_000;
 
 export class AiServiceError extends Error {
   code: string;
@@ -24,6 +24,18 @@ export class AiServiceError extends Error {
     this.code = params.code;
     this.status = params.status;
   }
+}
+
+function summarizeAiErrorPayload(payload: unknown) {
+  if (typeof payload === "string") {
+    return payload.slice(0, 500);
+  }
+
+  if (payload && typeof payload === "object") {
+    return payload;
+  }
+
+  return null;
 }
 
 export function getAiServiceConfig() {
@@ -88,6 +100,12 @@ async function postToAiService(params: {
     }
 
     if (!response.ok) {
+      console.error("[ai-service] request failed", {
+        path: params.path,
+        status: response.status,
+        detail: summarizeAiErrorPayload(payload),
+      });
+
       throw new AiServiceError({
         code: "ai_service_request_failed",
         message: "AI servisi isteği kabul etmedi.",
@@ -152,9 +170,9 @@ export async function improveProduct(
   const payload = await postToAiService({
     path: "/ai/improve-product",
     body: {
-      product_input: parsedInput,
+      product: parsedInput,
       analysis: parsedAnalysis,
-      user_facts: params.userFacts ?? null,
+      userFacts: params.userFacts ?? null,
     },
   });
   const parsedOutput = geoImprovementOutputSchema.safeParse(payload);

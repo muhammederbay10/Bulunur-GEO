@@ -109,6 +109,16 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { product, productInput } = productResult.data;
+
+  if (!productInput) {
+    return failureResponse(
+      "optimization_unavailable",
+      productResult.data.analysisUnavailableMessage ??
+        "Optimizasyon icin AI uyumlu urun URL adresi ve tarama bilgisi gerekli.",
+      422,
+    );
+  }
+
   const normalizedUserFacts = normalizeUserFacts(parsedBody.data.userFacts);
   const userFacts =
     Object.keys(normalizedUserFacts).length > 0 ? normalizedUserFacts : undefined;

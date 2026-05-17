@@ -62,7 +62,8 @@ export type ProductAnalysisDetail = {
 
 export type ProductAnalysisContext = {
   product: ProductAnalysisDetail;
-  productInput: ProductInput;
+  productInput?: ProductInput;
+  analysisUnavailableMessage?: string;
 };
 
 export type AnalyzeProductApiResponse =

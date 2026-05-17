@@ -1,38 +1,110 @@
 import { z } from "zod";
 
+const crawlStatusSchema = z.enum([
+  "success",
+  "partial",
+  "failed",
+  "blocked",
+  "timeout",
+]);
+const availabilityStatusSchema = z.enum([
+  "in_stock",
+  "out_of_stock",
+  "preorder",
+  "backorder",
+  "unknown",
+]);
+const supportedAiSourceSchema = z.enum(["shopify", "native"]);
+const headingsSchema = z
+  .record(z.string(), z.array(z.string()))
+  .default({});
+
 export const crawlMetadataSchema = z.object({
-  crawlStatus: z.string(),
-  httpStatusCode: z.number().optional(),
-  accessible: z.boolean().optional(),
-  blocked: z.boolean().optional(),
-  contentExtracted: z.boolean().optional(),
+  crawlStatus: crawlStatusSchema,
+  crawledAt: z.string().min(1),
+  accessible: z.boolean(),
+  blocked: z.boolean(),
+  contentExtracted: z.boolean(),
+  productUrl: z.string().url().optional(),
+  httpStatusCode: z.number().int().min(100).max(599).optional(),
   canonicalUrl: z.string().url().optional(),
   robotsAllowed: z.boolean().optional(),
+  indexable: z.boolean().optional(),
+  pageTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  headings: headingsSchema,
+  detectedStructuredData: z.array(z.record(z.string(), z.unknown())).default([]),
+  imageUrls: z.array(z.string().url()).default([]),
   imagesAccessible: z.boolean().optional(),
-  crawledAt: z.string().optional(),
+}).superRefine((metadata, context) => {
+  if (metadata.crawlStatus === "success" && !metadata.accessible) {
+    context.addIssue({
+      code: "custom",
+      message: "Successful crawls must be accessible.",
+      path: ["accessible"],
+    });
+  }
+
+  if (metadata.crawlStatus === "success" && !metadata.contentExtracted) {
+    context.addIssue({
+      code: "custom",
+      message: "Successful crawls must have extracted content.",
+      path: ["contentExtracted"],
+    });
+  }
+
+  if (
+    metadata.blocked &&
+    !["blocked", "failed", "partial"].includes(metadata.crawlStatus)
+  ) {
+    context.addIssue({
+      code: "custom",
+      message: "Blocked crawls must use blocked, failed, or partial status.",
+      path: ["crawlStatus"],
+    });
+  }
+
+  if (metadata.contentExtracted && !metadata.accessible) {
+    context.addIssue({
+      code: "custom",
+      message: "Content cannot be extracted from an inaccessible page.",
+      path: ["contentExtracted"],
+    });
+  }
+});
+
+export const rawExtractedSchema = z.object({
+  pageTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  headings: headingsSchema,
+  bodyText: z.string().optional(),
+  detectedSchema: z.array(z.record(z.string(), z.unknown())).default([]),
 });
 
 const scoreValueSchema = z.number().min(0).max(100);
 
 export const productInputSchema = z.object({
   productId: z.string(),
-  storeId: z.string(),
-  source: z.enum(["shopify", "native", "woocommerce"]),
-  url: z.string().url().optional(),
-  language: z.string().default("tr"),
-  market: z.string().default("TR"),
+  storeId: z.string().optional(),
+  source: supportedAiSourceSchema,
+  url: z.string().url(),
+  language: z.literal("tr").default("tr"),
+  market: z.literal("TR").default("TR"),
   title: z.string(),
   description: z.string().optional(),
   shortDescription: z.string().optional(),
   price: z.string().optional(),
-  currency: z.string().optional(),
-  availability: z.string().optional(),
+  currency: z.string().regex(/^[A-Z]{3}$/).nullable().optional(),
+  availability: availabilityStatusSchema.default("unknown"),
   brand: z.string().optional(),
   category: z.string().optional(),
   imageUrls: z.array(z.string().url()).default([]),
   attributes: z.record(z.string(), z.unknown()).default({}),
-  rawExtracted: z.record(z.string(), z.unknown()).optional(),
-  crawlMetadata: crawlMetadataSchema.optional(),
+  rawExtracted: rawExtractedSchema.default({
+    headings: {},
+    detectedSchema: [],
+  }),
+  crawlMetadata: crawlMetadataSchema,
 });
 
 export const geoScoreLayerSchema = z.object({

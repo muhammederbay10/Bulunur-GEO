@@ -67,6 +67,16 @@ export async function POST(_request: Request, context: RouteContext) {
   }
 
   const { product, productInput } = productResult.data;
+
+  if (!productInput) {
+    return failureResponse(
+      "analysis_unavailable",
+      productResult.data.analysisUnavailableMessage ??
+        "AI analizi icin urun URL adresi ve tarama bilgisi gerekli.",
+      422,
+    );
+  }
+
   const runResult = await startProductAnalysisRun({
     profileId: user.id,
     storeId: product.storeId,
