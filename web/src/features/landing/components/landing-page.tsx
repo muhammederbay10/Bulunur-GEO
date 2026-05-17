@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   CheckCircle2,
@@ -12,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import shopifyLogo from "@/app/shopify-logo.png";
 
 const capabilityCards = [
   {
@@ -39,10 +41,17 @@ const capabilityCards = [
 function ShopifyMark() {
   return (
     <div className="landing-hover inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Store className="h-4 w-4" />
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/15 bg-background/90">
+        <Image
+          src={shopifyLogo}
+          alt=""
+          width={22}
+          height={22}
+          className="h-8 w-8 object-contain"
+          aria-hidden="true"
+        />
       </span>
-      Shopify easy integration
+      Shopifya kolay integrasyon
     </div>
   );
 }
@@ -175,9 +184,8 @@ function HeroSection() {
           Ürün sayfalarını arama ve cevap motorları için anlaşılır hale getirin.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-          Bulunur; Shopify veya web sitenizden gelen ürünleri analiz eder,
-          eksik sinyalleri gösterir ve yayına hazır iyileştirme taslakları
-          oluşturur.
+          Bulunur; Shopify veya web sitenizden gelen ürünleri analiz eder, eksik
+          sinyalleri gösterir ve yayına hazır iyileştirme taslakları oluşturur.
         </p>
 
         <div className="mt-7 flex flex-wrap justify-center gap-3">
