@@ -87,11 +87,11 @@ const scrapePreviewItemSelect =
   "id,profile_id,store_id,scrape_job_id,product_url,title,image_urls,price_display,confidence_score,confidence_status,raw_extracted,crawl_metadata,imported_product_id";
 
 function scrapeStorageSetupMessage() {
-  return "Kazima tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Kazıma tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function serviceRoleMessage() {
-  return "Kazima onizleme kayitlari icin server tarafinda guvenli Supabase anahtari gerekli. Bu anahtar tarayiciya acilmamali.";
+  return "Kazıma önizleme kayıtları için sunucu tarafında güvenli Supabase anahtarı gerekli. Bu anahtar tarayıcıya açılmamalı.";
 }
 
 function isMissingScrapeTable(error: { code?: string; message?: string }) {
@@ -172,7 +172,7 @@ export async function createRunningScrapeJob(
       });
 
       return mutationError({
-        message: "Kazima isi baslatilamadi. Lutfen tekrar dene.",
+        message: "Kazıma isi başlatilamadi. Lütfen tekrar dene.",
         error: error ?? undefined,
         code: "scrape_job_create_failed",
       });
@@ -235,7 +235,7 @@ export async function completeScrapeJob(
     });
 
     return mutationError({
-      message: "Kazima isi durumu guncellenemedi.",
+      message: "Kazıma isi durumu güncellenemedi.",
       error: error ?? undefined,
       code: "scrape_job_update_failed",
     });
@@ -286,7 +286,7 @@ export async function persistScrapePreviewItems(
     });
 
     return mutationError({
-      message: "Urun onizlemeleri kaydedilemedi.",
+      message: "Ürün önizlemeleri kaydedilemedi.",
       error,
       code: "scrape_preview_persist_failed",
     });
@@ -320,7 +320,7 @@ export async function loadOwnedScrapePreviewItems(
     });
 
     return mutationError({
-      message: "Urun onizlemeleri okunamadi.",
+      message: "Ürün önizlemeleri okunamadı.",
       error,
       code: "scrape_preview_not_found",
     });
@@ -329,7 +329,7 @@ export async function loadOwnedScrapePreviewItems(
   if ((data?.length ?? 0) !== input.previewItemIds.length) {
     return {
       ok: false,
-      message: "Secilen urun onizlemeleri bulunamadi veya bu hesaba ait degil.",
+      message: "Seçilen ürün önizlemeleri bulunamadı veya bu hesaba ait değil.",
       code: "scrape_preview_not_found",
       status: 404,
     };
@@ -364,7 +364,7 @@ export async function markScrapePreviewItemsImported(
       });
 
       return mutationError({
-        message: "Aktarilan onizleme satirlari guncellenemedi.",
+        message: "Aktarilan önizleme satirlari güncellenemedi.",
         error,
         code: "scrape_preview_update_failed",
       });

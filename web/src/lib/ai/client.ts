@@ -90,7 +90,7 @@ async function postToAiService(params: {
     if (!response.ok) {
       throw new AiServiceError({
         code: "ai_service_request_failed",
-        message: "AI servisi istegi kabul etmedi.",
+        message: "AI servisi isteği kabul etmedi.",
         status: response.status,
       });
     }
@@ -104,7 +104,7 @@ async function postToAiService(params: {
     if (error instanceof Error && error.name === "AbortError") {
       throw new AiServiceError({
         code: "ai_service_timeout",
-        message: "AI istegi zaman asimina ugradi. Birazdan tekrar deneyin.",
+        message: "AI isteği zaman aşımına uğradı. Birazdan tekrar deneyin.",
         status: 504,
       });
     }
@@ -132,7 +132,7 @@ export async function analyzeProduct(
   if (!parsedOutput.success) {
     throw new AiServiceError({
       code: "invalid_ai_analysis_response",
-      message: "AI analiz cevabi beklenen sozlesmeye uymuyor.",
+      message: "AI analiz cevabı beklenen sözleşmeye uymuyor.",
       status: 502,
     });
   }
@@ -162,7 +162,7 @@ export async function improveProduct(
   if (!parsedOutput.success) {
     throw new AiServiceError({
       code: "invalid_ai_improvement_response",
-      message: "AI iyilestirme cevabi beklenen sozlesmeye uymuyor.",
+      message: "AI iyileştirme cevabı beklenen sözleşmeye uymuyor.",
       status: 502,
     });
   }

@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       await markErrorIfPossible(
         statePayload,
         "auth_context_mismatch",
-        "Shopify callback oturum bilgisi dogrulanamadi.",
+        "Shopify callback oturum bilgisi doğrulanamadı.",
       );
 
       return clearStateCookie(
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
       await markErrorIfPossible(
         statePayload,
         "invalid_hmac",
-        "Shopify callback imzasi dogrulanamadi.",
+        "Shopify callback imzası doğrulanamadı.",
       );
 
       return clearStateCookie(
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       await markErrorIfPossible(
         statePayload,
         "storage_failed",
-        "Shopify baglantisi kaydedilemedi.",
+        "Shopify bağlantısı kaydedilemedi.",
       );
 
       return clearStateCookie(
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
     await markErrorIfPossible(
       statePayload,
       "callback_failed",
-      "Shopify baglantisi tamamlanamadi.",
+      "Shopify bağlantısı tamamlanamadı.",
     );
 
     return clearStateCookie(

@@ -200,7 +200,7 @@ function readZipEntries(buffer: Buffer): ZipEntry[] {
   const endOffset = findEndOfCentralDirectory(buffer);
 
   if (endOffset < 0) {
-    throw new Error("Invalid XLSX file.");
+    throw new Error("Geçersiz XLSX dosyası.");
   }
 
   const entryCount = readUInt16(buffer, endOffset + 10);
@@ -210,7 +210,7 @@ function readZipEntries(buffer: Buffer): ZipEntry[] {
 
   for (let index = 0; index < entryCount; index++) {
     if (readUInt32(buffer, offset) !== 0x02014b50) {
-      throw new Error("Invalid XLSX central directory.");
+      throw new Error("Geçersiz XLSX merkez dizini.");
     }
 
     const compressionMethod = readUInt16(buffer, offset + 10);
@@ -242,7 +242,7 @@ function readZipEntry(buffer: Buffer, entry: ZipEntry) {
   const localOffset = entry.localHeaderOffset;
 
   if (readUInt32(buffer, localOffset) !== 0x04034b50) {
-    throw new Error("Invalid XLSX local file header.");
+    throw new Error("Geçersiz XLSX yerel dosya başlığı.");
   }
 
   const fileNameLength = readUInt16(buffer, localOffset + 26);

@@ -191,7 +191,7 @@ async function fetchWithSafeRedirects({
       return {
         ok: false,
         finalUrl: currentUrl,
-        error: validation.error ?? "Unsafe or unsupported URL.",
+        error: validation.error ?? "Güvensiz veya desteklenmeyen URL.",
         errorCode:
           redirectCount === 0
             ? (validation.errorCode ?? "unsafe_url")
@@ -240,7 +240,7 @@ async function fetchWithSafeRedirects({
         finalUrl,
         status: response.status,
         contentType: response.headers.get("content-type"),
-        error: "Website returned a redirect without a valid location.",
+        error: "Web sitesi geçerli konumu olmayan bir yönlendirme döndürdü.",
         errorCode: "unsafe_redirect",
       };
     }
@@ -251,7 +251,7 @@ async function fetchWithSafeRedirects({
         finalUrl: redirectUrl,
         status: response.status,
         contentType: response.headers.get("content-type"),
-        error: "Website redirected too many times.",
+        error: "Web sitesi çok fazla kez yönlendirdi.",
         errorCode: "too_many_redirects",
       };
     }
@@ -262,7 +262,7 @@ async function fetchWithSafeRedirects({
   return {
     ok: false,
     finalUrl: currentUrl,
-    error: "Website redirected too many times.",
+    error: "Web sitesi çok fazla kez yönlendirdi.",
     errorCode: "too_many_redirects",
   };
 }
@@ -340,7 +340,7 @@ async function checkRobotsPermission(
       allowed: false,
       url: robotsUrl,
       status: "unavailable",
-      error: robotsValidation.error ?? "Robots.txt URL could not be validated.",
+      error: robotsValidation.error ?? "Robots.txt URL adresi doğrulanamadı.",
       errorCode: "robots_unavailable",
     };
   }
@@ -533,7 +533,7 @@ export async function safeFetchHtml(
     return {
       ok: false,
       url: inputUrl,
-      error: validation.error ?? "Invalid URL.",
+      error: validation.error ?? "Geçersiz URL.",
       errorCode: validation.errorCode ?? "invalid_url",
     };
   }
@@ -628,7 +628,7 @@ export async function safeFetchHtml(
         finalUrl,
         status: response.status,
         contentType,
-        error: `Website returned HTTP ${response.status}.`,
+        error: `Web sitesi HTTP ${response.status} döndürdü.`,
         errorCode: "http_error",
         crawlMetadata: buildCrawlMetadata({
           requestedUrl: validation.normalizedUrl,
@@ -739,8 +739,8 @@ export async function safeFetchHtml(
   } catch (error) {
     const message =
       error instanceof Error && error.name === "AbortError"
-        ? "Request timed out."
-        : "Failed to fetch the website.";
+        ? "İstek zaman aşımına uğradı."
+        : "Web sitesi getirilemedi.";
 
     return {
       ok: false,

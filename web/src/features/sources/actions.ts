@@ -67,7 +67,7 @@ export async function saveNativeSource(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Web sitesi kaynagini kaydetmeden once alanlari duzelt.",
+      message: "Web sitesi kaynağını kaydetmeden önce alanları düzelt.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -87,7 +87,7 @@ export async function saveNativeSource(
   return {
     status: "success",
     message:
-      "Web sitesi kaynagi hazir. Urun ekleme akisi Phase 5'te bu kaynaktan devam edecek.",
+      "Web sitesi kaynağı hazır. Ürün ekleme akışı Phase 5'te bu kaynaktan devam edecek.",
   };
 }
 
@@ -103,7 +103,7 @@ export async function saveShopifySource(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Shopify hazirligini kaydetmeden once alanlari duzelt.",
+      message: "Shopify hazırlığını kaydetmeden önce alanları düzelt.",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -123,7 +123,7 @@ export async function saveShopifySource(
   return {
     status: "success",
     message:
-      "Shopify magaza bilgisi kaydedildi. Yetki vermeniz icin Shopify'a yonlendiriliyorsunuz.",
+      "Shopify mağaza bilgisi kaydedildi. Yetki vermeniz için Shopify'a yonlendiriliyorsunuz.",
     connectUrl: `/api/shopify/connect?shop=${encodeURIComponent(
       parsed.data.shopDomain,
     )}`,

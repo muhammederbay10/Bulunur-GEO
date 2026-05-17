@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { LogoutButton } from "@/features/auth/components/logout-button";
 import { OnboardingForm } from "@/features/onboarding/components/onboarding-form";
 import {
   getCurrentUser,
@@ -49,8 +51,18 @@ async function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <main className="min-h-screen bg-background p-5">
-      <div className="mx-auto w-full max-w-7xl py-10">
+    <main className="flex h-svh flex-col overflow-hidden bg-background">
+      <header className="z-40 flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 py-2 backdrop-blur md:px-8">
+        <div>
+          <p className="text-xl font-semibold text-primary">AI Görünürlük</p>
+          <p className="mono-label text-muted-foreground">Onboarding</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeSwitcher />
+          <LogoutButton variant="outline" size="sm" />
+        </div>
+      </header>
+      <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-4">
         <Suspense fallback={<OnboardingFallback />}>
           <OnboardingContent />
         </Suspense>

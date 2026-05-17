@@ -43,7 +43,7 @@ const optimizationSelect =
 const reviewActionSelect = "field_path,decision,approved_value,reason";
 
 function optimizationStorageSetupMessage() {
-  return "Optimizasyon tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Optimizasyon tablolari hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function isMissingOptimizationTable(error: { code?: string; message?: string }) {
@@ -154,7 +154,7 @@ export async function getLatestOptimizationResult(params: {
       ok: false,
       message: isMissingOptimizationTable(error)
         ? optimizationStorageSetupMessage()
-        : "Son optimizasyon sonucu okunamadi.",
+        : "Son optimizasyon sonucu okunamadı.",
       code: error.code,
       status: isMissingOptimizationTable(error) ? 500 : 400,
     };
@@ -181,7 +181,7 @@ export async function getReviewActionsForOptimization(params: {
   if (error) {
     return {
       ok: false,
-      message: "Onay durumlari okunamadi.",
+      message: "Onay durumları okunamadı.",
       code: error.code,
       status: 400,
     };
@@ -234,7 +234,7 @@ export async function startProductOptimizationAttempt(params: {
       ok: false,
       message: isMissingOptimizationTable(snapshotError)
         ? optimizationStorageSetupMessage()
-        : "Optimizasyon oncesi urun yedegi kaydedilemedi.",
+        : "Optimizasyon öncesi ürün yedeği kaydedilemedi.",
       code: snapshotError.code,
       status: 500,
     };
@@ -250,7 +250,7 @@ export async function startProductOptimizationAttempt(params: {
   if (productError) {
     return {
       ok: false,
-      message: "Urun optimizasyon durumu guncellenemedi.",
+      message: "Ürün optimizasyon durumu güncellenemedi.",
       code: productError.code,
       status: 500,
     };
@@ -323,7 +323,7 @@ export async function saveOptimizationResult(params: {
   if (productError) {
     return {
       ok: false,
-      message: "Urun optimizasyon ozeti guncellenemedi.",
+      message: "Ürün optimizasyon ozeti güncellenemedi.",
       code: productError.code,
       status: 500,
     };
@@ -399,7 +399,7 @@ export async function saveReviewActions(params: {
   if (params.actions.length === 0) {
     return {
       ok: false,
-      message: "Yayinlamak icin en az bir alan onaylanmali.",
+      message: "Yayınlamak için en az bir alan onaylanmalı.",
       code: "no_approved_fields",
       status: 400,
     };
@@ -443,7 +443,7 @@ export async function saveReviewActions(params: {
   if (statusError) {
     return {
       ok: false,
-      message: "Optimizasyon onay durumu guncellenemedi.",
+      message: "Optimizasyon onay durumu güncellenemedi.",
       code: statusError.code,
       status: 500,
     };

@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           result: {
             isValid: false,
             error:
-              parsedBody.error.issues[0]?.message ?? "Invalid request body.",
+              parsedBody.error.issues[0]?.message ?? "Geçersiz istek gövdesi.",
             errorCode: "invalid_url",
           },
         } satisfies ValidateUrlResponse,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
             status: fetchResult.status ?? null,
             contentType: fetchResult.contentType ?? null,
             finalUrl: fetchResult.finalUrl ?? null,
-            error: fetchResult.error ?? "Website could not be reached safely.",
+            error: fetchResult.error ?? "Web sitesine güvenli şekilde ulaşılamadı.",
             errorCode: fetchResult.errorCode ?? "fetch_failed",
           },
         } satisfies ValidateUrlResponse,
@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
         success: false,
         result: {
           isValid: false,
-          error: "URL doÄŸrulanÄ±rken beklenmeyen bir hata oluÅŸtu.",
+          error: "URL doğrulanırken beklenmeyen bir hata oluştu.",
           errorCode: "unexpected_error",
         },
       } satisfies ValidateUrlResponse,

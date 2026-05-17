@@ -38,7 +38,7 @@ export function validateShopDomain(value: string | null | undefined) {
   const shop = normalizeShopDomain(value);
 
   if (!isValidShopDomain(shop)) {
-    throw new Error("Invalid Shopify shop domain.");
+    throw new Error("Geçersiz Shopify mağaza alan adı.");
   }
 
   return shop;

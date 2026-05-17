@@ -1,72 +1,132 @@
 import Link from "next/link";
-import { Suspense } from "react";
-import {
-  History,
-  LayoutDashboard,
-  Package,
-  Settings,
-  Store,
-} from "lucide-react";
 
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/features/auth/components/auth-button";
-import { hasRequiredPublicEnv } from "@/lib/env/public";
+import { SidebarAccountCard } from "@/components/sidebar-account-card";
+import { SidebarNav } from "@/components/sidebar-nav";
+import type { ProductSourceSummary } from "@/types/product";
 
-const navItems = [
-  { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
-  { href: "/products", label: "Ürünler", icon: Package },
-  { href: "/sources", label: "Kaynaklar", icon: Store },
-  { href: "/history", label: "Geçmiş", icon: History },
-  { href: "/settings", label: "Ayarlar", icon: Settings },
-];
+const sourceLabels = {
+  shopify: "Shopify",
+  native: "Web sitesi",
+  woocommerce: "WooCommerce",
+};
 
-export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
+const sourceStatusLabels: Record<string, string> = {
+  setup_pending: "Kurulum",
+  active: "Aktif",
+  syncing: "Senkron",
+  error: "Hata",
+  disconnected: "Kapali",
+};
+
+function SourceStatusPill({ source }: { source: ProductSourceSummary }) {
+  const isHealthy = source.status === "active";
+  const isWorking = source.status === "syncing";
+
   return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl lg:grid-cols-[248px_1fr]">
-        <aside className="border-b border-border/70 bg-card/80 p-5 lg:border-b-0 lg:border-r">
-          <Link href="/" className="block">
-            <p className="text-sm font-semibold text-foreground">
-              AI Görünürlük
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Türkçe e-ticaret ürünleri için
-            </p>
-          </Link>
+    <Link
+      href="/sources"
+      className="inline-flex min-w-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs transition hover:border-primary/50 hover:bg-muted"
+    >
+      <span
+        className={
+          isHealthy
+            ? "h-2 w-2 shrink-0 rounded-full bg-primary"
+            : isWorking
+              ? "h-2 w-2 shrink-0 rounded-full bg-yellow-500"
+              : "h-2 w-2 shrink-0 rounded-full bg-destructive"
+        }
+      />
+      <span className="truncate font-medium">{source.name}</span>
+      <span className="shrink-0 text-muted-foreground">
+        {sourceLabels[source.sourceType]} /{" "}
+        {sourceStatusLabels[source.status] ?? source.status}
+      </span>
+    </Link>
+  );
+}
 
-          <nav className="mt-8 grid gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-3 rounded-md border border-transparent px-3 py-2.5 text-sm text-muted-foreground transition hover:border-border hover:bg-background hover:text-foreground"
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </aside>
+function SourceStatusHeader({
+  sources,
+}: {
+  sources: ProductSourceSummary[];
+}) {
+  if (sources.length === 0) {
+    return (
+      <Link
+        href="/sources"
+        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
+      >
+        Kaynak ekle
+      </Link>
+    );
+  }
 
-        <section className="flex min-w-0 flex-col">
-          <header className="flex min-h-16 flex-wrap items-center justify-between gap-4 border-b border-border/70 bg-background/90 px-5 py-3">
+  return (
+    <div className="flex min-w-0 flex-wrap justify-end gap-2">
+      {sources.slice(0, 2).map((source) => (
+        <SourceStatusPill key={source.id} source={source} />
+      ))}
+      {sources.length > 2 ? (
+        <Link
+          href="/sources"
+          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
+        >
+          +{sources.length - 2}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
+export function AppShell({
+  children,
+  sources = [],
+}: Readonly<{
+  children: React.ReactNode;
+  sources?: ProductSourceSummary[];
+}>) {
+  return (
+    <main className="h-screen overflow-hidden bg-background">
+      <div className="flex h-full w-full">
+        <aside className="hidden h-screen w-64 shrink-0 overflow-hidden border-r border-border/70 bg-muted/70 p-5 lg:flex lg:flex-col">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+              AI
+            </div>
             <div>
-              <p className="text-sm font-medium text-foreground">
-                Satıcı çalışma alanı
+              <p className="text-xl font-semibold text-primary">
+                AI Görünürlük
               </p>
-              <p className="text-sm text-muted-foreground">
-                Ürünlerinizi içeri alın, analiz edin ve güvenle iyileştirin.
+              <p className="mono-label mt-1 text-muted-foreground">
+                E-ticaret paneli
               </p>
             </div>
-            {hasRequiredPublicEnv ? (
-              <Suspense>
-                <AuthButton />
-              </Suspense>
-            ) : (
-              <EnvVarWarning />
-            )}
+          </Link>
+
+          <SidebarNav />
+
+          <div className="mt-auto pt-5">
+            <SidebarAccountCard />
+          </div>
+        </aside>
+
+        <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
+          <header className="shrink-0 border-b border-border/70 bg-background/95 px-5 py-3 backdrop-blur lg:px-10">
+            <div className="flex min-h-16 flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Satıcı çalışma alani
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Ürünlerinizi içeri alın, analiz edin ve güvenle iyileştirin.
+                </p>
+              </div>
+              <SourceStatusHeader sources={sources} />
+            </div>
           </header>
-          <div className="flex-1 px-5 py-6">{children}</div>
+          <div className="flex-1 overflow-y-auto px-5 py-6 lg:px-10 lg:py-8">
+            {children}
+          </div>
         </section>
       </div>
     </main>

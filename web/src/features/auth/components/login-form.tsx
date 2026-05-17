@@ -1,17 +1,11 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +32,7 @@ export function LoginForm({
         email,
         password,
       });
+
       if (error) throw error;
       router.push("/dashboard");
     } catch (error: unknown) {
@@ -48,63 +43,80 @@ export function LoginForm({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Giriş yap</CardTitle>
-          <CardDescription>
-            Ürünlerinizi kaldığınız yerden yönetmek için hesabınıza girin.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">E-posta</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="ornek@magazam.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Şifre</Label>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                  >
-                    Şifreni mi unuttun?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              {error ? <p className="text-sm text-destructive">{error}</p> : null}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Giriş yapılıyor..." : "Giriş yap"}
-              </Button>
+    <div className={cn("mx-auto w-full max-w-2xl", className)} {...props}>
+      <section className="seller-surface overflow-hidden p-5 md:p-6">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="mono-label text-primary">Adım 1 / 1</p>
+            <h1 className="mt-1 text-xl font-semibold">Giriş</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Paneli kullanmaya devam edin.
+            </p>
+          </div>
+          <span className="h-2 w-10 rounded-full bg-primary" />
+        </div>
+
+        <form
+          onSubmit={handleLogin}
+          className="mx-auto grid w-full max-w-lg gap-4 animate-in fade-in slide-in-from-right-4 duration-300"
+        >
+          <div>
+            <h2 className="text-xl font-semibold">Hesabınıza giriş yapın</h2>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              Kayıtlı e-posta ve şifrenizle satıcı paneline devam edin.
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            <div className="grid gap-2">
+              <Label htmlFor="email">E-posta adresi</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="ornek@mağazam.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <div className="mt-4 text-center text-sm">
-              Hesabın yok mu?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
-                Kayıt ol
-              </Link>
+
+            <div className="grid gap-2">
+              <div className="flex items-center gap-3">
+                <Label htmlFor="password">Şifre</Label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="mono-label ml-auto text-primary transition hover:text-foreground"
+                >
+                  Şifremi unuttüm
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+          <div className="flex justify-end border-t border-border pt-4">
+            <Button type="submit" className="gap-2" disabled={isLoading}>
+              {isLoading ? "Giriş yapiliyor..." : "Giriş yap"}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="border-t border-border pt-4 text-center text-sm text-muted-foreground">
+            Hesabın yok mu?{" "}
+            <Button asChild variant="link" className="h-auto px-1 py-0 align-baseline">
+              <Link href="/auth/sign-up">Kayıt ol</Link>
+            </Button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

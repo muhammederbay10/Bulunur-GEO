@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { AlertTriangle } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { AlertTriangle, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { NativeImportPanel } from "@/features/native-import/components/native-import-panel";
@@ -15,8 +15,8 @@ import type { UserProfile } from "@/types/profile";
 import type { SourceStore } from "@/types/source";
 
 import { NativeSourceForm } from "./native-source-form";
+import { SourceChoiceSelector, type SourceChoice } from "./source-choice-selector";
 import { ShopifySourceForm } from "./shopify-source-form";
-import { SourceSetupHeader } from "./source-setup-header";
 import { SourceSetupSuccess } from "./source-setup-success";
 import { SourceStatusList } from "./source-status-list";
 
@@ -46,6 +46,12 @@ export function SourceSetupPanel({
   shopifyNotice,
 }: SourceSetupPanelProps) {
   const router = useRouter();
+  const [sourceChoice, setSourceChoice] = useState<SourceChoice>(() =>
+    stores.some((store) => store.sourceType === "native") &&
+    !stores.some((store) => store.sourceType === "shopify")
+      ? "native"
+      : "shopify",
+  );
   const [nativeState, nativeAction, nativePending] = useActionState(
     saveNativeSource,
     nativeInitialState,
@@ -99,16 +105,62 @@ export function SourceSetupPanel({
         setupMode={setupMode}
         redirectLabel={
           shopifyState.status === "success" && shopifyState.connectUrl
-            ? "Shopify yetki ekranina yonlendiriliyorsunuz..."
+            ? "Shopify yetki ekranına yönlendiriliyorsunuz..."
             : undefined
         }
       />
     );
   }
 
+  const selectedSourceForm =
+    sourceChoice === "shopify" ? (
+      <ShopifySourceForm
+        action={shopifyAction}
+        disabled={formsDisabled}
+        pending={shopifyPending}
+        state={shopifyState}
+        store={shopifyStore}
+      />
+    ) : (
+      <NativeSourceForm
+        action={nativeAction}
+        disabled={formsDisabled}
+        pending={nativePending}
+        profile={profile}
+        state={nativeState}
+        store={nativeStore}
+      />
+    );
+
+  const sourceSelector = (
+    <section className={setupMode ? "mx-auto grid w-full max-w-2xl gap-2" : "grid w-full gap-2"}>
+      <p className="text-sm font-medium text-foreground">Bağlantı yontemini seçin</p>
+      <SourceChoiceSelector
+        value={sourceChoice}
+        onChange={setSourceChoice}
+        disabled={formsDisabled || nativePending || shopifyPending}
+      />
+    </section>
+  );
+
+  const statusContent = (
+    <section className="seller-surface h-full p-4">
+      <div className="mb-4 flex items-start gap-3">
+        <AlertTriangle className="mt-1 h-5 w-5 text-primary" />
+        <div>
+          <h2 className="text-lg font-semibold">Kaynak durumu</h2>
+          <p className="mt-2 text-sm leading-5 text-muted-foreground">
+            Kayıtlar sunucu tarafında sahiplik kontrolüyle oluşturulur.
+          </p>
+        </div>
+      </div>
+      <SourceStatusList stores={stores} />
+    </section>
+  );
+
   return (
-    <div className="flex flex-col gap-6">
-      <SourceSetupHeader />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+      <h1 className="sr-only">Kaynaklar</h1>
 
       {!databaseReady && setupMessage ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -118,8 +170,8 @@ export function SourceSetupPanel({
 
       {databaseReady && !canWriteSources ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          Kaynak kurulumu şu anda kullanılamıyor. Lütfen daha sonra tekrar
-          deneyin veya destek ekibine haber verin.
+          Kaynak kurulumu su anda kullanilamiyor. Lütfen daha sonra tekrar deneyin
+          veya destek ekibine haber verin.
         </div>
       ) : null}
 
@@ -130,47 +182,43 @@ export function SourceSetupPanel({
               ? "rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
               : shopifyNotice.kind === "warning"
                 ? "rounded-lg border border-primary/40 bg-primary/10 p-4 text-sm text-foreground"
-                : "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-900 dark:text-emerald-100"
+                : "rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary"
           }
         >
           {shopifyNotice.message}
         </div>
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <ShopifySourceForm
-          action={shopifyAction}
-          disabled={formsDisabled}
-          pending={shopifyPending}
-          state={shopifyState}
-          store={shopifyStore}
-        />
-        <NativeSourceForm
-          action={nativeAction}
-          disabled={formsDisabled}
-          pending={nativePending}
-          profile={profile}
-          state={nativeState}
-          store={nativeStore}
-        />
-      </section>
+      {setupMode ? (
+        <section className="mx-auto grid w-full max-w-2xl gap-4">
+          {sourceSelector}
+          {selectedSourceForm}
+        </section>
+      ) : null}
 
-      <section className="seller-surface p-5">
-        <div className="mb-4 flex items-start gap-3">
-          <AlertTriangle className="mt-1 h-5 w-5 text-primary" />
-          <div>
-            <h2 className="text-xl font-semibold">Kaynak durumu</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Bu liste yalnızca sizin mağaza/kaynak kayıtlarınızı gösterir.
-              Kayıtlar server tarafında sahiplik kontrolüyle oluşturulur.
-            </p>
-          </div>
+      {setupMode ? (
+        <div className="flex justify-center pt-2">
+          <button
+            type="button"
+            className="mono-label inline-flex items-center gap-2 text-muted-foreground transition hover:text-primary"
+          >
+            <HelpCircle className="h-5 w-5" />
+            Yardıma mı ihtiyacınız var?
+          </button>
         </div>
-        <SourceStatusList stores={stores} />
-      </section>
+      ) : null}
 
-      {nativeStore?.status === "active" ? (
-        <NativeImportPanel store={nativeStore} />
+      {!setupMode ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(280px,0.85fr)] lg:items-stretch">
+          <div className="grid h-full gap-4">
+            {sourceSelector}
+            {selectedSourceForm}
+            {nativeStore?.status === "active" ? (
+              <NativeImportPanel store={nativeStore} />
+            ) : null}
+          </div>
+          <div className="h-full">{statusContent}</div>
+        </div>
       ) : null}
     </div>
   );

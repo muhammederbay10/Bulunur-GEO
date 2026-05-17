@@ -58,7 +58,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!params.success) {
     return failureResponse(
       "invalid_product_id",
-      "Gecersiz urun kimligi.",
+      "Geçersiz ürün kimliği.",
       400,
     );
   }
@@ -68,7 +68,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsedBody.success) {
     return failureResponse(
       "invalid_improve_request",
-      "Gecersiz optimizasyon istegi.",
+      "Geçersiz optimizasyon isteği.",
       400,
     );
   }
@@ -103,7 +103,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!analysisResult.data?.rawOutput || analysisResult.data.status !== "succeeded") {
     return failureResponse(
       "analysis_required",
-      "Optimizasyon icin once basarili bir analiz gerekli.",
+      "Optimizasyon için önce başarılı bir analiz gerekli.",
       409,
     );
   }
@@ -174,7 +174,7 @@ export async function POST(request: Request, context: RouteContext) {
         ? error
         : new AiServiceError({
             code: "optimization_failed",
-            message: "Optimizasyon tamamlanamadi.",
+            message: "Optimizasyon tamamlanamadı.",
             status: 500,
           });
 

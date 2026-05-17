@@ -37,7 +37,7 @@ const analysisSelect =
   "id,status,overall_score,retrieval_score,machine_understanding_score,reranking_strength_score,ai_answer_readiness_score,detected_category,buyer_intent_variants,known_facts,missing_facts,main_problems,recommended_action,raw_output,error_code,error_message,started_at,completed_at,created_at";
 
 function analysisStorageSetupMessage() {
-  return "Analiz tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Analiz tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function isMissingAnalysisTable(error: { code?: string; message?: string }) {
@@ -99,7 +99,7 @@ export async function getLatestProductAnalysis(params: {
       ok: false,
       message: isMissingAnalysisTable(error)
         ? analysisStorageSetupMessage()
-        : "Son analiz okunamadi.",
+        : "Son analiz okunamadı.",
       code: error.code,
       status: isMissingAnalysisTable(error) ? 500 : 400,
     };
@@ -148,7 +148,7 @@ export async function startProductAnalysisRun(params: {
       ok: false,
       message: isMissingAnalysisTable(snapshotError)
         ? analysisStorageSetupMessage()
-        : "Analiz oncesi urun yedegi kaydedilemedi.",
+        : "Analiz öncesi ürün yedeği kaydedilemedi.",
       code: snapshotError.code,
       status: 500,
     };
@@ -171,7 +171,7 @@ export async function startProductAnalysisRun(params: {
       ok: false,
       message: error && isMissingAnalysisTable(error)
         ? analysisStorageSetupMessage()
-        : "Analiz kaydi baslatilamadi.",
+        : "Analiz kaydı başlatilamadi.",
       code: error?.code,
       status: 500,
     };
@@ -187,7 +187,7 @@ export async function startProductAnalysisRun(params: {
   if (productError) {
     return {
       ok: false,
-      message: "Urun analiz durumu guncellenemedi.",
+      message: "Ürün analiz durumu güncellenemedi.",
       code: productError.code,
       status: 500,
     };
@@ -263,7 +263,7 @@ export async function saveProductAnalysisSuccess(params: {
   if (productResult.error) {
     return {
       ok: false,
-      message: "Urun analiz ozeti guncellenemedi.",
+      message: "Ürün analiz ozeti güncellenemedi.",
       code: productResult.error.code,
       status: 500,
     };

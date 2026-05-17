@@ -20,7 +20,7 @@ function getTokenEncryptionKey() {
     return hexKey;
   }
 
-  throw new Error("Invalid Shopify token encryption key.");
+  throw new Error("Geçersiz Shopify token şifreleme anahtarı.");
 }
 
 export function encryptShopifyAccessToken(accessToken: string) {
@@ -45,7 +45,7 @@ export function decryptShopifyAccessToken(encryptedAccessToken: string) {
     encryptedAccessToken.split(".");
 
   if (!ivBase64 || !authTagBase64 || !encryptedBase64) {
-    throw new Error("Invalid encrypted Shopify token format.");
+    throw new Error("Geçersiz şifrelenmiş Shopify token formatı.");
   }
 
   const key = getTokenEncryptionKey();

@@ -155,9 +155,9 @@ async function persistScanSession(params: {
       : (params.scanResult.errorCode ?? "unexpected_error"),
     errorMessage: params.scanResult.success
       ? failedCount > 0
-        ? `${failedCount} product page(s) could not be scanned.`
+        ? `${failedCount} ürün sayfası taranamadı.`
         : null
-      : (params.scanResult.error ?? "Native URL scan failed."),
+      : (params.scanResult.error ?? "Web sitesi taraması başarısız oldu."),
   });
 
   if (!completeResult.ok) {
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
           detectedCount: 0,
           previewItems: [],
           status: "failed",
-          error: parsedBody.error.issues[0]?.message ?? "Invalid request body.",
+          error: parsedBody.error.issues[0]?.message ?? "Geçersiz istek gövdesi.",
           errorCode: "invalid_scan_request",
         } satisfies ScanResponse,
         { status: 400 },
@@ -281,7 +281,7 @@ export async function POST(request: Request) {
           detectedCount: 0,
           previewItems: [],
           status: "failed",
-          error: validationResult.error ?? "Invalid URL.",
+          error: validationResult.error ?? "Geçersiz URL.",
           errorCode: validationResult.errorCode ?? "invalid_url",
           source,
         } satisfies ScanResponse,

@@ -31,41 +31,47 @@ export function ShopifySourceForm({
   const isConnected = store?.connection?.status === "connected";
 
   return (
-    <form action={action} className="seller-surface p-5">
+    <form
+      action={action}
+      className="seller-surface group relative overflow-hidden p-5 transition hover:border-primary/60 hover:shadow-primary-soft focus-within:border-primary/60 md:p-6"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-muted/80 to-transparent opacity-0 transition group-hover:opacity-100" />
       <fieldset className="flex flex-col gap-5" disabled={disabled || pending}>
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <Store className="h-5 w-5" />
+        <div className="relative flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-primary transition group-hover:scale-105">
+            <Store className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Shopify Magazami Bagla</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Shopify urunlerinizi otomatik iceri almak icin myshopify.com
-              alan adinizi girin ve yetki ekranini tamamlayin.
+            <h2 className="text-xl font-semibold">Shopify Mağazamı Bağla</h2>
+            <p className="mt-2 text-sm leading-5 text-muted-foreground">
+              Shopify ürünlerinizi otomatik içeri almak için myshopify.com
+              alan adınızı girin ve yetki ekranını tamamlayın.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="shopDomain">Shopify alan adi</Label>
+        <div className="relative grid gap-2 text-left">
+          <Label htmlFor="shopDomain">Shopify alan adı</Label>
           <Input
             id="shopDomain"
             name="shopDomain"
             defaultValue={shopDomain ?? ""}
-            placeholder="magazam.myshopify.com"
+            placeholder="mağazam.myshopify.com"
             autoComplete="off"
           />
           <p className="text-sm text-muted-foreground">
-            Ozel alan adiniz olsa bile Shopify OAuth icin myshopify.com alan
+            Özel alan adınız olsa bile Shopify OAuth için myshopify.com alan
             adi gerekir.
           </p>
           <FieldError errors={state.fieldErrors?.shopDomain} />
         </div>
 
-        <FeedbackMessage status={state.status} message={state.message} />
+        <div className="relative">
+          <FeedbackMessage status={state.status} message={state.message} />
+        </div>
 
         {canStartOAuth ? (
-          <Button asChild className="w-full gap-2" variant="outline">
+          <Button asChild className="relative w-full gap-2" variant="outline">
             <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain as string)}`}>
               <ExternalLink className="h-4 w-4" />
               Shopify yetkisini tamamla
@@ -73,7 +79,11 @@ export function ShopifySourceForm({
           </Button>
         ) : null}
 
-        <Button type="submit" className="w-full gap-2" disabled={disabled || pending}>
+        <Button
+          type="submit"
+          className="relative w-full gap-2"
+          disabled={disabled || pending}
+        >
           {pending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : isConnected ? (
@@ -81,7 +91,7 @@ export function ShopifySourceForm({
           ) : (
             <ExternalLink className="h-4 w-4" />
           )}
-          {isConnected ? "Shopify alan adini guncelle" : "Kaydet ve Shopify'a baglan"}
+          {isConnected ? "Shopify alan adıni güncelle" : "Kaydet ve Shopify'a bağlan"}
         </Button>
       </fieldset>
     </form>

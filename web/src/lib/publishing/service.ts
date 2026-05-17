@@ -34,7 +34,7 @@ type PublishApprovedFieldsResult =
   | { ok: false; message: string; code: string; status: number };
 
 function publishingStorageSetupMessage() {
-  return "Yayinlama tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Yayınlama tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function isMissingPublishingTable(error: { code?: string; message?: string }) {
@@ -59,7 +59,7 @@ function safePublishError(error: unknown) {
 
   return {
     code: "shopify_publish_failed",
-    message: "Shopify yayinlama islemi tamamlanamadi.",
+    message: "Shopify yayınlama işlemi tamamlanamadı.",
     status: 502,
   };
 }
@@ -87,7 +87,7 @@ function createShopifyProductUpdate(params: {
   fields: ApprovedPublishField[];
 }): ShopifyProductUpdateInput {
   if (!params.product.externalId?.startsWith("gid://shopify/Product/")) {
-    throw new Error("Invalid Shopify product id.");
+    throw new Error("Geçersiz Shopify ürün ID'si.");
   }
 
   const update: ShopifyProductUpdateInput = {
@@ -163,7 +163,7 @@ async function createRollbackSnapshot(params: {
       ok: false as const,
       message: error && isMissingPublishingTable(error)
         ? publishingStorageSetupMessage()
-        : "Yayinlama oncesi geri alma yedegi kaydedilemedi.",
+        : "Yayınlama öncesi geri alma yedeği kaydedilemedi.",
       code: error?.code ?? "rollback_snapshot_failed",
       status: 500,
     };
@@ -202,7 +202,7 @@ async function createPublishJob(params: {
       ok: false as const,
       message: error && isMissingPublishingTable(error)
         ? publishingStorageSetupMessage()
-        : "Yayinlama kaydi baslatilamadi.",
+        : "Yayınlama kaydı başlatılamadı.",
       code: error?.code ?? "publish_job_failed",
       status: 500,
     };
@@ -287,7 +287,7 @@ export async function publishApprovedFields(params: {
   if (params.product.source !== "shopify") {
     return {
       ok: false,
-      message: "Yayinlama sadece Shopify urunleri icin kullanilabilir.",
+      message: "Yayınlama sadece Shopify ürünleri için kullanılabilir.",
       code: "shopify_only",
       status: 400,
     };
@@ -304,7 +304,7 @@ export async function publishApprovedFields(params: {
   if (approvedFields.length === 0) {
     return {
       ok: false,
-      message: "Yayinlamak icin en az bir guvenli alan secilmeli.",
+      message: "Yayınlamak için en az bir güvenli alan seçilmeli.",
       code: "no_approved_fields",
       status: 400,
     };
@@ -327,7 +327,7 @@ export async function publishApprovedFields(params: {
   if (shopifyContext.data.connection.status !== "connected") {
     return {
       ok: false,
-      message: "Shopify baglantisi aktif degil. Yeniden baglanin.",
+      message: "Shopify bağlantısı aktif değil. Yeniden bağlanın.",
       code: "shopify_connection_not_connected",
       status: 409,
     };
@@ -336,7 +336,7 @@ export async function publishApprovedFields(params: {
   if (!shopifyContext.data.connection.shopDomain) {
     return {
       ok: false,
-      message: "Shopify magaza alan adi bulunamadi. Yeniden baglanin.",
+      message: "Shopify mağaza alan adı bulunamadı. Yeniden bağlanın.",
       code: "missing_shop_domain",
       status: 409,
     };
@@ -346,7 +346,7 @@ export async function publishApprovedFields(params: {
     return {
       ok: false,
       message:
-        "Shopify baglantisinda urun yazma izni yok. write_products izniyle yeniden baglanin.",
+        "Shopify bağlantısında ürün yazma izni yok. write_products izniyle yeniden bağlanın.",
       code: "missing_write_products_scope",
       status: 409,
     };
@@ -361,7 +361,7 @@ export async function publishApprovedFields(params: {
     return {
       ok: false,
       message: secret.ok
-        ? "Shopify erisim anahtari bulunamadi. Yeniden baglanin."
+        ? "Shopify erişim anahtarı bulunamadı. Yeniden bağlanın."
         : secret.message,
       code: secret.ok ? "missing_shopify_token" : secret.code ?? "secret_error",
       status: 409,
@@ -401,7 +401,7 @@ export async function publishApprovedFields(params: {
     profileId: params.profileId,
     publishJobId: job.data.id,
     level: "info",
-    message: "Shopify yayinlama baslatildi.",
+    message: "Shopify yayınlama başlatıldı.",
     details: {
       fields: approvedFields.map((field) => field.field),
     },
@@ -422,7 +422,7 @@ export async function publishApprovedFields(params: {
         profileId: params.profileId,
         publishJobId: job.data.id,
         level: "error",
-        message: "Shopify alanlari reddetti.",
+        message: "Shopify alanları reddetti.",
         details: { userErrors: result.userErrors },
       });
       await finishPublishJob({
@@ -433,7 +433,7 @@ export async function publishApprovedFields(params: {
 
       return {
         ok: false,
-        message: "Shopify yayinlama istegini reddetti.",
+        message: "Shopify yayınlama isteğini reddetti.",
         code: "shopify_user_errors",
         status: 422,
       };
@@ -455,7 +455,7 @@ export async function publishApprovedFields(params: {
         profileId: params.profileId,
         publishJobId: job.data.id,
         level: "warning",
-        message: "Yayinlama basarili oldu ama yeniden senkronizasyon tamamlanamadi.",
+        message: "Yayınlama başarılı oldu ama yeniden senkronizasyon tamamlanamadı.",
         details: { code: syncResult.code },
       });
     }
@@ -464,7 +464,7 @@ export async function publishApprovedFields(params: {
       profileId: params.profileId,
       publishJobId: job.data.id,
       level: "info",
-      message: "Shopify yayinlama tamamlandi.",
+      message: "Shopify yayınlama tamamlandı.",
       details: { productId: result.product?.id ?? params.product.externalId },
     });
     await finishPublishJob({

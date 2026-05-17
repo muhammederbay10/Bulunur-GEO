@@ -64,7 +64,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!params.success) {
     return failureResponse(
       "invalid_product_id",
-      "Gecersiz urun kimligi.",
+      "Geçersiz ürün kimliği.",
       400,
     );
   }
@@ -76,7 +76,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!parsedBody.success) {
     return failureResponse(
       "invalid_publish_request",
-      "Yayinlamak icin en az bir guvenli alan secin.",
+      "Yayınlamak için en az bir güvenli alan seçin.",
       400,
     );
   }
@@ -111,7 +111,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!optimizationResult.data) {
     return failureResponse(
       "optimization_required",
-      "Yayinlama icin once kayitli optimizasyon sonucu gerekli.",
+      "Yayınlama için önce kayıtlı optimizasyon sonucu gerekli.",
       409,
     );
   }
@@ -122,7 +122,7 @@ export async function POST(request: Request, context: RouteContext) {
   ) {
     return failureResponse(
       "optimization_not_ready",
-      "Yalnizca hazir optimizasyon sonuclari yayinlanabilir.",
+      "Yalnızca hazır optimizasyon sonuçları yayınlanabilir.",
       409,
     );
   }
@@ -132,7 +132,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (product.source !== "shopify") {
     return failureResponse(
       "shopify_only",
-      "Yayinlama sadece Shopify urunleri icin kullanilabilir.",
+      "Yayınlama sadece Shopify ürünleri için kullanılabilir.",
       400,
     );
   }

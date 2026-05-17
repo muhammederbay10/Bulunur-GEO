@@ -40,6 +40,7 @@ export async function saveOnboardingProfile(
     businessCategory: getFormValue(formData, "businessCategory"),
     marketFocus: getFormValue(formData, "marketFocus"),
   });
+  const inlineFlow = getFormValue(formData, "flowMode") === "inline";
 
   if (!parsed.success) {
     return {
@@ -64,6 +65,6 @@ export async function saveOnboardingProfile(
   return {
     status: "success",
     message: "Onboarding tamamlandı. Ürün kaynağını hazırlamaya geçiyoruz.",
-    redirectTo: "/sources?setup=1",
+    redirectTo: inlineFlow ? undefined : "/sources?setup=1",
   };
 }

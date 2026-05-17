@@ -16,6 +16,7 @@ const eslintConfig = [
       "node_modules/**",
       "shopify-testing/**",
       "scrapingtest/**",
+      "vitrinai/**",
       "next-env.d.ts",
     ],
   },

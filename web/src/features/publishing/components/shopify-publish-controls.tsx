@@ -80,7 +80,7 @@ export function ShopifyPublishControls({
     anchor.download = `shopify-approved-fields-${productId}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
-    setMessage("Onaylanan alanlar JSON olarak hazirlandi.");
+    setMessage("Onaylanan alanlar JSON olarak hazırlandı.");
   }
 
   async function publishToShopify() {
@@ -98,16 +98,16 @@ export function ShopifyPublishControls({
       const payload = (await response.json()) as PublishProductApiResponse;
 
       if (!response.ok || !payload.ok) {
-        setMessage(payload.ok ? "Yayinlama basarisiz." : payload.message);
+        setMessage(payload.ok ? "Yayınlama başarısız." : payload.message);
         return;
       }
 
-      setMessage("Onaylanan alanlar Shopify'a yayinlandi.");
+      setMessage("Onaylanan alanlar Shopify'a yayınlandı.");
       startTransition(() => {
         router.refresh();
       });
     } catch {
-      setMessage("Yayinlama istegi gonderilemedi. Baglantiyi kontrol edin.");
+      setMessage("Yayınlama isteği gönderilemedi. Bağlantıyı kontrol edin.");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +116,7 @@ export function ShopifyPublishControls({
   if (fields.length === 0) {
     return (
       <p className="rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
-        Shopify icin yayinlanabilir guvenli alan bulunamadi.
+        Shopify için yayınlanabilir güvenli alan bulunamadı.
       </p>
     );
   }
@@ -127,7 +127,7 @@ export function ShopifyPublishControls({
         {fields.map((field) => (
           <label
             key={field.field}
-            className="grid gap-3 rounded-md border border-border bg-background p-4"
+            className="grid gap-3 rounded-lg border border-border bg-background/70 p-4 transition hover:bg-muted/70"
           >
             <div className="flex items-start gap-3">
               <Checkbox
@@ -148,15 +148,15 @@ export function ShopifyPublishControls({
                 </div>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   <div>
-                    <p className="text-xs uppercase text-muted-foreground">
-                      Once
+                    <p className="mono-label text-muted-foreground">
+                      Önce
                     </p>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
                       {formatValue(field.before)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase text-primary">Sonra</p>
+                    <p className="mono-label text-primary">Sonra</p>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm">
                       {formatValue(field.value)}
                     </p>
@@ -187,7 +187,7 @@ export function ShopifyPublishControls({
           disabled={selectedCandidates.length === 0 || isBusy}
         >
           <Download className="h-4 w-4" />
-          JSON Disari Aktar
+          JSON Dışarı Aktar
         </Button>
         <Button
           type="button"
@@ -200,14 +200,14 @@ export function ShopifyPublishControls({
           ) : (
             <Send className="h-4 w-4" />
           )}
-          Shopify&apos;a Yayinla
+          Shopify&apos;a Yayınla
         </Button>
       </div>
 
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       <p className="text-sm leading-6 text-muted-foreground">
-        Yalnizca isaretli alanlar gonderilir. Fiyat, stok, SKU, varyant,
-        kargo, vergi, koleksiyon ve medya alanlari bu MVP&apos;de degistirilmez.
+        Yalnızca işaretli alanlar gönderilir. Fiyat, stok, SKU, varyant,
+        kargo, vergi, koleksiyon ve medya alanları bu MVP&apos;de değiştirilmez.
       </p>
     </div>
   );

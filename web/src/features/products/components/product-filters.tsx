@@ -11,7 +11,7 @@ const statusFilters: Array<{
   value: ProductListStatusFilter;
   label: string;
 }> = [
-  { value: "all", label: "Tum urunler" },
+  { value: "all", label: "Tüm ürünler" },
   { value: "waiting", label: "Analiz bekleyen" },
   { value: "analyzed", label: "Analiz edilen" },
   { value: "optimized", label: "Optimize edilen" },
@@ -22,7 +22,7 @@ const sourceFilters: Array<{
   value: ProductListSourceFilter;
   label: string;
 }> = [
-  { value: "all", label: "Tum kaynaklar" },
+  { value: "all", label: "Tüm kaynaklar" },
   { value: "shopify", label: "Shopify" },
   { value: "native", label: "Web sitesi" },
 ];
@@ -54,12 +54,12 @@ export function ProductFilters({
   activeSource: ProductListSourceFilter;
 }) {
   return (
-    <section className="grid gap-4 rounded-lg border border-border bg-card p-4">
+    <section className="grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold">Katalog filtreleri</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Analiz icin odaklanacaginiz urunleri hizli ayirin.
+            Analiz için odaklanacağınız ürünleri hızlı ayırın.
           </p>
         </div>
         <Badge variant="outline">Sunucuda filtrelenir</Badge>

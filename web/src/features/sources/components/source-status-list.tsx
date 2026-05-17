@@ -21,24 +21,24 @@ const sourceLabels = {
 };
 
 const storeStatusLabels = {
-  setup_pending: "Hazirlaniyor",
-  active: "Hazir",
+  setup_pending: "Hazırlanıyor",
+  active: "Hazır",
   syncing: "Senkronize ediliyor",
   error: "Hata var",
-  disconnected: "Baglanti kesildi",
+  disconnected: "Bağlantı kesildi",
 };
 
 const connectionStatusLabels = {
   pending: "Yetki bekliyor",
-  connected: "Bagli",
+  connected: "Bağlı",
   error: "Tekrar gerekli",
   revoked: "Yetki kaldirildi",
-  disconnected: "Baglanti kesildi",
+  disconnected: "Bağlantı kesildi",
 };
 
 function formatDateTime(value: string | null) {
   if (!value) {
-    return "Henuz senkronize edilmedi";
+    return "Henüz senkronize edilmedi";
   }
 
   return new Intl.DateTimeFormat("tr-TR", {
@@ -125,7 +125,7 @@ function DisconnectButton({ storeId }: { storeId: string }) {
       ) : (
         <Unplug className="h-4 w-4" />
       )}
-      Baglantiyi kes
+      Bağlantıyı kes
     </Button>
   );
 }
@@ -134,10 +134,10 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
   if (!stores.length) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-background/60 p-5">
-        <p className="font-medium">Henuz urun kaynagi yok</p>
+        <p className="font-medium">Henüz ürün kaynağı yok</p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Once Shopify magazanizi baglayin veya web sitenizden urun eklemek
-          icin bir kaynak olusturun.
+          Önce Shopify mağazanızı bağlayın veya web sitenizden ürün eklemek
+          için bir kaynak oluşturun.
         </p>
       </div>
     );
@@ -183,7 +183,7 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
                 </div>
                 <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
                   {store.sourceType === "shopify"
-                    ? shopDomain ?? "Shopify alan adi bekleniyor"
+                    ? shopDomain ?? "Shopify alan adı bekleniyor"
                     : store.websiteUrl ?? "Web sitesi adresi eklenmedi"}
                 </p>
                 {store.sourceType === "shopify" ? (
@@ -199,8 +199,8 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
                     <a href={`/api/shopify/connect?shop=${encodeURIComponent(shopDomain)}`}>
                       <ExternalLink className="h-4 w-4" />
                       {store.connection?.status === "disconnected"
-                        ? "Yeniden baglan"
-                        : "Shopify'a baglan"}
+                        ? "Yeniden bağlan"
+                        : "Shopify'a bağlan"}
                     </a>
                   </Button>
                 ) : null}
@@ -212,7 +212,7 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
                 {store.connection?.status === "disconnected" ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Unplug className="h-4 w-4" />
-                    Kayitli urunler DB&apos;den gosterilir.
+                    Kayıtlı ürünler veritabanından gösterilir.
                   </div>
                 ) : null}
               </div>
@@ -221,16 +221,16 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
             {store.connection?.status === "disconnected" ? (
               <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                 <Unplug className="h-4 w-4" />
-                Shopify baglantisi kesildi. Eski urunler kayitli veri olarak
-                gorunur, fakat Shopify API islemleri yeniden baglanana kadar
-                kapali kalir.
+                Shopify bağlantısı kesildi. Eski ürünler kayıtlı veri olarak
+                görünür, fakat Shopify API işlemleri yeniden bağlanana kadar
+                kapali kalır.
               </p>
             ) : null}
 
             {store.connection?.status === "connected" ? (
-              <p className="mt-3 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
+              <p className="mt-3 flex items-center gap-2 text-sm text-primary">
                 <CheckCircle2 className="h-4 w-4" />
-                Shopify bagli. Urunler otomatik senkronize edilir; gerekirse
+                Shopify bağlı. Ürünler otomatik senkronize edilir; gerekirse
                 tekrar senkronize edebilirsiniz.
               </p>
             ) : null}

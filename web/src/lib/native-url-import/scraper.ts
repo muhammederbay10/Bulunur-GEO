@@ -81,7 +81,7 @@ async function scrapeSingleProduct(
   if (!fetchResult.ok || !fetchResult.html) {
     return createFailedPreviewItem(
       productUrl,
-      fetchResult.error ?? "Failed to fetch product page.",
+      fetchResult.error ?? "Ürün sayfası getirilemedi.",
       fetchResult.errorCode,
     );
   }
@@ -248,7 +248,7 @@ export async function scanNativeProductListing(
       failedItems,
       status: "failed",
       error:
-        "Product links were found, but none of the product pages could be parsed successfully.",
+        "Ürün bağlantıları bulundu, ancak ürün sayfalarının hiçbiri başarıyla ayrıştırılamadı.",
       errorCode: "all_products_failed",
     };
   }
@@ -310,7 +310,7 @@ export async function scanNativeProductUrls(
       failedItems,
       status: "failed",
       error:
-        "Product URLs were provided, but none of the product pages could be parsed successfully.",
+        "Ürün URL adresleri verildi, ancak ürün sayfalarının hiçbiri başarıyla ayrıştırılamadı.",
       errorCode: "all_products_failed",
     };
   }

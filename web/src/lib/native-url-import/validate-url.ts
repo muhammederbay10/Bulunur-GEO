@@ -161,7 +161,7 @@ export function validateProductListingUrl(
   } catch {
     return {
       isValid: false,
-      error: "Invalid URL format.",
+      error: "Geçersiz URL formatı.",
       errorCode: "invalid_url",
     };
   }

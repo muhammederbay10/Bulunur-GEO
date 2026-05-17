@@ -6,57 +6,91 @@
   :root {
     --font-space-grotesk: "Space Grotesk";
     --font-space-mono: "Space Mono";
-    --background: 40 18% 97%;
-    --foreground: 0 0% 18%;
-    --card: 38 20% 94%;
-    --card-foreground: 0 0% 18%;
-    --popover: 40 18% 97%;
-    --popover-foreground: 0 0% 18%;
-    --primary: 29 90% 55%;
-    --primary-foreground: 30 36% 10%;
-    --secondary: 32 16% 88%;
-    --secondary-foreground: 0 0% 18%;
-    --muted: 36 14% 88%;
-    --muted-foreground: 0 0% 38%;
-    --accent: 29 90% 55%;
-    --accent-foreground: 30 36% 10%;
+
+    /* Shopify green + white base */
+    --background: 0 0% 100%;
+    --foreground: 160 44% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 44% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 44% 10%;
+
+    /* Primary: Shopify Green */
+    --primary: 165 100% 25%;
+    --primary-foreground: 0 0% 98%;
+
+    /* Secondary: white/green support */
+    --secondary: 150 38% 95%;
+    --secondary-foreground: 160 44% 16%;
+
+    /* Muted elements */
+    --muted: 150 38% 96%;
+    --muted-foreground: 160 17% 34%;
+
+    /* Accent: Shopify Green */
+    --accent: 165 100% 25%;
+    --accent-foreground: 0 0% 98%;
+
+    /* Destructive & States */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 76%;
-    --input: 0 0% 76%;
-    --ring: 29 90% 55%;
-    --chart-1: 29 90% 55%;
-    --chart-2: 142 50% 42%;
-    --chart-3: 0 0% 18%;
-    --chart-4: 43 74% 66%;
+    --border: 150 20% 84%;
+    --input: 150 20% 84%;
+    --ring: 165 100% 25%;
+
+    /* Charts */
+    --chart-1: 165 100% 25%;
+    --chart-2: 151 58% 40%;
+    --chart-3: 160 44% 10%;
+    --chart-4: 142 45% 55%;
     --chart-5: 0 78% 60%;
-    --radius: 0.25rem;
+
+    --ai-panel: 160 84% 14%;
+    --ai-panel-border: 160 73% 22%;
+    --ai-panel-foreground: 0 0% 100%;
+
+    --radius: 0.75rem;
   }
+
   .dark {
-    --background: 30 36% 10%;
-    --foreground: 40 18% 97%;
-    --card: 29 41% 7%;
-    --card-foreground: 0 0% 98%;
-    --popover: 29 41% 7%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 29 90% 55%;
-    --primary-foreground: 30 36% 10%;
-    --secondary: 30 26% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 30 20% 16%;
-    --muted-foreground: 35 10% 67%;
-    --accent: 29 90% 55%;
-    --accent-foreground: 30 36% 10%;
+    /* Neutral dark theme with Shopify green accents */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 96%;
+
+    /* Primary: Shopify Green */
+    --primary: 154 61% 46%;
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 154 61% 46%;
+    --accent-foreground: 0 0% 5%;
+
+    /* Destructive & States */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 24%;
-    --input: 0 0% 24%;
-    --ring: 29 90% 55%;
-    --chart-1: 29 90% 55%;
-    --chart-2: 142 50% 42%;
-    --chart-3: 40 18% 97%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 0 78% 60%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
+    --ring: 154 61% 46%;
+
+    /* Charts */
+    --chart-1: 154 61% 46%;
+    --chart-2: 142 45% 58%;
+    --chart-3: 0 0% 96%;
+    --chart-4: 188 42% 58%;
+    --chart-5: 0 78% 64%;
+
+    --ai-panel: 0 0% 8%;
+    --ai-panel-border: 0 0% 24%;
+    --ai-panel-foreground: 0 0% 96%;
   }
 }
 
@@ -65,7 +99,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -78,15 +115,30 @@
   }
 
   .industrial-panel {
-    @apply rounded-lg border border-border/60 bg-card/90 shadow-industrial-panel;
+    @apply rounded-xl border border-border/70 bg-card shadow-industrial-panel;
   }
 
   .seller-surface {
-    @apply rounded-lg border border-border/60 bg-card/95 shadow-industrial-panel;
+    @apply rounded-xl border border-border/70 bg-card shadow-sm;
   }
 
   .ai-engine-panel {
-    @apply rounded-lg border border-border/70 bg-[#1a120b] text-[#f8f7f5] shadow-industrial-panel;
+    @apply rounded-xl border shadow-industrial-panel;
+    background: hsl(var(--ai-panel));
+    border-color: hsl(var(--ai-panel-border));
+    color: hsl(var(--ai-panel-foreground));
+  }
+
+  .surface-muted {
+    @apply rounded-lg border border-border/70 bg-muted/70;
+  }
+
+  .mono-label {
+    @apply font-mono text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .page-enter {
+    @apply animate-in fade-in slide-in-from-bottom-3 duration-500;
   }
 
   .scanline {
@@ -108,10 +160,76 @@
     transform: translateX(-100%);
   }
 
+  .landing-reveal {
+    animation: landing-reveal 700ms ease both;
+  }
+
+  .landing-delay-2 {
+    animation-delay: 120ms;
+  }
+
+  .landing-hover {
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .landing-hover:hover {
+    border-color: hsl(var(--primary) / 0.42);
+    box-shadow: 0 18px 44px hsl(var(--primary) / 0.12);
+    transform: translateY(-2px);
+  }
+
+  .landing-preview-image {
+    background:
+      linear-gradient(135deg, hsl(var(--primary) / 0.14), transparent 42%),
+      linear-gradient(160deg, hsl(var(--muted)), hsl(var(--background)));
+    position: relative;
+  }
+
+  .landing-preview-image::after {
+    background:
+      linear-gradient(90deg, hsl(var(--primary) / 0.18), transparent),
+      hsl(var(--card) / 0.72);
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    content: "";
+    height: 34%;
+    left: 12%;
+    position: absolute;
+    right: 12%;
+    top: 18%;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .scanline::after {
       animation: scanline-pass 4s ease-in-out infinite;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-reveal {
+      animation: none;
+    }
+
+    .landing-hover,
+    .landing-hover:hover {
+      transform: none;
+      transition: none;
+    }
+  }
+}
+
+@keyframes landing-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

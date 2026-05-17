@@ -3,9 +3,8 @@ import { cookies } from "next/headers";
 import { getSupabasePublicEnv } from "@/lib/env/public";
 
 /**
- * Especially important if using Fluid compute: Don't put this client in a
- * global variable. Always create a new client within each function when using
- * it.
+ * Fluid compute kullanırken özellikle önemli: bu istemciyi global
+ * değişkene koyma. Kullanırken her fonksiyon içinde yeni istemci oluştur.
  */
 export async function createClient() {
   const cookieStore = await cookies();

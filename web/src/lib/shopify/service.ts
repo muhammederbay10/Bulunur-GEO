@@ -34,7 +34,7 @@ function safeSyncError(error: unknown) {
 
   return {
     code: "shopify_sync_failed",
-    message: "Shopify urunleri senkronize edilemedi.",
+    message: "Shopify ürünleri senkronize edilemedi.",
   };
 }
 
@@ -64,7 +64,7 @@ export async function syncShopifyProductsForConnection({
       return {
         ok: false,
         code: "missing_shop_domain",
-        message: "Shopify magaza alan adi bulunamadi.",
+        message: "Shopify mağaza alan adı bulunamadı.",
       };
     }
 
@@ -75,7 +75,7 @@ export async function syncShopifyProductsForConnection({
       return {
         ok: false,
         code: "shopify_connection_not_connected",
-        message: "Shopify baglantisi aktif degil.",
+        message: "Shopify bağlantısı aktif değil.",
       };
     }
 
@@ -96,7 +96,7 @@ export async function syncShopifyProductsForConnection({
       return {
         ok: false,
         code: "missing_shopify_token",
-        message: "Shopify erisim anahtari bulunamadi. Yeniden baglan.",
+        message: "Shopify erişim anahtarı bulunamadı. Yeniden bağlan.",
       };
     }
 

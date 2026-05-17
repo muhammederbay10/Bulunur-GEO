@@ -9,9 +9,9 @@ function DashboardFallback() {
       <p className="text-sm font-medium text-primary">
         Katalog kontrol merkezi
       </p>
-      <h1 className="mt-3 text-2xl font-semibold">Panel hazirlaniyor</h1>
+      <h1 className="mt-3 text-2xl font-semibold">Panel hazırlanıyor</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Katalog ozeti, kaynak durumu ve son urun hareketleri okunuyor.
+        Katalog ozeti, kaynak durumu ve son ürün hareketleri okunuyor.
       </p>
     </section>
   );

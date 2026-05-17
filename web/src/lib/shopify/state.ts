@@ -8,7 +8,7 @@ import { validateShopDomain } from "@/lib/shopify/validation";
 export const SHOPIFY_OAUTH_STATE_COOKIE = "shopify_oauth_state";
 
 export type ShopifyOAuthStatePayload = {
-  nonce: string;
+  nönce: string;
   shop: string;
   profileId: string;
   storeId: string;
@@ -16,7 +16,7 @@ export type ShopifyOAuthStatePayload = {
   returnTo?: string;
 };
 
-export function createOAuthNonce() {
+export function createOAuthNönce() {
   return crypto.randomBytes(24).toString("hex");
 }
 
@@ -59,7 +59,7 @@ export function createSignedOAuthStateCookie(
 
 export function verifySignedOAuthStateCookie(
   cookieValue: string | undefined,
-  expectedNonce: string,
+  expectedNönce: string,
   expectedShop: string,
 ) {
   if (!cookieValue) {
@@ -84,7 +84,7 @@ export function verifySignedOAuthStateCookie(
     const shop = validateShopDomain(decodedPayload.shop);
 
     if (
-      decodedPayload.nonce !== expectedNonce ||
+      decodedPayload.nönce !== expectedNönce ||
       shop !== validateShopDomain(expectedShop)
     ) {
       return null;

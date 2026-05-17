@@ -10,7 +10,7 @@ import {
 import { getShopifyConfig, MissingShopifyConfigError } from "@/lib/shopify/config";
 import { buildShopifyAuthorizationUrl } from "@/lib/shopify/oauth";
 import {
-  createOAuthNonce,
+  createOAuthNönce,
   createSignedOAuthStateCookie,
   SHOPIFY_OAUTH_STATE_COOKIE,
 } from "@/lib/shopify/state";
@@ -53,9 +53,9 @@ export async function GET(request: NextRequest) {
       return redirectToSourcesError(request, "connection_not_found");
     }
 
-    const nonce = createOAuthNonce();
+    const nönce = createOAuthNönce();
     const signedStateCookie = createSignedOAuthStateCookie({
-      nonce,
+      nönce,
       shop,
       profileId: user.id,
       storeId: connection.data.storeId,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     });
     const authorizationUrl = buildShopifyAuthorizationUrl({
       shop,
-      nonce,
+      nönce,
     });
     const response = NextResponse.redirect(authorizationUrl);
 
