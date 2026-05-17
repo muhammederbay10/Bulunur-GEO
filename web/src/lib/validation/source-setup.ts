@@ -1,13 +1,10 @@
 import { z } from "zod";
 
-const optionalUrl = z.preprocess(
-  (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z
-    .string()
-    .trim()
-    .url("Geçerli bir URL gir. Örn: https://magazam.com")
-    .optional(),
-);
+const requiredUrl = z
+  .string()
+  .trim()
+  .min(1, "Ürün liste URL'sini gir.")
+  .url("Geçerli bir URL gir. Örn: https://magazam.com/collections/all");
 
 function normalizeShopDomain(value: string) {
   const trimmed = value.trim().toLowerCase();
@@ -41,7 +38,7 @@ export const nativeSourceSchema = z.object({
     .trim()
     .min(2, "Mağaza adı en az 2 karakter olmalı.")
     .max(160, "Mağaza adı 160 karakteri geçmemeli."),
-  websiteUrl: optionalUrl,
+  websiteUrl: requiredUrl,
 });
 
 export const shopifySourceSchema = z.object({

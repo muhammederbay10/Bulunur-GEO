@@ -40,32 +40,33 @@ export function NativeSourceForm({
           <div>
             <h2 className="text-xl font-semibold">Web Sitemden Ürün Ekle</h2>
             <p className="mt-2 text-sm leading-5 text-muted-foreground">
-              Shopify kullanmiyorsaniz web siteniz için bir ürün kaynağı
-              oluşturun. URL, dosya veya manuel aktarim sonraki adımda ayni
-              kaynaga yazilir.
+              Shopify kullanmıyorsanız ürün liste sayfanızı verin. İlk 20 ürün
+              otomatik alınır; sonra gerekirse tek tek, dosya ile veya manuel
+              eklemeye devam edebilirsiniz.
             </p>
           </div>
         </div>
 
         <div className="relative grid gap-2 text-left">
-          <Label htmlFor="storeName">Kaynak adi</Label>
+          <Label htmlFor="storeName">Kaynak adı</Label>
           <Input
             id="storeName"
             name="storeName"
             defaultValue={store?.name ?? profile.businessName ?? "Mağazam"}
-            placeholder="Orn: Kuzey Outdoor"
+            placeholder="Örn: Kuzey Outdoor"
           />
           <FieldError errors={state.fieldErrors?.storeName} />
         </div>
 
         <div className="relative grid gap-2 text-left">
-          <Label htmlFor="websiteUrl">Web sitesi URL</Label>
+          <Label htmlFor="websiteUrl">Ürün liste URL</Label>
           <Input
             id="websiteUrl"
             name="websiteUrl"
             type="url"
             defaultValue={store?.websiteUrl ?? profile.websiteUrl ?? ""}
-            placeholder="https://mağazam.com"
+            placeholder="https://magazam.com/collections/all"
+            required
           />
           <FieldError errors={state.fieldErrors?.websiteUrl} />
         </div>
@@ -84,7 +85,7 @@ export function NativeSourceForm({
           ) : (
             <CheckCircle2 className="h-4 w-4" />
           )}
-          Web sitesi kaynağıni kaydet
+          Kaydet ve ürünleri getir
         </Button>
       </fieldset>
     </form>

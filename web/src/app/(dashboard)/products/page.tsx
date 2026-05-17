@@ -12,6 +12,7 @@ import type {
 type ProductsSearchParams = {
   shopify_connected?: string;
   shopify_sync?: string;
+  native_imported?: string;
   product_count?: string;
   shop?: string;
   status?: string;
@@ -58,6 +59,22 @@ function getShopifyNotice(params?: ProductsSearchParams) {
   };
 }
 
+function getNativeImportNotice(params?: ProductsSearchParams) {
+  if (params?.native_imported !== "1") {
+    return null;
+  }
+
+  const productCount = Number(params.product_count ?? "0");
+
+  return {
+    tone: "success" as const,
+    message:
+      productCount > 0
+        ? `Web sitesi kaynağı hazırlandı ve ${productCount} ürün içeri alındı.`
+        : "Web sitesi kaynağı hazırlandı. Bu URL'den aktarılabilir ürün bulunamadı.",
+  };
+}
+
 function normalizeStatusFilter(value?: string): ProductListStatusFilter {
   if (
     value === "waiting" ||
@@ -92,6 +109,7 @@ async function ProductsContent({
     source: activeSource,
   });
   const shopifyNotice = getShopifyNotice(params);
+  const nativeImportNotice = getNativeImportNotice(params);
 
   return (
     <div className="page-enter grid gap-6">
@@ -104,6 +122,12 @@ async function ProductsContent({
           }
         >
           {shopifyNotice.message}
+        </div>
+      ) : null}
+
+      {nativeImportNotice ? (
+        <div className="rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
+          {nativeImportNotice.message}
         </div>
       ) : null}
 
