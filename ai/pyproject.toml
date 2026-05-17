@@ -4,24 +4,30 @@ version = "0.1.0"
 description = "AI/GEO engine for Bulunur Turkish e-commerce product optimization."
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi>=0.115,<1.0",
     "langchain>=0.3,<0.4",
     "langchain-google-genai>=2.0,<3.0",
     "langgraph>=0.2,<0.3",
     "pydantic>=2.0,<3.0",
     "python-dotenv>=1.0,<2.0",
+    "uvicorn>=0.30,<1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "httpx>=0.27,<1.0",
     "pytest>=8.0,<9.0",
 ]
 
 [tool.setuptools.packages.find]
 include = [
+    "api*",
     "agents*",
+    "ai*",
     "api_contracts*",
     "geo_engine*",
     "llm*",
     "schema_engine*",
+    "services*",
     "turkish_nlp*",
 ]
