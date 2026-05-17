@@ -15,7 +15,7 @@ export function SourceSetupSuccess({
         <CheckCircle2 className="h-7 w-7" />
       </div>
       <h1 className="mt-5 text-3xl font-semibold">
-        Kaynak hazirligi tamamlandi
+        Kaynak hazırlığı tamamlandı
       </h1>
       <p className="mx-auto mt-3 max-w-xl leading-7 text-muted-foreground">
         {message}
@@ -28,7 +28,7 @@ export function SourceSetupSuccess({
           <RefreshCw className="h-4 w-4 motion-safe:animate-spin" />
           {redirectLabel ??
             (setupMode
-              ? "Panel yenileniyor ve dashboard ekranina geciliyor..."
+              ? "Panel yenileniyor ve dashboard ekranına geçiliyor..."
               : "Kaynak durumu yenileniyor...")}
         </p>
       </div>

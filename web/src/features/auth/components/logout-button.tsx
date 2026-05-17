@@ -6,7 +6,7 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function LogoutButton({
-  children = "Cikis yap",
+  children = "Çıkış yap",
   ...props
 }: Omit<ButtonProps, "onClick">) {
   const router = useRouter();

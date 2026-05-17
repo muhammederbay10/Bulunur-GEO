@@ -56,7 +56,7 @@ export function ImproveProductButton({
 
       if (!response.ok || !payload.ok) {
         setErrorMessage(
-          payload.ok ? "Optimizasyon baslatilamadi." : payload.message,
+          payload.ok ? "Optimizasyon başlatilamadi." : payload.message,
         );
         return;
       }
@@ -72,7 +72,7 @@ export function ImproveProductButton({
       });
     } catch {
       setErrorMessage(
-        "Optimizasyon istegi gonderilemedi. Baglantiyi kontrol edin.",
+        "Optimizasyon isteği gönderilemedi. Bağlantıyı kontrol edin.",
       );
     } finally {
       setIsSubmitting(false);
@@ -104,7 +104,7 @@ export function ImproveProductButton({
         ) : (
           <WandSparkles className="h-4 w-4" />
         )}
-        {isBusy || isOptimizationRunning ? "Optimizasyon Hazirlaniyor" : "Optimize Et"}
+        {isBusy || isOptimizationRunning ? "Optimizasyon Hazırlanıyor" : "Optimize Et"}
       </Button>
       {isBusy ? <OptimizationLoadingState /> : null}
       {errorMessage ? (
@@ -116,8 +116,8 @@ export function ImproveProductButton({
 
 function OptimizationLoadingState() {
   const steps = [
-    "Urun icerigi okunuyor",
-    "Gorunurluk sinyalleri isleniyor",
+    "Ürün içerigi okunuyor",
+    "Görünürlük sinyalleri isleniyor",
     "Optimize taslak kaydediliyor",
   ];
 
@@ -125,7 +125,7 @@ function OptimizationLoadingState() {
     <div className="rounded-lg border border-primary/25 bg-primary/10 p-3">
       <div className="flex items-center gap-2 text-sm font-medium text-primary">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Optimizasyon hazirlaniyor
+        Optimizasyon hazırlanıyor
       </div>
       <div className="mt-3 grid gap-2">
         {steps.map((step, index) => (
@@ -182,7 +182,7 @@ export function MissingFactsForm({
 
       if (!response.ok || !payload.ok) {
         setErrorMessage(
-          payload.ok ? "Eksik bilgiler gonderilemedi." : payload.message,
+          payload.ok ? "Eksik bilgiler gönderilemedi." : payload.message,
         );
         return;
       }
@@ -191,7 +191,7 @@ export function MissingFactsForm({
         router.refresh();
       });
     } catch {
-      setErrorMessage("Bilgiler gonderilemedi. Baglantiyi kontrol edin.");
+      setErrorMessage("Bilgiler gönderilemedi. Bağlantıyı kontrol edin.");
     } finally {
       setIsSubmitting(false);
     }

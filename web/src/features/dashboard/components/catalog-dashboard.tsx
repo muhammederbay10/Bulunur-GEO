@@ -26,14 +26,14 @@ const workflowLabels = {
   not_analyzed: "Analiz bekliyor",
   analysis_running: "Analiz ediliyor",
   analyzed: "Analiz edildi",
-  optimization_running: "Iyilestiriliyor",
+  optimization_running: "İyileştiriliyor",
   optimized: "Optimize edildi",
-  published: "Yayinda",
+  published: "Yayında",
   failed: "Hata var",
 };
 
 function formatDate(value?: string) {
-  if (!value) return "Henuz yok";
+  if (!value) return "Henüz yok";
 
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
@@ -159,23 +159,23 @@ export function CatalogDashboard({
 }) {
   const metrics = [
     {
-      label: "Toplam urun",
+      label: "Toplam ürün",
       value: summary.metrics.totalProducts,
-      note: "Katalogdaki urunler.",
+      note: "Katalogdaki ürünler.",
       icon: Package,
       href: "/products",
     },
     {
       label: "Analiz edilen",
       value: summary.metrics.analyzedProducts,
-      note: "Skoru olusan urunler.",
+      note: "Skoru olusan ürünler.",
       icon: Activity,
       href: "/products?status=analyzed",
     },
     {
       label: "Optimize edilen",
       value: summary.metrics.optimizedProducts,
-      note: "Taslagi hazir urunler.",
+      note: "Taslagi hazır ürünler.",
       icon: Sparkles,
       href: "/products?status=optimized",
     },
@@ -242,17 +242,17 @@ export function CatalogDashboard({
       <section className="grid gap-4 xl:grid-cols-2">
         <ProductCardGroup
           title="Analiz bekleyenler"
-          actionLabel="Tumunu gor"
+          actionLabel="Tümünü gor"
           actionHref="/products?status=waiting"
           products={summary.attentionProducts}
-          emptyText="Analiz bekleyen urun yok."
+          emptyText="Analiz bekleyen ürün yok."
         />
         <ProductCardGroup
-          title="Son urun hareketleri"
+          title="Son ürün hareketleri"
           actionLabel="Katalog"
           actionHref="/products"
           products={summary.recentProducts}
-          emptyText="Henuz urun hareketi yok."
+          emptyText="Henüz ürün hareketi yok."
         />
       </section>
     </div>

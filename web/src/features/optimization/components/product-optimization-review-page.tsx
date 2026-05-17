@@ -15,10 +15,10 @@ import type {
 const reviewStatusLabels = {
   draft: "Taslak",
   needs_user_input: "Eksik bilgi gerekiyor",
-  ready_for_review: "Incelemeye hazir",
+  ready_for_review: "Incelemeye hazır",
   approved: "Onaylandi",
-  exported: "Disa aktarildi",
-  published: "Yayinda",
+  exported: "Disa aktarıldı",
+  published: "Yayında",
   failed: "Hata",
 };
 
@@ -50,7 +50,7 @@ export function ProductOptimizationReviewPage({
         <Button asChild variant="outline" size="sm">
           <Link href={`/products/${product.id}`}>
             <ArrowLeft className="h-4 w-4" />
-            Analize don
+            Analize dön
           </Link>
         </Button>
         <Badge variant="outline">
@@ -73,10 +73,10 @@ export function ProductOptimizationReviewPage({
             <p className="mono-label">Optimizasyon sonucu</p>
           </div>
           <h1 className="mt-2 text-xl font-semibold">
-            Optimize edilmis taslak henuz hazir degil
+            Optimize edilmiş taslak henüz hazır değil
           </h1>
           <Button asChild className="mt-4">
-            <Link href={`/products/${product.id}`}>Analize don</Link>
+            <Link href={`/products/${product.id}`}>Analize dön</Link>
           </Button>
         </section>
       ) : (

@@ -31,11 +31,11 @@ type OnboardingFormProps = {
 const steps = [
   {
     title: "Kimlik",
-    note: "Panelde kimin calistigini bilelim.",
+    note: "Panelde kimin çalıştığını bilelim.",
   },
   {
-    title: "Magaza",
-    note: "Isletme bilgilerini kaydederiz.",
+    title: "Mağaza",
+    note: "İşletme bilgilerini kaydederiz.",
   },
   {
     title: "Kaynak",
@@ -108,7 +108,7 @@ export function OnboardingForm({
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
             <p className="mono-label text-primary">
-              Adim {activeStep + 1} / {steps.length}
+              Adım {activeStep + 1} / {steps.length}
             </p>
             <h2 className="mt-1 text-xl font-semibold">{steps[activeStep].title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -145,7 +145,7 @@ export function OnboardingForm({
               <Input
                 id="fullName"
                 autoComplete="name"
-                placeholder="Orn: Ayse Yilmaz"
+                placeholder="Orn: Ayşe Yılmaz"
                 value={fullName}
                 onChange={(event) => setFullName(event.target.value)}
               />
@@ -167,7 +167,7 @@ export function OnboardingForm({
             <input type="hidden" name="marketFocus" value="TR" />
             <div className="grid gap-3 md:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="businessName">Magaza / isletme adi</Label>
+                <Label htmlFor="businessName">Mağaza / işletme adi</Label>
                 <Input
                   id="businessName"
                   name="businessName"
@@ -200,7 +200,7 @@ export function OnboardingForm({
               </Button>
               <Button type="submit" className="gap-2" disabled={isDisabled}>
                 {onboardingPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                Magazayi kaydet
+                Mağazayı kaydet
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>

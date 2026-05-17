@@ -42,25 +42,25 @@ export function ShopifySourceForm({
             <Store className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Shopify Magazami Bagla</h2>
+            <h2 className="text-xl font-semibold">Shopify Mağazamı Bağla</h2>
             <p className="mt-2 text-sm leading-5 text-muted-foreground">
-              Shopify urunlerinizi otomatik iceri almak icin myshopify.com
-              alan adinizi girin ve yetki ekranini tamamlayin.
+              Shopify ürünlerinizi otomatik içeri almak için myshopify.com
+              alan adınızı girin ve yetki ekranını tamamlayın.
             </p>
           </div>
         </div>
 
         <div className="relative grid gap-2 text-left">
-          <Label htmlFor="shopDomain">Shopify alan adi</Label>
+          <Label htmlFor="shopDomain">Shopify alan adı</Label>
           <Input
             id="shopDomain"
             name="shopDomain"
             defaultValue={shopDomain ?? ""}
-            placeholder="magazam.myshopify.com"
+            placeholder="mağazam.myshopify.com"
             autoComplete="off"
           />
           <p className="text-sm text-muted-foreground">
-            Ozel alan adiniz olsa bile Shopify OAuth icin myshopify.com alan
+            Özel alan adınız olsa bile Shopify OAuth için myshopify.com alan
             adi gerekir.
           </p>
           <FieldError errors={state.fieldErrors?.shopDomain} />
@@ -91,7 +91,7 @@ export function ShopifySourceForm({
           ) : (
             <ExternalLink className="h-4 w-4" />
           )}
-          {isConnected ? "Shopify alan adini guncelle" : "Kaydet ve Shopify'a baglan"}
+          {isConnected ? "Shopify alan adıni güncelle" : "Kaydet ve Shopify'a bağlan"}
         </Button>
       </fieldset>
     </form>

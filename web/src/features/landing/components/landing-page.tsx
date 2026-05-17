@@ -16,23 +16,23 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 const capabilityCards = [
   {
     icon: Search,
-    title: "Gorunurluk skoru",
-    body: "Her urun; bulunabilirlik, urun bilgisi kalitesi, karsilastirma gucu ve cevap hazirligi katmanlariyla puanlanir.",
+    title: "Görünürlük skoru",
+    body: "Her ürün; bulunabilirlik, ürün bilgisi kalitesi, karşılaştırma gücü ve cevap hazırlığı katmanlarıyla puanlanır.",
   },
   {
     icon: Code2,
-    title: "Product schema hazirligi",
-    body: "Baslik, aciklama, ozellikler, fiyat, stok ve schema sinyalleri tek urun sayfasinda toparlanir.",
+    title: "Ürün schema hazırlığı",
+    body: "Başlık, açıklama, özellikler, fiyat, stok ve schema sinyalleri tek ürün sayfasında toparlanır.",
   },
   {
     icon: FileCheck2,
-    title: "Once / sonra review",
-    body: "Optimize edilen icerik mevcut urunle yan yana incelenir. Satici onaylamadan Shopify urunu degismez.",
+    title: "Önce / sonra review",
+    body: "Optimize edilen içerik mevcut ürünle yan yana incelenir. Satıcı onaylamadan Shopify ürünü değişmez.",
   },
   {
     icon: Store,
-    title: "Shopify akisi",
-    body: "Shopify magazasindan urun cekme, analiz etme, taslak hazirlama ve uygun alanlari yayinlama akisi tek panelde ilerler.",
+    title: "Shopify akışı",
+    body: "Shopify mağazasından ürün çekme, analiz etme, taslak hazırlama ve uygun alanları yayınlama akışı tek panelde ilerler.",
   },
 ];
 
@@ -49,9 +49,9 @@ function ShopifyMark() {
 
 function HeroSignalStrip() {
   const signals = [
-    ["Urun skoru", "87/100"],
-    ["Shopify", "bagli"],
-    ["Review", "hazir"],
+    ["Ürün skoru", "87/100"],
+    ["Shopify", "bağlı"],
+    ["Review", "hazır"],
   ];
 
   return (
@@ -91,9 +91,9 @@ function ScoreRing() {
 function SystemPreview() {
   const scores = [
     ["Bulunabilirlik", 74],
-    ["Urun bilgisi", 68],
+    ["Ürün bilgisi", 68],
     ["Karsilastirma", 61],
-    ["Cevap hazirligi", 87],
+    ["Cevap hazırlığı", 87],
   ];
 
   return (
@@ -104,7 +104,7 @@ function SystemPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
           <span className="h-2.5 w-2.5 rounded-full bg-primary" />
         </div>
-        <Badge variant="secondary">Urun analizi</Badge>
+        <Badge variant="secondary">Ürün analizi</Badge>
       </div>
 
       <div className="grid gap-4 p-4 lg:grid-cols-[1.1fr_0.9fr]">
@@ -112,10 +112,10 @@ function SystemPreview() {
           <div className="rounded-lg border border-border bg-background/70 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="mono-label text-primary">Gorunurluk skoru</p>
+                <p className="mono-label text-primary">Görünürlük skoru</p>
                 <p className="mt-2 text-5xl font-bold text-primary">87</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Yayina hazir urun taslagi
+                  Yayına hazır ürün taslağı
                 </p>
               </div>
               <ScoreRing />
@@ -152,11 +152,11 @@ function SystemPreview() {
           <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              FAQ ve schema taslagi hazir
+              FAQ ve schema taslağı hazır
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              Shopify review adimina uygun
+              Shopify review adımina uygun
             </span>
           </div>
         </div>
@@ -170,25 +170,25 @@ function HeroSection() {
     <section className="relative mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-6xl items-center justify-center overflow-hidden px-5 py-16 text-center">
       <div className="pointer-events-none absolute inset-x-6 top-16 h-64 rounded-full border border-primary/10 bg-primary/5 blur-3xl" />
       <div className="landing-reveal relative z-10 mx-auto max-w-4xl">
-        <Badge variant="secondary">Turkce e-ticaret urun gorunurlugu</Badge>
+        <Badge variant="secondary">Türkçe e-ticaret ürün görünürlüğü</Badge>
         <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
-          Urun sayfalarini arama ve cevap motorlari icin anlasilir hale getirin.
+          Ürün sayfalarını arama ve cevap motorları için anlaşılır hale getirin.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-          Bulunur; Shopify veya web sitenizden gelen urunleri analiz eder,
-          eksik sinyalleri gosterir ve yayina hazir iyilestirme taslaklari
-          olusturur.
+          Bulunur; Shopify veya web sitenizden gelen ürünleri analiz eder,
+          eksik sinyalleri gösterir ve yayına hazır iyileştirme taslakları
+          oluşturur.
         </p>
 
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <Button asChild size="lg" className="gap-2">
             <Link href="/auth/sign-up">
-              Kuruluma basla
+              Kuruluma başla
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link href="/auth/login">Giris yap</Link>
+            <Link href="/auth/login">Giriş yap</Link>
           </Button>
         </div>
 
@@ -212,18 +212,18 @@ function ProductSection() {
         <div className="landing-reveal landing-delay-2">
           <p className="mono-label text-primary">Sistem ekrani</p>
           <h2 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">
-            Tek urunde skor, eksik bilgi ve optimize taslagi ayni akista.
+            Tek üründe skor, eksik bilgi ve optimize taslağı aynı akışta.
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            Panel, saticinin teknik detaylarda kaybolmadan karar vermesi icin
-            tasarlandi: once urun skoru, sonra sinyal kartlari, sonra kontrollu
-            once/sonra review.
+            Panel, satıcının teknik detaylarda kaybolmadan karar vermesi için
+            tasarlandı: önce ürün skoru, sonra sinyal kartları, sonra kontrollü
+            önce/sonra review.
           </p>
           <div className="mt-6 grid gap-3">
             {[
-              "Kaynak, stok, fiyat ve urun metni tek kartta gorunur.",
-              "Skor katmanlari urunun neden zayif kaldigini ayirir.",
-              "Shopify urunleri icin onay ve yayinlama ayrica kontrol edilir.",
+              "Kaynak, stok, fiyat ve ürün metni tek kartta görünür.",
+              "Skor katmanları ürünün neden zayıf kaldığını ayırır.",
+              "Shopify ürünleri için onay ve yayınlama ayrıca kontrol edilir.",
             ].map((item) => (
               <div key={item} className="flex gap-3 text-sm">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -243,7 +243,7 @@ function CapabilitiesSection() {
       <div className="max-w-2xl">
         <p className="mono-label text-primary">Yetenekler</p>
         <h2 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">
-          E-ticaret urunleri icin dogru sinyallere odaklanir.
+          E-ticaret ürünleri için doğru sinyallere odaklanır.
         </h2>
       </div>
 
@@ -299,27 +299,27 @@ function AboutSection() {
         <div className="max-w-2xl">
           <p className="mono-label text-primary">Ekip</p>
           <h2 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">
-            Satici deneyimi ve yapay zeka muhendisligi ayni masada.
+            Satıcı deneyimi ve yapay zeka mühendisliği aynı masada.
           </h2>
           <p className="mt-4 text-base leading-7 text-muted-foreground">
-            Proje, e-ticaret saticilarinin urun icerigini daha guvenli ve
-            anlasilir sekilde iyilestirmesine odaklanan iki kisilik bir ekip
-            tarafindan gelistiriliyor.
+            Proje, e-ticaret satıcılarının ürün içeriğini daha güvenli ve
+            anlaşılır şekilde iyileştirmesine odaklanan iki kişilik bir ekip
+            tarafından geliştiriliyor.
           </p>
         </div>
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <AvatarCard
             name="Kurucu"
-            role="Urun ve frontend"
+            role="Ürün ve frontend"
             initials="K"
-            body="Satici akisini, onboarding deneyimini ve panel tasarimini sade tutmaya odaklanir."
+            body="Satıcı akışını, onboarding deneyimini ve panel tasarımını sade tutmaya odaklanır."
           />
           <AvatarCard
             name="AI Engineer"
-            role="Yapay zeka muhendisi"
+            role="Yapay zeka mühendisi"
             initials="AI"
-            body="Analiz, urun sinyalleri, optimizasyon ciktisi ve guvenli backend akislari uzerinde calisir."
+            body="Analiz, ürün sinyalleri, optimizasyon çıktısı ve güvenli backend akışları üzerinde çalışır."
           />
         </div>
       </div>
@@ -341,10 +341,10 @@ export function LandingPage() {
           <nav className="flex items-center gap-2">
             <ThemeSwitcher />
             <Button asChild variant="ghost" size="sm">
-              <Link href="/auth/login">Giris</Link>
+              <Link href="/auth/login">Giriş</Link>
             </Button>
             <Button asChild size="sm">
-              <Link href="/auth/sign-up">Basla</Link>
+              <Link href="/auth/sign-up">Başla</Link>
             </Button>
           </nav>
         </div>
@@ -360,7 +360,7 @@ export function LandingPage() {
           <span>Bulunur</span>
           <span className="inline-flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Onay olmadan yayin yok
+            Onay olmadan yayın yok
           </span>
         </div>
       </footer>

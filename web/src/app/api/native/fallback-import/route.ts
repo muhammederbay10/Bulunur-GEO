@@ -144,7 +144,7 @@ export async function POST(request: Request) {
           fallbackResponse({
             success: false,
             source,
-            error: "Urun adi zorunludur.",
+            error: "Ürün adi zorunludur.",
             errorCode: "invalid_import_request",
           }),
           { status: 400 },
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
           fallbackResponse({
             success: false,
             source,
-            error: "Dosya okunamadi. CSV veya basit XLSX dosyasi yukleyin.",
+            error: "Dosya okunamadı. CSV veya basit XLSX dosyası yükleyin.",
             errorCode: "fallback_file_invalid",
           }),
           { status: 400 },
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
         fallbackResponse({
           success: false,
           source,
-          error: "Gecersiz fallback import modu.",
+          error: "Geçersiz yedek içe aktarma modu.",
           errorCode: "invalid_import_request",
         }),
         { status: 400 },
@@ -203,7 +203,7 @@ export async function POST(request: Request) {
         fallbackResponse({
           success: false,
           source,
-          error: "Aktarilacak gecerli urun bulunamadi.",
+          error: "Aktarılacak geçerli ürün bulunamadı.",
           errorCode: "fallback_file_invalid",
         }),
         { status: 422 },
@@ -244,7 +244,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       fallbackResponse({
         success: false,
-        error: "Fallback import sirasinda beklenmeyen bir hata olustu.",
+        error: "Fallback import sirasinda beklenmeyen bir hata oluştu.",
         errorCode: "unexpected_error",
       }),
       { status: 500 },

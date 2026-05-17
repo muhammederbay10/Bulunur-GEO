@@ -71,7 +71,7 @@ const shopifyConnectionSelect =
   "id,profile_id,store_id,platform,external_shop_id,shop_domain,scopes,status,last_error_code,last_error_message,connected_at,created_at,updated_at";
 
 function shopifyStorageSetupMessage() {
-  return "Shopify baglanti tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Shopify bağlantı tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function isMissingShopifyTable(error: { code?: string; message?: string }) {
@@ -137,7 +137,7 @@ async function getOwnedShopifyStore(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify magazasi bulunamadi veya bu kullaniciya ait degil.",
+        : "Shopify mağazası bulunamadı veya bu kullanıcıya ait değil.",
       code: error.code,
       isMissingTable,
     };
@@ -189,7 +189,7 @@ export async function getOwnedShopifyConnection(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify baglantisi bulunamadi.",
+        : "Shopify bağlantısı bulunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -240,7 +240,7 @@ export async function getOwnedShopifyConnectionByShopDomain(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify baglantisi bulunamadi. Once kaynak ekraninda magazayi hazirla.",
+        : "Shopify bağlantısı bulunamadı. Önce kaynak ekranında mağazayı hazırla.",
       code: error.code,
       isMissingTable,
     };
@@ -292,7 +292,7 @@ export async function completeShopifyConnection(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify baglantisi kaydedilemedi.",
+        : "Shopify bağlantısı kaydedilemedi.",
       code: connectionError.code,
       isMissingTable,
     };
@@ -319,7 +319,7 @@ export async function completeShopifyConnection(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify erisim anahtari guvenli alana kaydedilemedi.",
+        : "Shopify erişim anahtarı güvenli alana kaydedilemedi.",
       code: secretError.code,
       isMissingTable,
     };
@@ -349,7 +349,7 @@ export async function getShopifyConnectionSecret(
       ok: false,
       message: isMissingTable
         ? shopifyStorageSetupMessage()
-        : "Shopify erisim anahtari bulunamadi.",
+        : "Shopify erişim anahtarı bulunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -543,7 +543,7 @@ export async function disconnectShopifyConnection(params: {
   if (storeResult.error) {
     return {
       ok: false,
-      message: "Shopify magazasi baglanti kesildi olarak isaretlenemedi.",
+      message: "Shopify mağazasi bağlantı kesildi olarak işaretlenemedi.",
       code: storeResult.error.code,
       isMissingTable: isMissingShopifyTable(storeResult.error),
     };
@@ -552,7 +552,7 @@ export async function disconnectShopifyConnection(params: {
   if (connectionResult.error) {
     return {
       ok: false,
-      message: "Shopify baglantisi kesilemedi.",
+      message: "Shopify bağlantısı kesilemedi.",
       code: connectionResult.error.code,
       isMissingTable: isMissingShopifyTable(connectionResult.error),
     };
@@ -561,7 +561,7 @@ export async function disconnectShopifyConnection(params: {
   if (secretResult.error) {
     return {
       ok: false,
-      message: "Shopify erisim anahtari kaldirilamadi.",
+      message: "Shopify erişim anahtarı kaldirilamadi.",
       code: secretResult.error.code,
       isMissingTable: isMissingShopifyTable(secretResult.error),
     };

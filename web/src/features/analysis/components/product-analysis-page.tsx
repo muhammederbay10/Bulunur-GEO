@@ -42,9 +42,9 @@ const workflowLabels = {
   not_analyzed: "Analiz bekliyor",
   analysis_running: "Analiz ediliyor",
   analyzed: "Analiz edildi",
-  optimization_running: "Iyilestiriliyor",
+  optimization_running: "İyileştiriliyor",
   optimized: "Optimize edildi",
-  published: "Yayinda",
+  published: "Yayında",
   failed: "Analiz hatasi",
 };
 
@@ -57,26 +57,26 @@ const scoreLabels = [
   },
   {
     key: "machineUnderstandingScore",
-    label: "Urun Bilgisi Kalitesi",
-    note: "Baslik, aciklama, ozellik ve yapisal veri netligi.",
+    label: "Ürün Bilgisi Kalitesi",
+    note: "Başlık, açıklama, özellik ve yapısal veri netliği.",
     icon: Tags,
   },
   {
     key: "rerankingStrengthScore",
-    label: "Karsilastirma Gucu",
-    note: "Urunun alternatiflerle kiyaslanabilir kanitlari.",
+    label: "Karşılaştırma Gücü",
+    note: "Ürünün alternatiflerle kıyaslanabilir kanıtları.",
     icon: Gauge,
   },
   {
     key: "aiAnswerReadinessScore",
-    label: "Cevap Hazirligi",
-    note: "Cevaplarda guvenle kullanilabilecek bilgiler.",
+    label: "Cevap Hazırlığı",
+    note: "Cevaplarda güvenle kullanılabilecek bilgiler.",
     icon: FileText,
   },
 ] as const;
 
 function formatDate(value?: string) {
-  if (!value) return "Henuz yok";
+  if (!value) return "Henüz yok";
 
   return new Intl.DateTimeFormat("tr-TR", {
     dateStyle: "medium",
@@ -196,11 +196,11 @@ function AnalysisStatusPanel({
       <section className="seller-surface p-4">
         <div className="flex items-center gap-2 text-primary">
           <AlertTriangle className="h-5 w-5" />
-          <p className="mono-label">Analiz tamamlanamadi</p>
+          <p className="mono-label">Analiz tamamlanamadı</p>
         </div>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {analysis.errorMessage ??
-            "Beklenen analiz sonucu alinamadi."}
+            "Beklenen analiz sonucu alınamadı."}
         </p>
       </section>
     );
@@ -214,7 +214,7 @@ function AnalysisStatusPanel({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="mono-label text-primary">
-              Gorunurluk skoru
+              Görünürlük skoru
             </p>
             <h2 className="mt-2 text-5xl font-bold leading-none text-primary">
               {typeof overallScore === "number" ? overallScore : "--"}
@@ -222,7 +222,7 @@ function AnalysisStatusPanel({
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-5 text-muted-foreground">
               {analysis.recommendedAction ??
-                "Zayif sinyaller ve siradaki guvenli adim."}
+                "Zayif sinyaller ve sıradaki güvenli adım."}
             </p>
           </div>
           <ScoreRing value={overallScore} />
@@ -260,7 +260,7 @@ function ProductPreviewPanel({ product }: { product: ProductAnalysisDetail }) {
   return (
     <aside className="seller-surface p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Urun sayfasi</h2>
+        <h2 className="text-lg font-semibold">Ürün sayfasi</h2>
         <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
       </div>
 
@@ -295,11 +295,11 @@ function ProductPreviewPanel({ product }: { product: ProductAnalysisDetail }) {
       </div>
 
       <div className="mt-4 border-t border-border pt-3">
-        <h3 className="text-sm font-semibold">Urun aciklamasi</h3>
+        <h3 className="text-sm font-semibold">Ürün açıklaması</h3>
         <p className="mt-2 line-clamp-3 text-sm leading-5 text-muted-foreground">
           {product.description ??
             product.shortDescription ??
-            "Bu urun icin aciklama kaydi henuz bulunmuyor."}
+            "Bu ürün için açıklama kaydı henüz bulunmuyor."}
         </p>
       </div>
 
@@ -333,11 +333,11 @@ function AnalysisActionPanel({
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
           <LabelLikeText>Analiz</LabelLikeText>
-          <h2 className="mt-1 text-lg font-semibold">Urun sayfasi</h2>
+          <h2 className="mt-1 text-lg font-semibold">Ürün sayfasi</h2>
           <div className="mt-2 flex items-center gap-3 rounded-lg border border-border bg-background/70 px-3 py-2">
             <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
             <span className="truncate text-sm text-muted-foreground">
-              {product.url ?? "Urun kaydi URL olmadan analiz edilecek"}
+              {product.url ?? "Ürün kaydı URL olmadan analiz edilecek"}
             </span>
           </div>
         </div>
@@ -407,11 +407,11 @@ function OptimizationPanel({
           <div>
             <p className="mono-label text-primary">Optimizasyon</p>
             <h2 className="mt-1 text-lg font-semibold">
-              Son optimizasyon tamamlanamadi
+              Son optimizasyon tamamlanamadı
             </h2>
             <p className="mt-1 text-sm leading-5 text-muted-foreground">
               {optimization.errorMessage ??
-                "Tekrar deneyebilirsiniz; urun otomatik degistirilmez."}
+                "Tekrar deneyebilirsiniz; ürün otomatik değiştirilmez."}
             </p>
           </div>
           <ImproveProductButton
@@ -430,8 +430,8 @@ function OptimizationPanel({
           <p className="mono-label text-primary">Optimizasyon</p>
           <h2 className="mt-1 text-lg font-semibold">
             {reviewableOptimization
-              ? "Optimize edilmis taslak hazir"
-              : "Iyilestirme taslagi olustur"}
+              ? "Optimize edilmiş taslak hazır"
+              : "İyileştirme taslağı oluştur"}
           </h2>
         </div>
         <ImproveProductButton
@@ -457,7 +457,7 @@ export function StrategyRail({
     <section className="seller-surface p-5 md:p-6">
       <div className="flex items-center gap-2">
         <WandSparkles className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Secilen stratejiler</h2>
+        <h2 className="text-lg font-semibold">Seçilen stratejiler</h2>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {optimization.selectedStrategies.map((strategy) => (
@@ -533,7 +533,7 @@ export function BeforeAfterPanel({
     getBeforeAfterText(optimization.beforeAfter, "description", "before") ??
     product.description ??
     product.shortDescription ??
-    "Aciklama kaydi yok.";
+    "Açıklama kaydı yok.";
   const afterDescription =
     getBeforeAfterText(optimization.beforeAfter, "description", "after") ??
     pickGeneratedText(
@@ -567,7 +567,7 @@ export function BeforeAfterPanel({
         <article className="seller-surface p-4">
           <div className="flex items-start justify-between gap-4 border-b border-border pb-3">
             <div>
-              <p className="text-xl font-semibold text-destructive">Once</p>
+              <p className="text-xl font-semibold text-destructive">Önce</p>
             </div>
             <Badge variant="outline">Skor {beforeScore ?? "--"}/100</Badge>
           </div>
@@ -590,7 +590,7 @@ export function BeforeAfterPanel({
                 <h4 className="text-sm font-semibold">Mevcut gucler</h4>
               </div>
               <ul className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                {(product.tags.length ? product.tags.slice(0, 4) : ["Baslik", "Fiyat", "Gorsel"]).map(
+                {(product.tags.length ? product.tags.slice(0, 4) : ["Başlık", "Fiyat", "Görsel"]).map(
                   (item) => (
                     <li key={item}>- {item}</li>
                   ),
@@ -642,7 +642,7 @@ export function BeforeAfterPanel({
             <div className="rounded-lg border border-primary/25 bg-primary/10 p-3">
               <div className="flex items-center gap-2 text-primary">
                 <FileText className="h-4 w-4" />
-                <h4 className="text-sm font-semibold">Urun ozellikleri</h4>
+                <h4 className="text-sm font-semibold">Ürün ozellikleri</h4>
               </div>
               <ul className="mt-2 grid gap-1 text-xs">
                 {optimization.selectedStrategies.slice(0, 4).map((strategy) => (
@@ -661,7 +661,7 @@ export function BeforeAfterPanel({
               <div className="mt-2 grid gap-1.5">
                 {(generatedFaq.length > 0
                   ? generatedFaq
-                  : ["Bu urun kimler icin uygun?", "Bakim nasil yapilir?", "Kargo bilgisi nedir?"]
+                  : ["Bu ürün kimler için uygun?", "Bakım nasıl yapılır?", "Kargo bilgisi nedir?"]
                 ).slice(0, 3).map((item, index) => (
                   <div
                     key={`${index}-${JSON.stringify(item)}`}
@@ -715,7 +715,7 @@ export function ShopifyReviewPublishPanel({
     <section className="seller-surface p-4">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Onayla, aktar veya yayinla</h2>
+        <h2 className="text-lg font-semibold">Onayla, aktar veya yayınla</h2>
       </div>
       <div className="mt-3">
         <ShopifyPublishControls productId={product.id} fields={fields} />
@@ -748,7 +748,7 @@ export function GeneratedContentPanel({
     <section className="seller-surface p-5 md:p-6">
       <div className="flex items-center gap-2">
         <ArrowRightLeft className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Uretilen taslak alanlar</h2>
+        <h2 className="text-lg font-semibold">Üretilen taslak alanlar</h2>
       </div>
       <div className="mt-4 grid gap-3">
         {generatedEntries.map(([field, value]) => (
@@ -786,7 +786,7 @@ export function ProductAnalysisPage({
         <Button asChild variant="outline" size="sm">
           <Link href="/products">
             <ArrowLeft className="h-4 w-4" />
-            Urunlere don
+            Ürünlere dön
           </Link>
         </Button>
         <Badge variant="outline">{workflowLabels[product.workflowStatus]}</Badge>

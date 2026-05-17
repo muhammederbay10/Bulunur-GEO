@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         importFailureResponse({
           error:
-            parsedBody.error.issues[0]?.message ?? "Invalid import request.",
+            parsedBody.error.issues[0]?.message ?? "Geçersiz içe aktarma isteği.",
           errorCode: "invalid_import_request",
         }),
         { status: 400 },

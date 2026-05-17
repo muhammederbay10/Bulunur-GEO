@@ -97,7 +97,7 @@ const defaultCatalogMetrics = {
 };
 
 function productStorageSetupMessage() {
-  return "Urun tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Ürün tablolari hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function isMissingProductTable(error: { code?: string; message?: string }) {
@@ -209,7 +209,7 @@ async function countProductsForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Katalog ozeti okunamadi.",
+        : "Katalog özeti okunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -604,7 +604,7 @@ export async function listProductSourceSummariesForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Kaynak ozeti okunamadi.",
+        : "Kaynak özeti okunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -654,7 +654,7 @@ export async function getProductAnalysisContextForProfile(params: {
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Urun analiz verisi okunamadi.",
+        : "Ürün analiz verisi okunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -663,7 +663,7 @@ export async function getProductAnalysisContextForProfile(params: {
   if (!data) {
     return {
       ok: false,
-      message: "Urun bulunamadi veya bu hesaba ait degil.",
+      message: "Ürün bulunamadı veya bu hesaba ait değil.",
       code: "product_not_found",
     };
   }
@@ -706,7 +706,7 @@ export async function upsertShopifyProducts(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Shopify urunleri okunamadi.",
+        : "Shopify ürünleri okunamadı.",
       code: lookupError.code,
       isMissingTable,
     };
@@ -747,7 +747,7 @@ export async function upsertShopifyProducts(
 
       return {
         ok: false,
-        message: "Shopify urunu guncellenemedi.",
+        message: "Shopify ürünü güncellenemedi.",
         code: error.code,
         isMissingTable: isMissingProductTable(error),
       };
@@ -765,7 +765,7 @@ export async function upsertShopifyProducts(
 
       return {
         ok: false,
-        message: "Shopify urunleri kaydedilemedi.",
+        message: "Shopify ürünleri kaydedilemedi.",
         code: error.code,
         isMissingTable: isMissingProductTable(error),
       };
@@ -825,7 +825,7 @@ export async function upsertNativeProductsFromPreviewItems(params: {
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Native urunler okunamadi.",
+        : "Native ürünler okunamadı.",
       code: lookupError.code,
       isMissingTable,
     };
@@ -867,7 +867,7 @@ export async function upsertNativeProductsFromPreviewItems(params: {
 
         return {
           ok: false,
-          message: "Native urun guncellenemedi.",
+          message: "Native ürün güncellenemedi.",
           code: error?.code,
           isMissingTable: error ? isMissingProductTable(error) : false,
         };
@@ -895,7 +895,7 @@ export async function upsertNativeProductsFromPreviewItems(params: {
 
       return {
         ok: false,
-        message: "Native urun kaydedilemedi.",
+        message: "Native ürün kaydedilemedi.",
         code: error?.code,
         isMissingTable: error ? isMissingProductTable(error) : false,
       };
@@ -961,7 +961,7 @@ export async function upsertNativeProductsFromFallbackItems(params: {
         ok: false,
         message: isMissingTable
           ? productStorageSetupMessage()
-          : "Native urunler okunamadi.",
+          : "Native ürünler okunamadı.",
         code: lookupError.code,
         isMissingTable,
       };
@@ -1002,7 +1002,7 @@ export async function upsertNativeProductsFromFallbackItems(params: {
       if (error || !data?.id) {
         return {
           ok: false,
-          message: "Native urun guncellenemedi.",
+          message: "Native ürün güncellenemedi.",
           code: error?.code,
           isMissingTable: error ? isMissingProductTable(error) : false,
         };
@@ -1021,7 +1021,7 @@ export async function upsertNativeProductsFromFallbackItems(params: {
     if (error || !data?.id) {
       return {
         ok: false,
-        message: "Native urun kaydedilemedi.",
+        message: "Native ürün kaydedilemedi.",
         code: error?.code,
         isMissingTable: error ? isMissingProductTable(error) : false,
       };
@@ -1074,7 +1074,7 @@ export async function listProductsForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Urunler okunamadi.",
+        : "Ürünler okunamadı.",
       code: error.code,
       isMissingTable,
     };
@@ -1149,7 +1149,7 @@ export async function getCatalogDashboardForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Son urunler okunamadi.",
+        : "Son ürünler okunamadı.",
       code: recentProductsResult.error.code,
       isMissingTable,
     };
@@ -1162,7 +1162,7 @@ export async function getCatalogDashboardForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Dikkat isteyen urunler okunamadi.",
+        : "Dikkat isteyen ürünler okunamadı.",
       code: attentionProductsResult.error.code,
       isMissingTable,
     };
@@ -1175,7 +1175,7 @@ export async function getCatalogDashboardForProfile(
       ok: false,
       message: isMissingTable
         ? productStorageSetupMessage()
-        : "Kaynak ozeti okunamadi.",
+        : "Kaynak özeti okunamadı.",
       code: sourcesResult.error.code,
       isMissingTable,
     };
@@ -1224,7 +1224,7 @@ export async function markShopifyProductsSourceDisconnected(params: {
   if (error) {
     return {
       ok: false,
-      message: "Shopify urunleri baglanti kesildi olarak isaretlenemedi.",
+      message: "Shopify ürünleri bağlantı kesildi olarak işaretlenemedi.",
       code: error.code,
       isMissingTable: isMissingProductTable(error),
     };

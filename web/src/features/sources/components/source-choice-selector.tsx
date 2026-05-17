@@ -35,7 +35,7 @@ export function SourceChoiceSelector({
   disabled = false,
 }: SourceChoiceSelectorProps) {
   return (
-    <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Urun kaynagi">
+    <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Ürün kaynağı">
       {options.map((option) => {
         const Icon = option.icon;
         const isSelected = value === option.value;

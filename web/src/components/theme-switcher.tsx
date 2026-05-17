@@ -21,7 +21,7 @@ export function ThemeSwitcher() {
       variant="outline"
       size="sm"
       className="gap-2"
-      aria-label={isDark ? "Acik temaya gec" : "Koyu temaya gec"}
+      aria-label={isDark ? "Açık temaya geç" : "Koyu temaya geç"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       disabled={!mounted}
     >
@@ -30,7 +30,7 @@ export function ThemeSwitcher() {
       ) : (
         <Moon className="h-4 w-4" />
       )}
-      <span className="hidden sm:inline">{mounted && isDark ? "Acik" : "Koyu"}</span>
+      <span className="hidden sm:inline">{mounted && isDark ? "Açık" : "Koyu"}</span>
     </Button>
   );
 }

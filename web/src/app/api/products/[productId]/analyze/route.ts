@@ -48,7 +48,7 @@ export async function POST(_request: Request, context: RouteContext) {
   if (!params.success) {
     return failureResponse(
       "invalid_product_id",
-      "Gecersiz urun kimligi.",
+      "Geçersiz ürün kimliği.",
       400,
     );
   }
@@ -120,7 +120,7 @@ export async function POST(_request: Request, context: RouteContext) {
         ? error
         : new AiServiceError({
             code: "analysis_failed",
-            message: "Analiz tamamlanamadi.",
+            message: "Analiz tamamlanamadı.",
             status: 500,
           });
 

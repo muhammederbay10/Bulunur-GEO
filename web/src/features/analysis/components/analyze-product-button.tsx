@@ -35,7 +35,7 @@ export function AnalyzeProductButton({
 
       if (!response.ok || !payload.ok) {
         setErrorMessage(
-          payload.ok ? "Analiz baslatilamadi." : payload.message,
+          payload.ok ? "Analiz başlatilamadi." : payload.message,
         );
         return;
       }
@@ -44,7 +44,7 @@ export function AnalyzeProductButton({
         router.refresh();
       });
     } catch {
-      setErrorMessage("Analiz istegi gonderilemedi. Baglantiyi kontrol edin.");
+      setErrorMessage("Analiz isteği gönderilemedi. Bağlantıyı kontrol edin.");
     } finally {
       setIsSubmitting(false);
     }

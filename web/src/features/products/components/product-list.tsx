@@ -15,9 +15,9 @@ const workflowLabels = {
   not_analyzed: "Analiz bekliyor",
   analysis_running: "Analiz ediliyor",
   analyzed: "Analiz edildi",
-  optimization_running: "Iyilestiriliyor",
-  optimized: "Hazir",
-  published: "Yayinda",
+  optimization_running: "İyileştiriliyor",
+  optimized: "Hazır",
+  published: "Yayında",
   failed: "Hata var",
 };
 
@@ -32,7 +32,7 @@ const workflowActionLabels = {
 };
 
 const availabilityLabels: Record<string, string> = {
-  source_disconnected: "Bagli kaynak yok",
+  source_disconnected: "Bağlı kaynak yok",
   in_stock: "Stokta",
   active: "Aktif",
   draft: "Taslak",
@@ -74,11 +74,11 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
             <Package className="h-6 w-6" />
           </div>
           <h2 className="mt-5 text-2xl font-semibold">
-            Bu filtrede urun bulunmuyor
+            Bu filtrede ürün bulunmuyor
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Kaynaklar ekranindan Shopify senkronizasyonu yapabilir, web sitesi
-            URLi taratabilir ya da dosya/manual urun aktarimi kullanabilirsiniz.
+            Kaynaklar ekranından Shopify senkronizasyonu yapabilir, web sitesi
+            URLi taratabilir ya da dosya/manual ürün aktarımı kullanabilirsiniz.
           </p>
           <Button asChild className="mt-6 gap-2">
             <Link href="/sources">
@@ -94,7 +94,7 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
   return (
     <section className="seller-surface overflow-hidden">
       <div className="hidden grid-cols-12 gap-4 border-b border-border bg-muted/80 px-4 py-3 mono-label text-muted-foreground md:grid">
-        <div className="col-span-5">Urun</div>
+        <div className="col-span-5">Ürün</div>
         <div className="col-span-2">Kaynak</div>
         <div className="col-span-2 text-center">Durum</div>
         <div className="col-span-1 text-center">Skor</div>
@@ -124,9 +124,9 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
                     <Store className="h-4 w-4" />
                     {product.priceDisplay ?? "Fiyat bilgisi yok"}
                   </span>
-                  <span>Guncellendi: {formatDate(product.updatedAt)}</span>
+                  <span>Güncellendi: {formatDate(product.updatedAt)}</span>
                   {product.availability === "source_disconnected" ? (
-                    <span>Shopify API islemleri kapali</span>
+                    <span>Shopify API işlemleri kapali</span>
                   ) : null}
                 </div>
               </div>

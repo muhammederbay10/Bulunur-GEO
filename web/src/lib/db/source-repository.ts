@@ -72,15 +72,15 @@ const connectionSelect =
   "id,profile_id,store_id,platform,shop_domain,scopes,status,last_error_code,last_error_message,connected_at,created_at,updated_at";
 
 function sourceSetupMessage() {
-  return "Kaynak tablolari hazir degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasini calistir.";
+  return "Kaynak tabloları hazır değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase2_database_foundation.sql dosyasını çalıştır.";
 }
 
 function sourceSetupTransactionMessage() {
-  return "Kaynak kurulum SQL'i guncel degil. Supabase SQL Editor'de web/.codex/sql/20260512_phase3_source_setup_transaction_rpc.sql dosyasini calistir.";
+  return "Kaynak kurulum SQL'i güncel değil. Supabase SQL Editor'de web/.codex/sql/20260512_phase3_source_setup_transaction_rpc.sql dosyasını çalıştır.";
 }
 
 function serviceRoleMessage() {
-  return "Kaynak kaydi olusturmak icin server tarafinda guvenli Supabase anahtari gerekli. Bu anahtar tarayiciya acilmamali.";
+  return "Kaynak kaydı oluşturmak için sunucu tarafında güvenli Supabase anahtarı gerekli. Bu anahtar tarayıcıya açılmamalı.";
 }
 
 function isMissingSourceTable(error: { code?: string; message?: string }) {
@@ -141,7 +141,7 @@ function mapStoreRow(
 
 function profileDefaults(profile: UserProfile) {
   return {
-    storeName: profile.businessName?.trim() || "Magazam",
+    storeName: profile.businessName?.trim() || "Mağazam",
     market: profile.marketFocus?.trim() || "TR",
     websiteUrl: profile.websiteUrl?.trim() || null,
   };
@@ -187,7 +187,7 @@ async function completeSourceSetupTransaction(
         ? sourceSetupMessage()
         : isMissingSourceSetupTransaction(error)
           ? sourceSetupTransactionMessage()
-          : "Kaynak kurulumu tamamlanamadi. Lutfen tekrar dene.",
+          : "Kaynak kurulumu tamamlanamadı. Lütfen tekrar dene.",
       isMissingTable,
     };
   }
@@ -195,7 +195,7 @@ async function completeSourceSetupTransaction(
   if (!data?.store_id) {
     return {
       ok: false,
-      message: "Kaynak kurulumu tamamlandi ancak kaynak kaydi bulunamadi. Lutfen tekrar dene.",
+      message: "Kaynak kurulumu tamamlandı ancak kaynak kaydı bulunamadı. Lütfen tekrar dene.",
     };
   }
 
@@ -228,7 +228,7 @@ async function loadStoreWithConnection(
       ok: false,
       message: isMissingSourceTable(storeError)
         ? sourceSetupMessage()
-        : "Kaynak kaydi okunamadi. Lutfen tekrar dene.",
+        : "Kaynak kaydı okunamadı. Lütfen tekrar dene.",
       isMissingTable: isMissingSourceTable(storeError),
     };
   }
@@ -238,7 +238,7 @@ async function loadStoreWithConnection(
       ok: false,
       message: isMissingSourceTable(connectionError)
         ? sourceSetupMessage()
-        : "Kaynak baglanti durumu okunamadi. Lutfen tekrar dene.",
+        : "Kaynak bağlantı durumu okunamadı. Lütfen tekrar dene.",
       isMissingTable: isMissingSourceTable(connectionError),
     };
   }
@@ -276,7 +276,7 @@ export async function getSourceSetupForUser(
       stores: [],
       errorMessage: isMissingSourceTable(storesResult.error)
         ? sourceSetupMessage()
-        : "Kaynak bilgileri okunamadi. Lutfen tekrar dene.",
+        : "Kaynak bilgileri okunamadı. Lütfen tekrar dene.",
       isMissingTable: isMissingSourceTable(storesResult.error),
     };
   }
@@ -286,7 +286,7 @@ export async function getSourceSetupForUser(
       stores: [],
       errorMessage: isMissingSourceTable(connectionsResult.error)
         ? sourceSetupMessage()
-        : "Kaynak baglantilari okunamadi. Lutfen tekrar dene.",
+        : "Kaynak bağlantıları okunamadı. Lütfen tekrar dene.",
       isMissingTable: isMissingSourceTable(connectionsResult.error),
     };
   }
@@ -326,7 +326,7 @@ export async function getActiveNativeSourceForUser(
         : "native_source_lookup_failed",
       message: isMissingTable
         ? sourceSetupMessage()
-        : "Web sitesi kaynaÄŸÄ± okunamadÄ±. LÃ¼tfen tekrar dene.",
+        : "Web sitesi kaynağı okunamadı. Lütfen tekrar dene.",
       status: isMissingTable ? 500 : 400,
       isMissingTable,
     };
@@ -337,7 +337,7 @@ export async function getActiveNativeSourceForUser(
       ok: false,
       code: "native_source_not_found",
       message:
-        "Devam etmek iÃ§in Ã¶nce Kaynaklar sayfasÄ±ndan web sitesi kaynaÄŸÄ±nÄ± hazÄ±rla.",
+        "Devam etmek için önce Kaynaklar sayfasından web sitesi kaynağını hazırla.",
       status: 409,
     };
   }
@@ -347,7 +347,7 @@ export async function getActiveNativeSourceForUser(
       ok: false,
       code: "native_source_conflict",
       message:
-        "Bu hesapta birden fazla aktif web sitesi kaynaÄŸÄ± var. MVP'de tek aktif kaynak desteklenir.",
+        "Bu hesapta birden fazla aktif web sitesi kaynağı var. MVP'de tek aktif kaynak desteklenir.",
       status: 409,
     };
   }
@@ -391,7 +391,7 @@ export async function createOrUpdateNativeSource(
 
     return {
       ok: false,
-      message: "Kaynak kaydi olusturulurken beklenmeyen bir hata olustu.",
+      message: "Kaynak kaydı oluşturulurken beklenmeyen bir hata oluştu.",
     };
   }
 }
@@ -429,7 +429,7 @@ export async function prepareShopifySource(
 
     return {
       ok: false,
-      message: "Shopify hazirligi yapilirken beklenmeyen bir hata olustu.",
+      message: "Shopify hazırlığı yapılırken beklenmeyen bir hata oluştu.",
     };
   }
 }

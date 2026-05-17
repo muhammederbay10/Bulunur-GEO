@@ -105,7 +105,7 @@ export function SourceSetupPanel({
         setupMode={setupMode}
         redirectLabel={
           shopifyState.status === "success" && shopifyState.connectUrl
-            ? "Shopify yetki ekranina yonlendiriliyorsunuz..."
+            ? "Shopify yetki ekranına yönlendiriliyorsunuz..."
             : undefined
         }
       />
@@ -134,7 +134,7 @@ export function SourceSetupPanel({
 
   const sourceSelector = (
     <section className={setupMode ? "mx-auto grid w-full max-w-2xl gap-2" : "grid w-full gap-2"}>
-      <p className="text-sm font-medium text-foreground">Baglanti yontemini secin</p>
+      <p className="text-sm font-medium text-foreground">Bağlantı yontemini seçin</p>
       <SourceChoiceSelector
         value={sourceChoice}
         onChange={setSourceChoice}
@@ -150,7 +150,7 @@ export function SourceSetupPanel({
         <div>
           <h2 className="text-lg font-semibold">Kaynak durumu</h2>
           <p className="mt-2 text-sm leading-5 text-muted-foreground">
-            Kayitlar server tarafinda sahiplik kontroluyle olusturulur.
+            Kayıtlar sunucu tarafında sahiplik kontrolüyle oluşturulur.
           </p>
         </div>
       </div>
@@ -170,7 +170,7 @@ export function SourceSetupPanel({
 
       {databaseReady && !canWriteSources ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          Kaynak kurulumu su anda kullanilamiyor. Lutfen daha sonra tekrar deneyin
+          Kaynak kurulumu su anda kullanilamiyor. Lütfen daha sonra tekrar deneyin
           veya destek ekibine haber verin.
         </div>
       ) : null}
@@ -203,7 +203,7 @@ export function SourceSetupPanel({
             className="mono-label inline-flex items-center gap-2 text-muted-foreground transition hover:text-primary"
           >
             <HelpCircle className="h-5 w-5" />
-            Yardima mi ihtiyaciniz var?
+            Yardıma mı ihtiyacınız var?
           </button>
         </div>
       ) : null}

@@ -27,12 +27,12 @@ function SourcesFallback() {
     <main className="min-h-screen bg-background p-5">
       <div className="mx-auto w-full max-w-5xl py-10">
         <div className="seller-surface p-6">
-          <p className="text-sm font-medium text-primary">Urun kaynagi</p>
+          <p className="text-sm font-medium text-primary">Ürün kaynağı</p>
           <h1 className="mt-3 text-2xl font-semibold">
-            Kaynak durumu hazirlaniyor
+            Kaynak durumu hazırlanıyor
           </h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Magaza ve baglanti kayitlariniz guvenli sekilde okunuyor.
+            Mağaza ve bağlantı kayıtlarınız güvenli şekilde okunuyor.
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@ function getShopifyNotice(params?: SourcesSearchParams) {
     return {
       kind: "error" as const,
       message:
-        "Shopify baglantisi tamamlanamadi. Magaza alan adini ve Shopify uygulama ayarlarini kontrol edip tekrar deneyin.",
+        "Shopify bağlantısı tamamlanamadı. Mağaza alan adını ve Shopify uygulama ayarlarını kontrol edip tekrar deneyin.",
     };
   }
 
@@ -53,7 +53,7 @@ function getShopifyNotice(params?: SourcesSearchParams) {
     return {
       kind: "warning" as const,
       message:
-        "Shopify baglantisi kuruldu, ancak urun senkronizasyonu tamamlanamadi. Kaynak kartindan tekrar senkronize edebilirsiniz.",
+        "Shopify bağlantısı kuruldu, ancak ürün senkronizasyonu tamamlanamadı. Kaynak kartından tekrar senkronize edebilirsiniz.",
     };
   }
 
@@ -64,8 +64,8 @@ function getShopifyNotice(params?: SourcesSearchParams) {
       kind: "success" as const,
       message:
         productCount > 0
-          ? `Shopify baglantisi kuruldu ve ${productCount} urun iceri alindi.`
-          : "Shopify baglantisi kuruldu. Bu magazada senkronize edilecek urun bulunamadi.",
+          ? `Shopify bağlantısı kuruldu ve ${productCount} ürün içeri alındı.`
+          : "Shopify bağlantısı kuruldu. Bu mağazada senkronize edilecek ürün bulunamadı.",
     };
   }
 
@@ -130,7 +130,7 @@ async function SourcesContent({
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 py-3 backdrop-blur md:px-10">
         <div>
-          <p className="text-xl font-semibold text-primary">AI Gorunurluk</p>
+          <p className="text-xl font-semibold text-primary">AI Görünürlük</p>
           <p className="mono-label text-muted-foreground">E-ticaret paneli</p>
         </div>
         <div className="flex items-center gap-2">

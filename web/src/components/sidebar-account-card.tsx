@@ -65,10 +65,10 @@ async function AccountSummary() {
     return (
       <div className="grid gap-2">
         <Button asChild size="sm" variant="outline" className="w-full">
-          <Link href="/auth/login">Giris yap</Link>
+          <Link href="/auth/login">Giriş yap</Link>
         </Button>
         <Button asChild size="sm" className="w-full">
-          <Link href="/auth/sign-up">Kayit ol</Link>
+          <Link href="/auth/sign-up">Kayıt ol</Link>
         </Button>
       </div>
     );

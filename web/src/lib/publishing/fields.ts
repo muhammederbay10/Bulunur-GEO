@@ -9,11 +9,11 @@ export type PublishableFieldCandidate = {
 };
 
 const fieldLabels: Record<ShopifyPublishableField, string> = {
-  title: "Baslik",
-  descriptionHtml: "Urun aciklamasi",
+  title: "Başlık",
+  descriptionHtml: "Ürün açıklaması",
   tags: "Etiketler",
   "seo.title": "SEO basligi",
-  "seo.description": "SEO aciklamasi",
+  "seo.description": "SEO açıklaması",
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

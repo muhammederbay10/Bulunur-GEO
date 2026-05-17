@@ -54,7 +54,7 @@ export default function OnboardingPage() {
     <main className="flex h-svh flex-col overflow-hidden bg-background">
       <header className="z-40 flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 py-2 backdrop-blur md:px-8">
         <div>
-          <p className="text-xl font-semibold text-primary">AI Gorunurluk</p>
+          <p className="text-xl font-semibold text-primary">AI Görünürlük</p>
           <p className="mono-label text-muted-foreground">Onboarding</p>
         </div>
         <div className="flex items-center gap-2">

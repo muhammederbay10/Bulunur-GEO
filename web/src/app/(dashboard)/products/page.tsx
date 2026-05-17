@@ -25,10 +25,10 @@ type ProductsPageProps = {
 function ProductsFallback() {
   return (
     <section className="seller-surface p-6">
-      <p className="text-sm font-medium text-primary">Urunler</p>
-      <h1 className="mt-3 text-2xl font-semibold">Urunler hazirlaniyor</h1>
+      <p className="text-sm font-medium text-primary">Ürünler</p>
+      <h1 className="mt-3 text-2xl font-semibold">Ürünler hazırlanıyor</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Senkronize edilen urunleriniz okunuyor.
+        Senkronize edilen ürünleriniz okunuyor.
       </p>
     </section>
   );
@@ -43,7 +43,7 @@ function getShopifyNotice(params?: ProductsSearchParams) {
     return {
       tone: "warning" as const,
       message:
-        "Shopify baglantisi kuruldu, ancak urun senkronizasyonu tamamlanamadi. Kaynaklar ekranindan tekrar senkronize edebilirsiniz.",
+        "Shopify bağlantısı kuruldu, ancak ürün senkronizasyonu tamamlanamadı. Kaynaklar ekranından tekrar senkronize edebilirsiniz.",
     };
   }
 
@@ -53,8 +53,8 @@ function getShopifyNotice(params?: ProductsSearchParams) {
     tone: "success" as const,
     message:
       productCount > 0
-        ? `Shopify baglantisi tamamlandi ve ${productCount} urun iceri alindi.`
-        : "Shopify baglantisi tamamlandi. Bu magazada iceri alinacak urun bulunamadi.",
+        ? `Shopify bağlantısı tamamlandı ve ${productCount} ürün içeri alındı.`
+        : "Shopify bağlantısı tamamlandı. Bu mağazada içeri alınacak ürün bulunamadı.",
   };
 }
 
@@ -109,19 +109,19 @@ async function ProductsContent({
 
       <section className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="mono-label text-primary">Urunler</p>
+          <p className="mono-label text-primary">Ürünler</p>
           <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">
             Senkronize katalog
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Shopify veya web sitesi kaynaklarindan iceri alinan urunler burada
+            Shopify veya web sitesi kaynaklarından içeri alınan ürünler burada
             listelenir. Analiz bekleyen, optimize edilen veya dusuk skorlu
-            urunleri secerek siradaki calisma adimini belirleyin.
+            Ürünleri seçerek sıradaki çalışma adımını belirleyin.
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground shadow-sm">
           <Package className="h-4 w-4" />
-          {products.length} urun
+          {products.length} ürün
         </div>
       </section>
 

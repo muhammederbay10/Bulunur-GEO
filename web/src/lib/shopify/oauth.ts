@@ -7,7 +7,7 @@ const SHOPIFY_REQUEST_TIMEOUT_MS = 15_000;
 
 type BuildShopifyAuthorizationUrlInput = {
   shop: string;
-  nonce: string;
+  nönce: string;
 };
 
 type ExchangeCodeForAccessTokenInput = {
@@ -27,7 +27,7 @@ export type ShopifyAccessToken = {
 
 export function buildShopifyAuthorizationUrl({
   shop,
-  nonce,
+  nönce,
 }: BuildShopifyAuthorizationUrlInput) {
   const config = getShopifyConfig();
   const url = new URL(`https://${validateShopDomain(shop)}/admin/oauth/authorize`);
@@ -35,7 +35,7 @@ export function buildShopifyAuthorizationUrl({
   url.searchParams.set("client_id", config.clientId);
   url.searchParams.set("scope", config.scopes);
   url.searchParams.set("redirect_uri", config.redirectUri);
-  url.searchParams.set("state", nonce);
+  url.searchParams.set("state", nönce);
 
   return url.toString();
 }

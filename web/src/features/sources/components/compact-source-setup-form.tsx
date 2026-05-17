@@ -38,7 +38,7 @@ export function CompactSourceSetupForm({
   shopifyPending,
   shopifyState,
   onBack,
-  successNotice = "Magaza bilgileri kaydedildi. Simdi urun kaynaginizi secin.",
+  successNotice = "Mağaza bilgileri kaydedildi. Şimdi ürün kaynağınızı seçin.",
 }: CompactSourceSetupFormProps) {
   const sourcePending = nativePending || shopifyPending;
 
@@ -62,8 +62,8 @@ export function CompactSourceSetupForm({
       {sourceChoice === "shopify" ? (
         <form action={shopifyAction} className="grid gap-3">
           <div className="grid gap-2">
-            <Label htmlFor="shopDomain">Shopify alan adi</Label>
-            <Input id="shopDomain" name="shopDomain" placeholder="magazam.myshopify.com" />
+            <Label htmlFor="shopDomain">Shopify alan adı</Label>
+            <Input id="shopDomain" name="shopDomain" placeholder="mağazam.myshopify.com" />
             <FieldError errors={shopifyState.fieldErrors?.shopDomain} />
           </div>
           {shopifyState.status === "error" && shopifyState.message ? (
@@ -76,7 +76,7 @@ export function CompactSourceSetupForm({
             </Button>
             <Button type="submit" className="gap-2" disabled={sourcePending}>
               {shopifyPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Kaydet ve Shopify&apos;a baglan
+              Kaydet ve Shopify&apos;a bağlan
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -91,7 +91,7 @@ export function CompactSourceSetupForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="websiteUrl">Web sitesi URL</Label>
-              <Input id="websiteUrl" name="websiteUrl" type="url" placeholder="https://magazam.com" />
+              <Input id="websiteUrl" name="websiteUrl" type="url" placeholder="https://mağazam.com" />
               <FieldError errors={nativeState.fieldErrors?.websiteUrl} />
             </div>
           </div>
@@ -108,7 +108,7 @@ export function CompactSourceSetupForm({
             </Button>
             <Button type="submit" className="gap-2" disabled={sourcePending}>
               {nativePending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Web sitesi kaynagini kaydet
+              Web sitesi kaynağıni kaydet
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>

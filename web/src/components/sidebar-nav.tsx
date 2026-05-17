@@ -21,9 +21,9 @@ type SidebarNavItem = {
 
 const navItems: SidebarNavItem[] = [
   { href: "/dashboard", label: "Panel", icon: LayoutDashboard },
-  { href: "/products", label: "Urunler", icon: Package },
+  { href: "/products", label: "Ürünler", icon: Package },
   { href: "/sources", label: "Kaynaklar", icon: Store },
-  { href: "/history", label: "Gecmis", icon: History },
+  { href: "/history", label: "Geçmiş", icon: History },
   { href: "/settings", label: "Ayarlar", icon: Settings },
 ];
 

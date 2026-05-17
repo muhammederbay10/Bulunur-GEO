@@ -23,19 +23,19 @@ export function calculateProductConfidence(
   if (hasValue(product.title)) {
     score += 25;
   } else {
-    warnings.push("Product title was not found.");
+    warnings.push("Ürün başlığı bulunamadı.");
   }
 
   if (hasValue(product.productUrl)) {
     score += 20;
   } else {
-    warnings.push("Product URL was not found.");
+    warnings.push("Ürün URL adresi bulunamadı.");
   }
 
   if (product.images.length > 0) {
     score += 15;
   } else {
-    warnings.push("Product image was not found.");
+    warnings.push("Ürün görseli bulunamadı.");
   }
 
   if (
@@ -45,19 +45,19 @@ export function calculateProductConfidence(
   ) {
     score += 20;
   } else {
-    warnings.push("Product description was not found.");
+    warnings.push("Ürün açıklaması bulunamadı.");
   }
 
   if (hasValue(product.priceDisplay)) {
     score += 10;
   } else {
-    warnings.push("Product price was not found.");
+    warnings.push("Ürün fiyatı bulunamadı.");
   }
 
   if (product.extractionMethods.includes("json_ld_product_schema")) {
     score += 10;
   } else {
-    warnings.push("JSON-LD Product schema was not found.");
+    warnings.push("JSON-LD Product schema bulunamadı.");
   }
 
   const finalScore = Math.min(score, 100);

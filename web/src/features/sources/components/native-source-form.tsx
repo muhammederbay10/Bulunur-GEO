@@ -38,10 +38,10 @@ export function NativeSourceForm({
             <Globe2 className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">Web Sitemden Urun Ekle</h2>
+            <h2 className="text-xl font-semibold">Web Sitemden Ürün Ekle</h2>
             <p className="mt-2 text-sm leading-5 text-muted-foreground">
-              Shopify kullanmiyorsaniz web siteniz icin bir urun kaynagi
-              olusturun. URL, dosya veya manuel aktarim sonraki adimda ayni
+              Shopify kullanmiyorsaniz web siteniz için bir ürün kaynağı
+              oluşturun. URL, dosya veya manuel aktarim sonraki adımda ayni
               kaynaga yazilir.
             </p>
           </div>
@@ -52,7 +52,7 @@ export function NativeSourceForm({
           <Input
             id="storeName"
             name="storeName"
-            defaultValue={store?.name ?? profile.businessName ?? "Magazam"}
+            defaultValue={store?.name ?? profile.businessName ?? "Mağazam"}
             placeholder="Orn: Kuzey Outdoor"
           />
           <FieldError errors={state.fieldErrors?.storeName} />
@@ -65,7 +65,7 @@ export function NativeSourceForm({
             name="websiteUrl"
             type="url"
             defaultValue={store?.websiteUrl ?? profile.websiteUrl ?? ""}
-            placeholder="https://magazam.com"
+            placeholder="https://mağazam.com"
           />
           <FieldError errors={state.fieldErrors?.websiteUrl} />
         </div>
@@ -84,7 +84,7 @@ export function NativeSourceForm({
           ) : (
             <CheckCircle2 className="h-4 w-4" />
           )}
-          Web sitesi kaynagini kaydet
+          Web sitesi kaynağıni kaydet
         </Button>
       </fieldset>
     </form>

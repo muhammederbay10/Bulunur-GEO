@@ -95,7 +95,7 @@ export function AppShell({
             </div>
             <div>
               <p className="text-xl font-semibold text-primary">
-                AI Gorunurluk
+                AI Görünürlük
               </p>
               <p className="mono-label mt-1 text-muted-foreground">
                 E-ticaret paneli
@@ -115,10 +115,10 @@ export function AppShell({
             <div className="flex min-h-16 flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  Satici calisma alani
+                  Satıcı çalışma alani
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Urunlerinizi iceri alin, analiz edin ve guvenle iyilestirin.
+                  Ürünlerinizi içeri alın, analiz edin ve güvenle iyileştirin.
                 </p>
               </div>
               <SourceStatusHeader sources={sources} />
