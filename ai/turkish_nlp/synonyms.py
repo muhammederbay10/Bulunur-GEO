@@ -43,7 +43,7 @@ ATTRIBUTE_SYNONYM_GROUPS: dict[str, tuple[str, ...]] = {
     "compatibility": ("compatibility", "uyumluluk", "uyumlu", "destekler"),
     "warranty": ("warranty", "garanti", "güvence", "guvence"),
     "shipping": ("shipping", "kargo", "teslimat", "gönderim", "gonderim"),
-    "return_policy": ("return policy", "iade", "değişim", "degisim", "cayma hakkı"),
+    "return_policy": ("return_policy", "return policy", "iade", "değişim", "degisim", "cayma hakkı"),
 }
 
 SPELLING_VARIANT_GROUPS: dict[str, tuple[str, ...]] = {
@@ -191,7 +191,10 @@ def contains_synonym(
 
 def canonicalize_attribute_key(key: str | None) -> str:
     """Canonicalize a generic product attribute label."""
-    return canonicalize_term(key, synonym_groups=ATTRIBUTE_SYNONYM_GROUPS)
+    canonical = canonicalize_term(key, synonym_groups=ATTRIBUTE_SYNONYM_GROUPS)
+    if canonical == "return policy":
+        return "return_policy"
+    return canonical
 
 
 def canonicalize_attribute_keys(

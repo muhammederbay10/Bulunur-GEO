@@ -169,6 +169,8 @@ def normalize_availability(value: Any) -> str | None:
         availability_key = normalized
     if availability_key is None and compact in AVAILABILITY_URLS:
         availability_key = compact
+    if availability_key is None:
+        availability_key = _infer_turkish_availability(normalized_with_spaces)
 
     if availability_key is None:
         return None
@@ -401,6 +403,18 @@ def _normalize_schema_org_url(value: str) -> str | None:
         if lower.startswith(prefix.casefold()):
             suffix = stripped.rsplit("/", maxsplit=1)[-1].strip()
             return SCHEMA_AVAILABILITY_SUFFIXES.get(suffix.casefold())
+    return None
+
+
+def _infer_turkish_availability(normalized_text: str) -> str | None:
+    """Infer safe stock state from common Turkish free-text answers."""
+    text = f" {normalized_text} "
+    if any(marker in text for marker in (" stok yok ", " tukendi ", " kalmadi ", " yok ")):
+        return "out_of_stock"
+    if any(marker in text for marker in (" son ", " adet kaldi ", " sinirli ")):
+        return "limited_availability"
+    if any(marker in text for marker in (" stok ", " adet ", " kaldi ", " mevcut ", " var ")):
+        return "in_stock"
     return None
 
 

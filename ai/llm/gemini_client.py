@@ -15,7 +15,7 @@ load_dotenv()
 # Configure the Gemini LLM
 DEFAULT_MODEL = "gemini-3-flash-preview"
 DEFAULT_TEMPERATURE = 0.1
-DEFAULT_MAX_TOKENS = 1024
+DEFAULT_MAX_TOKENS = 4096
 
 
 def get_gemini_llm(
