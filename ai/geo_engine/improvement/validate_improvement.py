@@ -18,7 +18,7 @@ from ai.api_contracts.product_input import ProductInput
 from ai.llm.gemini_client import get_gemini_llm
 from ai.llm.safety import LLMError, invoke_with_safety
 from ai.llm.skill_loader import build_skill_prompt
-from ai.llm.structured_outputs import parse_structured_output
+from ai.llm.structured_outputs import StructuredOutputError, parse_structured_output
 from ai.schema_engine.schema_mapping import is_known_value, normalize_price
 from ai.schema_engine.validate_schema import validate_schema
 from ai.turkish_nlp.normalize import normalize_for_matching
@@ -412,7 +412,15 @@ def _run_semantic_validation(
         prompt,
         operation="improvement_semantic_validation",
     )
-    return parse_structured_output(response, SemanticImprovementValidationJudgment)
+    try:
+        return parse_structured_output(response, SemanticImprovementValidationJudgment)
+    except StructuredOutputError:
+        retry_response = invoke_with_safety(
+            resolved_llm,
+            _strict_json_retry_prompt(prompt),
+            operation="improvement_semantic_validation_retry",
+        )
+        return parse_structured_output(retry_response, SemanticImprovementValidationJudgment)
 
 
 def _semantic_judgment_issues(
@@ -680,7 +688,23 @@ def _fact_negates_claim(value: Any, normalized_claim: str) -> bool:
     normalized_value = normalize_for_matching(str(value))
     if normalized_claim not in normalized_value:
         return False
-    return any(marker in normalized_value for marker in NEGATED_FACT_MARKERS)
+    return any(
+        f"{normalized_claim} {marker}" in normalized_value
+        for marker in NEGATED_FACT_MARKERS
+    )
+
+
+def _strict_json_retry_prompt(original_prompt: str) -> str:
+    """Ask Gemini to retry with only the required JSON object."""
+    return (
+        f"{original_prompt}\n\n"
+        "Önceki cevap geçerli JSON olarak okunamadı. "
+        "Şimdi yalnızca tek bir geçerli JSON objesi döndür. "
+        "Markdown, açıklama, code fence veya JSON dışında metin yazma. "
+        "Zorunlu alanlar: validationStatus, supportedClaims, unsupportedClaims, "
+        "uncertainClaims, naturalnessWarnings, keywordStuffingWarnings, "
+        "recommendedSafeNextAction."
+    )
 
 
 def _supporting_paths(value: str, fact_index: Mapping[str, TrustedFact]) -> list[str]:

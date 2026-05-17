@@ -221,9 +221,13 @@ def _rule_applies(
         )
 
     if rule.field == "trustSignals":
-        return STRATEGY_FAQ_ENRICHMENT in strategy_ids and (
+        return (
+            STRATEGY_FAQ_ENRICHMENT in strategy_ids
+            and fact_missing
+            and (
             (explicit_missing and reranking_is_weak)
             or (_trust_signals_are_missing(analysis) and signal_mentions_fact and reranking_is_weak)
+            )
         )
 
     if rule.field == "brand":
@@ -357,10 +361,12 @@ def _use_cases_are_missing(analysis: GeoAnalysisOutput) -> bool:
 
 def _trust_signals_are_missing(analysis: GeoAnalysisOutput) -> bool:
     trust_aliases = (
+        "trustSignals",
         "warranty",
         "shipping",
         "returnPolicy",
         "certifications",
+        "attributes.trustSignals",
         "attributes.warranty",
         "attributes.shipping",
         "attributes.returnPolicy",
