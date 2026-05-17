@@ -112,6 +112,7 @@ def run_turkish_buyer_intent_rewrite_strategy(
     missing_facts: Sequence[str] | None = None,
     trusted_facts: Mapping[str, Any] | None = None,
     user_confirmed_facts: Mapping[str, Any] | None = None,
+    turkish_nlp_context: Mapping[str, Any] | None = None,
     rewrite_generator: RewriteGenerator | None = None,
     llm: Any | None = None,
 ) -> StrategyExecutionResult:
@@ -122,6 +123,7 @@ def run_turkish_buyer_intent_rewrite_strategy(
         missing_facts=missing_facts,
         trusted_facts=trusted_facts,
         user_confirmed_facts=user_confirmed_facts,
+        turkish_nlp_context=turkish_nlp_context,
     )
     judgment = _run_rewrite(context, rewrite_generator=rewrite_generator, llm=llm)
     generated = GeneratedProductContent(
@@ -180,6 +182,7 @@ def _build_context(
     missing_facts: Sequence[str] | None,
     trusted_facts: Mapping[str, Any] | None,
     user_confirmed_facts: Mapping[str, Any] | None,
+    turkish_nlp_context: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     product_facts = _product_to_facts(product)
     known_facts = _merge_facts(product_facts, trusted_facts, user_confirmed_facts)
@@ -188,9 +191,11 @@ def _build_context(
         "knownFacts": known_facts,
         "buyerIntentVariants": list(buyer_intent_variants or ()),
         "missingFacts": _dedupe_text(missing_facts or ()),
+        "turkishNlpSeedContext": dict(turkish_nlp_context or {}),
         "antiHallucination": {
             "useOnlyKnownOrUserConfirmedFacts": True,
             "unsupportedClaimsMustGoToBlockedByMissingFacts": True,
+            "turkishNlpContextIsSeedOnly": True,
         },
     }
 

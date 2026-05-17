@@ -126,6 +126,7 @@ def run_turkish_faq_enrichment_strategy(
     missing_facts: Sequence[str] | None = None,
     trusted_facts: Mapping[str, Any] | None = None,
     user_confirmed_facts: Mapping[str, Any] | None = None,
+    turkish_nlp_context: Mapping[str, Any] | None = None,
     faq_generator: FaqGenerator | None = None,
     llm: Any | None = None,
     max_faq_items: int = DEFAULT_MAX_FAQ_ITEMS,
@@ -140,6 +141,7 @@ def run_turkish_faq_enrichment_strategy(
         missing_facts=missing_facts,
         trusted_facts=trusted_facts,
         user_confirmed_facts=user_confirmed_facts,
+        turkish_nlp_context=turkish_nlp_context,
     )
     judgment = _run_faq_generation(context, faq_generator=faq_generator, llm=llm)
     safe_items, validation_warnings = _safe_faq_items(
@@ -202,6 +204,7 @@ def _build_context(
     missing_facts: Sequence[str] | None,
     trusted_facts: Mapping[str, Any] | None,
     user_confirmed_facts: Mapping[str, Any] | None,
+    turkish_nlp_context: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     product_facts = _product_to_facts(product)
     known_facts = _merge_facts(product_facts, trusted_facts, user_confirmed_facts)
@@ -210,9 +213,11 @@ def _build_context(
         "knownFacts": known_facts,
         "buyerIntentVariants": list(buyer_intent_variants or ()),
         "missingFacts": _dedupe_text(_coerce_text_values(missing_facts)),
+        "turkishNlpSeedContext": dict(turkish_nlp_context or {}),
         "antiHallucination": {
             "useOnlyKnownOrUserConfirmedFacts": True,
             "dropUngroundedFaqAnswers": True,
+            "turkishNlpContextIsSeedOnly": True,
         },
     }
 
