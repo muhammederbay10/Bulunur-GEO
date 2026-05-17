@@ -79,6 +79,18 @@ export function SourceSetupPanel({
       return () => window.clearTimeout(timeoutId);
     }
 
+    if (nativeState.status === "success" && nativeState.importUrl) {
+      const timeoutId = window.setTimeout(() => {
+        const params = new URLSearchParams({
+          url: nativeState.importUrl as string,
+        });
+
+        router.replace(`/sources/native-import/loading?${params.toString()}`);
+      }, 500);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
     if (nativeState.status === "success" || shopifyState.status === "success") {
       const timeoutId = window.setTimeout(() => {
         if (setupMode) {
@@ -91,6 +103,7 @@ export function SourceSetupPanel({
       return () => window.clearTimeout(timeoutId);
     }
   }, [
+    nativeState.importUrl,
     nativeState.status,
     router,
     setupMode,
@@ -106,7 +119,9 @@ export function SourceSetupPanel({
         redirectLabel={
           shopifyState.status === "success" && shopifyState.connectUrl
             ? "Shopify yetki ekranına yönlendiriliyorsunuz..."
-            : undefined
+            : nativeState.status === "success"
+              ? "Ürünleriniz içeri alınırken bekleme ekranına geçiliyor..."
+              : undefined
         }
       />
     );
@@ -133,8 +148,14 @@ export function SourceSetupPanel({
     );
 
   const sourceSelector = (
-    <section className={setupMode ? "mx-auto grid w-full max-w-2xl gap-2" : "grid w-full gap-2"}>
-      <p className="text-sm font-medium text-foreground">Bağlantı yontemini seçin</p>
+    <section
+      className={
+        setupMode ? "mx-auto grid w-full max-w-2xl gap-2" : "grid w-full gap-2"
+      }
+    >
+      <p className="text-sm font-medium text-foreground">
+        Bağlantı yöntemini seçin
+      </p>
       <SourceChoiceSelector
         value={sourceChoice}
         onChange={setSourceChoice}
@@ -170,7 +191,7 @@ export function SourceSetupPanel({
 
       {databaseReady && !canWriteSources ? (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          Kaynak kurulumu su anda kullanilamiyor. Lütfen daha sonra tekrar deneyin
+          Kaynak kurulumu şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin
           veya destek ekibine haber verin.
         </div>
       ) : null}

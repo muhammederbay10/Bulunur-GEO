@@ -23,6 +23,7 @@ export type NativeSourceFormState = {
   status: "idle" | "error" | "success";
   message?: string;
   fieldErrors?: NativeSourceFieldErrors;
+  importUrl?: string;
 };
 
 export type ShopifySourceFormState = {
@@ -87,7 +88,8 @@ export async function saveNativeSource(
   return {
     status: "success",
     message:
-      "Web sitesi kaynağı hazır. Ürün ekleme akışı Phase 5'te bu kaynaktan devam edecek.",
+      "Web sitesi kaynağı hazır. Ürünleriniz içeri alınırken bekleme ekranına yönlendiriliyorsunuz.",
+    importUrl: parsed.data.websiteUrl,
   };
 }
 
@@ -123,7 +125,7 @@ export async function saveShopifySource(
   return {
     status: "success",
     message:
-      "Shopify mağaza bilgisi kaydedildi. Yetki vermeniz için Shopify'a yonlendiriliyorsunuz.",
+      "Shopify mağaza bilgisi kaydedildi. Yetki vermeniz için Shopify'a yönlendiriliyorsunuz.",
     connectUrl: `/api/shopify/connect?shop=${encodeURIComponent(
       parsed.data.shopDomain,
     )}`,
