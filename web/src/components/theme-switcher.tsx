@@ -18,10 +18,11 @@ export function ThemeSwitcher() {
   return (
     <Button
       type="button"
-      variant="outline"
-      size="sm"
-      className="gap-2"
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-primary"
       aria-label={isDark ? "Açık temaya geç" : "Koyu temaya geç"}
+      title={isDark ? "Açık temaya geç" : "Koyu temaya geç"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       disabled={!mounted}
     >
@@ -30,7 +31,6 @@ export function ThemeSwitcher() {
       ) : (
         <Moon className="h-4 w-4" />
       )}
-      <span className="hidden sm:inline">{mounted && isDark ? "Açık" : "Koyu"}</span>
     </Button>
   );
 }

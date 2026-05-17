@@ -343,9 +343,6 @@ export function LandingPage() {
             <Button asChild variant="ghost" size="sm">
               <Link href="/auth/login">Giriş</Link>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/auth/sign-up">Başla</Link>
-            </Button>
           </nav>
         </div>
       </header>
