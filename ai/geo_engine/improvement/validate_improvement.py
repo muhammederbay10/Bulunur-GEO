@@ -39,10 +39,12 @@ MEASUREMENT_RE = re.compile(
     r"\b\d+(?:[.,]\d+)?\s*(?:litre|lt|ml|cm|mm|metre|m|kg|gr|g|w|watt|mah|derece|adet|parça|parca)\b",
     re.IGNORECASE,
 )
+COUNT_RE = re.compile(r"\b(\d+(?:[.,]\d+)?)\s*adet\b", re.IGNORECASE)
 DURATION_RE = re.compile(
     r"\b\d+(?:[.,]\d+)?\s*(?:yıl|yil|ay|gün|gun)\b",
     re.IGNORECASE,
 )
+GROUNDING_TOKEN_RE = re.compile(r"[\wçğıöşüÇĞİÖŞÜ]+", re.UNICODE)
 
 PROTECTED_CLAIM_PHRASES: tuple[tuple[str, str], ...] = (
     ("free_shipping", "ücretsiz kargo"),
@@ -386,7 +388,7 @@ def _validate_semantically(
             )
         ]
 
-    return _semantic_judgment_issues(judgment)
+    return _semantic_judgment_issues(judgment, fact_index)
 
 
 def _run_semantic_validation(
@@ -425,14 +427,16 @@ def _run_semantic_validation(
 
 def _semantic_judgment_issues(
     judgment: SemanticImprovementValidationJudgment,
+    fact_index: Mapping[str, TrustedFact],
 ) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     for claim in judgment.unsupported_claims:
+        severity = _semantic_unsupported_claim_severity(claim, fact_index)
         issues.append(
             ValidationIssue(
-                severity="error",
+                severity=severity,
                 code="semantic_unsupported_claim",
-                message=f"Semantik doğrulama desteklenmeyen bir iddia buldu: {claim.claim}",
+                message=_semantic_unsupported_claim_message(claim.claim, severity),
                 field=claim.location,
                 value=claim.claim,
                 suggestion=claim.fix_suggestion or judgment.recommended_safe_next_action,
@@ -476,6 +480,23 @@ def _semantic_judgment_issues(
         )
 
     return issues
+
+
+def _semantic_unsupported_claim_severity(
+    claim: SemanticClaimIssue,
+    fact_index: Mapping[str, TrustedFact],
+) -> ValidationSeverity:
+    """Downgrade source/user-confirmed conflicts to warnings."""
+    if _is_supported_by_trusted_facts(claim.claim, fact_index):
+        return "warning"
+    return "error"
+
+
+def _semantic_unsupported_claim_message(claim: str, severity: ValidationSeverity) -> str:
+    """Return a user-facing semantic validation message."""
+    if severity == "warning":
+        return f"Semantik doğrulama kaynak veya kullanıcı bilgisiyle çelişebilecek bir uyarı buldu: {claim}"
+    return f"Semantik doğrulama desteklenmeyen bir iddia buldu: {claim}"
 
 
 def _semantic_validation_context(
@@ -652,13 +673,74 @@ def _is_supported_by_trusted_facts(value: str, fact_index: Mapping[str, TrustedF
 
     for fact in fact_index.values():
         fact_text = _fact_support_text(fact)
-        if f" {normalized} " not in f" {fact_text} ":
-            continue
-        if _fact_negates_claim(fact.value, normalized):
-            continue
+        if f" {normalized} " in f" {fact_text} ":
+            if _fact_negates_claim(fact.value, normalized):
+                continue
+            return True
+
+    if _count_claim_supported(normalized, fact_index):
         return True
 
+    return _is_supported_by_trusted_fact_terms(normalized, fact_index)
+
+
+def _count_claim_supported(
+    normalized: str,
+    fact_index: Mapping[str, TrustedFact],
+) -> bool:
+    """Allow count wording like '24 adet' when a count fact states the same number."""
+    match = COUNT_RE.search(normalized)
+    if match is None:
+        return False
+
+    number = match.group(1).replace(",", ".")
+    for fact in fact_index.values():
+        fact_text = _fact_support_text(fact)
+        if f" {number} " not in f" {fact_text} ":
+            continue
+        if any(keyword in fact_text for keyword in ("adet", "sayisi", "miktar", "parca", "quantity", "count")):
+            return True
     return False
+
+
+def _is_supported_by_trusted_fact_terms(
+    normalized: str,
+    fact_index: Mapping[str, TrustedFact],
+) -> bool:
+    if _requires_exact_grounding(normalized):
+        return False
+
+    tokens = _meaningful_grounding_tokens(normalized)
+    if not tokens:
+        return False
+
+    support_text = normalize_for_matching(
+        " ".join(_fact_support_text(fact) for fact in fact_index.values())
+    )
+    if not support_text:
+        return False
+
+    return all(f" {token} " in f" {support_text} " for token in tokens)
+
+
+def _requires_exact_grounding(normalized: str) -> bool:
+    """Return whether a claim is too sensitive for flexible token grounding."""
+    if MONEY_RE.search(normalized) or MEASUREMENT_RE.search(normalized) or DURATION_RE.search(normalized):
+        return True
+
+    return any(
+        f" {normalize_for_matching(phrase)} " in f" {normalized} "
+        for _, phrase in PROTECTED_CLAIM_PHRASES
+    )
+
+
+def _meaningful_grounding_tokens(value: str) -> list[str]:
+    tokens = [
+        token
+        for token in GROUNDING_TOKEN_RE.findall(normalize_for_matching(value))
+        if len(token) > 2 or token.isdigit()
+    ]
+    return _dedupe_text(tokens)
 
 
 def _fact_support_text(fact: TrustedFact) -> str:
@@ -714,7 +796,12 @@ def _supporting_paths(value: str, fact_index: Mapping[str, TrustedFact]) -> list
 
     paths: list[str] = []
     for fact in fact_index.values():
-        if normalized in fact.normalized_value or fact.normalized_value in normalized:
+        fact_text = _fact_support_text(fact)
+        if normalized in fact_text or fact.normalized_value in normalized:
+            paths.append(fact.path)
+            continue
+        tokens = _meaningful_grounding_tokens(normalized)
+        if tokens and all(f" {token} " in f" {fact_text} " for token in tokens):
             paths.append(fact.path)
     return _dedupe_text(paths)
 

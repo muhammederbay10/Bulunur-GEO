@@ -1,7 +1,7 @@
 {
   "productId": "url-kettle-basic-001",
   "storeId": "demo-url-mode",
-  "source": "url",
+  "source": "native",
   "url": "https://demo.bulunur.test/urunler/celik-su-isitici",
   "language": "tr",
   "market": "TR",

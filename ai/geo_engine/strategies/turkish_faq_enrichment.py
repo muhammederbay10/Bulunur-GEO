@@ -18,7 +18,7 @@ from ai.geo_engine.strategies.base import (
 from ai.llm.gemini_client import get_gemini_llm
 from ai.llm.safety import invoke_with_safety
 from ai.llm.skill_loader import build_skill_prompt
-from ai.llm.structured_outputs import parse_structured_output
+from ai.llm.structured_outputs import StructuredOutputError, parse_structured_output
 from ai.schema_engine.schema_mapping import is_known_value
 from ai.turkish_nlp.normalize import normalize_text, tokenize
 
@@ -194,7 +194,15 @@ def _run_faq_generation(
         prompt,
         operation="turkish_faq_enrichment",
     )
-    return parse_structured_output(response, FaqEnrichmentJudgment)
+    try:
+        return parse_structured_output(response, FaqEnrichmentJudgment)
+    except StructuredOutputError:
+        retry_response = invoke_with_safety(
+            resolved_llm,
+            _strict_json_retry_prompt(prompt),
+            operation="turkish_faq_enrichment_retry",
+        )
+        return parse_structured_output(retry_response, FaqEnrichmentJudgment)
 
 
 def _build_context(
@@ -305,6 +313,19 @@ def _product_to_facts(product: FaqEnrichmentInput) -> dict[str, Any]:
         }
 
     return dict(product)
+
+
+def _strict_json_retry_prompt(original_prompt: str) -> str:
+    """Ask Gemini to retry FAQ generation with only the required JSON object."""
+    return (
+        f"{original_prompt}\n\n"
+        "Önceki cevap geçerli JSON olarak okunamadı. "
+        "Şimdi yalnızca tek bir geçerli JSON objesi döndür. "
+        "Markdown, açıklama, code fence veya JSON dışında metin yazma. "
+        "Zorunlu alanlar: faqItems, blockedQuestions, "
+        "missingFactsToAnswerBetter, recommendedNextAction. "
+        "faqItems içindeki her öğede question, answer ve sourceFacts alanları olmalı."
+    )
 
 
 def _merge_facts(
