@@ -37,6 +37,8 @@ class MissingFactRule:
     question: str
     reason: str
     priority: int
+    input_type: str = "text"
+    options: tuple[tuple[str, str], ...] = ()
 
 
 MISSING_FACT_RULES: tuple[MissingFactRule, ...] = (
@@ -49,6 +51,14 @@ MISSING_FACT_RULES: tuple[MissingFactRule, ...] = (
         question="Urunun stok durumunu dogrular misiniz?",
         reason="Offer schema ve guvenli urun onerileri icin stok durumu gercek bir kaynakla dogrulanmali.",
         priority=10,
+        input_type="select",
+        options=(
+            ("in_stock", "Stokta var"),
+            ("out_of_stock", "Stokta yok"),
+            ("preorder", "On siparis"),
+            ("backorder", "Tedarik bekleniyor"),
+            ("unknown", "Bilinmiyor"),
+        ),
     ),
     MissingFactRule(
         field="price",
@@ -162,6 +172,11 @@ def collect_missing_facts(
                 question=rule.question,
                 reason=rule.reason,
                 requiredFor=list(rule.required_for),
+                inputType=rule.input_type,
+                options=[
+                    {"value": value, "label": label}
+                    for value, label in rule.options
+                ],
             )
         )
         if len(questions) >= max_questions:
