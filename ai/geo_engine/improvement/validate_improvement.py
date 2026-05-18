@@ -74,6 +74,28 @@ NEGATED_FACT_MARKERS: tuple[str, ...] = (
     "bulunmuyor",
     "mevcut degil",
 )
+GROUNDING_HELPER_WORDS: frozenset[str] = frozenset(
+    {
+        "amac",
+        "amaci",
+        "amaciyla",
+        "bilgi",
+        "bilgisi",
+        "icerik",
+        "icerigi",
+        "karisim",
+        "karisimi",
+        "koleksiyon",
+        "koleksiyonu",
+        "kullanim",
+        "kullanimi",
+        "ozellik",
+        "ozelligi",
+        "urun",
+        "urunu",
+        "urunun",
+    }
+)
 
 
 class TrustedFact(BaseModel):
@@ -738,7 +760,7 @@ def _meaningful_grounding_tokens(value: str) -> list[str]:
     tokens = [
         token
         for token in GROUNDING_TOKEN_RE.findall(normalize_for_matching(value))
-        if len(token) > 2 or token.isdigit()
+        if (len(token) > 2 or token.isdigit()) and token not in GROUNDING_HELPER_WORDS
     ]
     return _dedupe_text(tokens)
 

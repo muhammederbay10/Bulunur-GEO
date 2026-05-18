@@ -48,6 +48,28 @@ UNSUPPORTED_CLAIM_KEYWORDS: tuple[str, ...] = (
     "en iyi",
     "orijinal",
 )
+GROUNDING_HELPER_WORDS: frozenset[str] = frozenset(
+    {
+        "amac",
+        "amaci",
+        "amaciyla",
+        "bilgi",
+        "bilgisi",
+        "icerik",
+        "icerigi",
+        "karisim",
+        "karisimi",
+        "koleksiyon",
+        "koleksiyonu",
+        "kullanim",
+        "kullanimi",
+        "ozellik",
+        "ozelligi",
+        "urun",
+        "urunu",
+        "urunun",
+    }
+)
 
 
 class FaqEnrichmentItem(BaseModel):
@@ -290,11 +312,23 @@ def _faq_answer_looks_grounded(
     known_text = normalize_text(_known_fact_text(known_facts))
     fact_tokens = set(_meaningful_tokens(known_text))
     source_fact_supported = any(
-        normalize_text(source_fact) in known_text
+        _source_fact_supported_by_known_text(source_fact, known_text)
         for source_fact in item.source_facts
-        if normalize_text(source_fact)
     )
     return source_fact_supported and bool(answer_tokens.intersection(fact_tokens))
+
+
+def _source_fact_supported_by_known_text(source_fact: str, known_text: str) -> bool:
+    """Return whether a cited source phrase is supported by known fact text."""
+    normalized = normalize_text(source_fact)
+    if not normalized:
+        return False
+    if normalized in known_text:
+        return True
+
+    tokens = _meaningful_tokens(normalized)
+    known_tokens = set(_meaningful_tokens(known_text))
+    return bool(tokens) and all(token in known_tokens for token in tokens)
 
 
 def _product_to_facts(product: FaqEnrichmentInput) -> dict[str, Any]:
@@ -310,6 +344,7 @@ def _product_to_facts(product: FaqEnrichmentInput) -> dict[str, Any]:
             "category": product.category,
             "imageUrls": [str(url) for url in product.image_urls],
             "attributes": dict(product.attributes),
+            "rawExtracted": product.raw_extracted.model_dump(by_alias=True),
         }
 
     return dict(product)
@@ -371,7 +406,11 @@ def _known_fact_text(known_facts: Mapping[str, Any]) -> str:
 
 
 def _meaningful_tokens(text: str | None) -> list[str]:
-    return [token for token in tokenize(text) if len(token) > 2]
+    return [
+        token
+        for token in tokenize(text)
+        if len(token) > 2 and token not in GROUNDING_HELPER_WORDS
+    ]
 
 
 def _coerce_text_values(values: Any) -> tuple[str, ...]:

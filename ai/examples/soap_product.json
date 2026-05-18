@@ -1,7 +1,7 @@
 {
-  "productId": "woo-soap-lavender-001",
+  "productId": "native-soap-lavender-001",
   "storeId": "demo-store-natural",
-  "source": "woocommerce",
+  "source": "native",
   "url": "https://demo.bulunur.test/urunler/lavanta-sabunu",
   "language": "tr",
   "market": "TR",
