@@ -5,6 +5,7 @@ import { AiServiceError, improveProduct } from "@/lib/ai/client";
 import { getLatestProductAnalysis } from "@/lib/db/analysis-repository";
 import {
   getLatestOptimizationResult,
+  mergeUserFacts,
   normalizeUserFacts,
   saveOptimizationFailure,
   saveOptimizationResult,
@@ -63,7 +64,7 @@ async function runProductOptimizationInBackground(params: {
   productInput: ProductInput;
   analysisId: string;
   analysis: GeoAnalysisOutput;
-  userFacts?: Record<string, string | null>;
+  userFacts?: Record<string, unknown>;
 }) {
   try {
     const improvement = await improveProduct({
@@ -189,12 +190,16 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
-  const [productResult, analysisResult] = await Promise.all([
+  const [productResult, analysisResult, optimizationResult] = await Promise.all([
     getProductAnalysisContextForProfile({
       profileId: user.id,
       productId: params.data.productId,
     }),
     getLatestProductAnalysis({
+      profileId: user.id,
+      productId: params.data.productId,
+    }),
+    getLatestOptimizationResult({
       profileId: user.id,
       productId: params.data.productId,
     }),
@@ -213,6 +218,14 @@ export async function POST(request: Request, context: RouteContext) {
       analysisResult.code ?? "analysis_lookup_failed",
       analysisResult.message,
       analysisResult.status ?? 400,
+    );
+  }
+
+  if (!optimizationResult.ok) {
+    return failureResponse(
+      optimizationResult.code ?? "optimization_lookup_failed",
+      optimizationResult.message,
+      optimizationResult.status ?? 400,
     );
   }
 
@@ -237,8 +250,12 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const normalizedUserFacts = normalizeUserFacts(parsedBody.data.userFacts);
+  const mergedUserFacts = mergeUserFacts(
+    optimizationResult.data?.userConfirmedFacts,
+    normalizedUserFacts,
+  );
   const userFacts =
-    Object.keys(normalizedUserFacts).length > 0 ? normalizedUserFacts : undefined;
+    Object.keys(mergedUserFacts).length > 0 ? mergedUserFacts : undefined;
   const startResult = await startProductOptimizationAttempt({
     profileId: user.id,
     storeId: product.storeId,

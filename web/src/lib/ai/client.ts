@@ -38,6 +38,16 @@ function summarizeAiErrorPayload(payload: unknown) {
   return null;
 }
 
+function logAiJsonResponse(label: string, payload: unknown) {
+  try {
+    console.log(
+      `[ai-service] ${label} response json\n${JSON.stringify(payload, null, 2)}`,
+    );
+  } catch {
+    console.log(`[ai-service] ${label} response json`, payload);
+  }
+}
+
 export function getAiServiceConfig() {
   const env = getServerEnv();
 
@@ -145,6 +155,7 @@ export async function analyzeProduct(
     path: "/ai/analyze-product",
     body: parsedInput,
   });
+  logAiJsonResponse("analysis", payload);
   const parsedOutput = geoAnalysisOutputSchema.safeParse(payload);
 
   if (!parsedOutput.success) {
@@ -175,6 +186,7 @@ export async function improveProduct(
       userFacts: params.userFacts ?? null,
     },
   });
+  logAiJsonResponse("optimization", payload);
   const parsedOutput = geoImprovementOutputSchema.safeParse(payload);
 
   if (!parsedOutput.success) {

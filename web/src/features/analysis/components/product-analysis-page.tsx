@@ -502,6 +502,56 @@ export function getBeforeAfterText(
   return asText(value[side]);
 }
 
+type GeneratedFaqItem = {
+  question: string;
+  answer?: string;
+};
+
+function getGeneratedFaqItems(value: unknown): GeneratedFaqItem[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (isRecord(item)) {
+        const question =
+          asText(item.question) ?? asText(item.title) ?? asText(item.q);
+        const answer =
+          asText(item.answer) ?? asText(item.content) ?? asText(item.a);
+
+        return question ? { question, answer } : null;
+      }
+
+      const question = asText(item);
+      return question ? { question } : null;
+    })
+    .filter((item): item is GeneratedFaqItem => Boolean(item));
+}
+
+function FaqAccordion({ items }: { items: GeneratedFaqItem[] }) {
+  return (
+    <div className="mt-2 grid gap-2">
+      {items.map((item, index) => (
+        <details
+          key={`${index}-${item.question}`}
+          className="group rounded-md border border-border bg-card"
+        >
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium">
+            <span>{item.question}</span>
+            <span className="text-primary transition-transform group-open:rotate-90">
+              &rsaquo;
+            </span>
+          </summary>
+          {item.answer ? (
+            <p className="border-t border-border px-3 py-2 text-xs leading-5 text-muted-foreground">
+              {item.answer}
+            </p>
+          ) : null}
+        </details>
+      ))}
+    </div>
+  );
+}
+
 export function BeforeAfterPanel({
   product,
   optimization,
@@ -541,9 +591,7 @@ export function BeforeAfterPanel({
       ["description", "seoDescription", "shortDescription"],
       beforeDescription,
     );
-  const generatedFaq = Array.isArray(optimization.generated.faq)
-    ? optimization.generated.faq.slice(0, 4)
-    : [];
+  const generatedFaq = getGeneratedFaqItems(optimization.generated.faq).slice(0, 4);
   const generatedSchema = Array.isArray(optimization.generated.schemaTypes)
     ? optimization.generated.schemaTypes
         .filter((item): item is string => typeof item === "string")
@@ -571,19 +619,19 @@ export function BeforeAfterPanel({
             </div>
             <Badge variant="outline">Skor {beforeScore ?? "--"}/100</Badge>
           </div>
-          <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr] xl:grid-cols-1 2xl:grid-cols-[160px_1fr]">
+          <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr]">
             <ProductImage product={product} />
             <div>
-              <h3 className="line-clamp-2 text-lg font-semibold">{beforeTitle}</h3>
+              <h3 className="line-clamp-2 text-xl font-semibold leading-tight">{beforeTitle}</h3>
               {product.priceDisplay ? (
-                <p className="mt-2 font-semibold">{product.priceDisplay}</p>
+                <p className="mt-2 text-lg font-semibold">{product.priceDisplay}</p>
               ) : null}
               <p className="mt-3 line-clamp-4 whitespace-pre-wrap text-sm leading-5 text-muted-foreground">
                 {beforeDescription}
               </p>
             </div>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
             <div className="rounded-lg border border-border bg-background/70 p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -658,19 +706,17 @@ export function BeforeAfterPanel({
                 <CircleHelp className="h-4 w-4" />
                 <h4 className="text-sm font-semibold">FAQ</h4>
               </div>
-              <div className="mt-2 grid gap-1.5">
-                {(generatedFaq.length > 0
-                  ? generatedFaq
-                  : ["Bu ürün kimler için uygun?", "Bakım nasıl yapılır?", "Kargo bilgisi nedir?"]
-                ).slice(0, 3).map((item, index) => (
-                  <div
-                    key={`${index}-${JSON.stringify(item)}`}
-                    className="rounded-md border border-border bg-card px-3 py-1.5 text-xs"
-                  >
-                    {asText(item) ?? JSON.stringify(item)}
-                  </div>
-                ))}
-              </div>
+              <FaqAccordion
+                items={
+                  generatedFaq.length > 0
+                    ? generatedFaq.slice(0, 3)
+                    : [
+                        { question: "Bu ürün kimler için uygun?" },
+                        { question: "Bakım nasıl yapılır?" },
+                        { question: "Kargo bilgisi nedir?" },
+                      ]
+                }
+              />
             </div>
           </div>
           <div className="mt-3 rounded-lg border border-primary/25 bg-primary/10 p-3">

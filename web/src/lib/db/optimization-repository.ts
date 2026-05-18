@@ -381,14 +381,19 @@ export async function saveOptimizationFailure(params: {
 
 export function normalizeUserFacts(
   value: unknown,
-): Record<string, string | null> {
+): Record<string, unknown> {
   if (!isRecord(value)) return {};
 
-  const normalized: Record<string, string | null> = {};
+  const normalized: Record<string, unknown> = {};
 
   for (const [key, entry] of Object.entries(value)) {
     if (entry === null) {
       normalized[key] = null;
+      continue;
+    }
+
+    if (isRecord(entry)) {
+      normalized[key] = normalizeUserFactRecord(entry);
       continue;
     }
 
@@ -397,11 +402,71 @@ export function normalizeUserFacts(
     const trimmedValue = entry.trim();
 
     if (trimmedValue) {
-      normalized[key] = trimmedValue;
+      normalized[key] =
+        key === "attributes" ? { userProvided: trimmedValue } : trimmedValue;
     }
   }
 
   return normalized;
+}
+
+function normalizeUserFactRecord(
+  value: Record<string, unknown>,
+): Record<string, unknown> {
+  const normalized: Record<string, unknown> = {};
+
+  for (const [key, entry] of Object.entries(value)) {
+    if (entry === null) {
+      normalized[key] = null;
+      continue;
+    }
+
+    if (isRecord(entry)) {
+      normalized[key] = normalizeUserFactRecord(entry);
+      continue;
+    }
+
+    if (typeof entry === "string") {
+      const trimmedValue = entry.trim();
+      if (trimmedValue) {
+        normalized[key] = trimmedValue;
+      }
+      continue;
+    }
+
+    if (typeof entry === "number" || typeof entry === "boolean") {
+      normalized[key] = entry;
+    }
+  }
+
+  return normalized;
+}
+
+export function mergeUserFacts(
+  previous: unknown,
+  next: unknown,
+): Record<string, unknown> {
+  return deepMergeUserFacts(normalizeUserFacts(previous), normalizeUserFacts(next));
+}
+
+function deepMergeUserFacts(
+  previous: Record<string, unknown>,
+  next: Record<string, unknown>,
+): Record<string, unknown> {
+  const merged = { ...previous };
+
+  for (const [key, value] of Object.entries(next)) {
+    const previousValue = merged[key];
+
+    if (isRecord(previousValue) && isRecord(value)) {
+      merged[key] = deepMergeUserFacts(previousValue, value);
+      continue;
+    }
+
+    merged[key] = value;
+  }
+
+  return merged;
 }
 
 export async function saveReviewActions(params: {
