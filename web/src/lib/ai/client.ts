@@ -48,6 +48,27 @@ function logAiJsonResponse(label: string, payload: unknown) {
   }
 }
 
+function logAiJsonRequest(path: string, url: string, payload: unknown) {
+  try {
+    console.log(
+      `[ai-service] request json\nPOST ${url}\nAuthorization: Bearer <AI_SERVICE_SECRET>\nContent-Type: application/json\n\n${JSON.stringify(payload, null, 2)}`,
+    );
+  } catch {
+    console.log("[ai-service] request json", {
+      path,
+      url,
+      payload,
+    });
+  }
+}
+
+function debugLog(label: string, details: Record<string, unknown>) {
+  console.log(`[ai-service-debug] ${label}`, {
+    at: new Date().toISOString(),
+    ...details,
+  });
+}
+
 export function getAiServiceConfig() {
   const env = getServerEnv();
 
@@ -88,17 +109,35 @@ async function postToAiService(params: {
   const config = getRequiredAiServiceConfig();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
+  const url = buildAiUrl(config.serviceUrl, params.path);
+  const startedAt = Date.now();
+  const requestBody = JSON.stringify(params.body);
+
+  debugLog("request:start", {
+    path: params.path,
+    url,
+    timeoutMs: AI_REQUEST_TIMEOUT_MS,
+  });
+  logAiJsonRequest(params.path, url, params.body);
 
   try {
-    const response = await fetch(buildAiUrl(config.serviceUrl, params.path), {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${config.serviceSecret}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(params.body),
+      body: requestBody,
       signal: controller.signal,
       cache: "no-store",
+    });
+    const responseElapsedMs = Date.now() - startedAt;
+
+    debugLog("request:response", {
+      path: params.path,
+      status: response.status,
+      ok: response.ok,
+      elapsedMs: responseElapsedMs,
     });
 
     let payload: unknown = null;
@@ -113,6 +152,7 @@ async function postToAiService(params: {
       console.error("[ai-service] request failed", {
         path: params.path,
         status: response.status,
+        elapsedMs: responseElapsedMs,
         detail: summarizeAiErrorPayload(payload),
       });
 
@@ -130,12 +170,25 @@ async function postToAiService(params: {
     }
 
     if (error instanceof Error && error.name === "AbortError") {
+      debugLog("request:timeout", {
+        path: params.path,
+        elapsedMs: Date.now() - startedAt,
+        timeoutMs: AI_REQUEST_TIMEOUT_MS,
+      });
+
       throw new AiServiceError({
         code: "ai_service_timeout",
         message: "AI isteği zaman aşımına uğradı. Birazdan tekrar deneyin.",
         status: 504,
       });
     }
+
+    debugLog("request:unreachable", {
+      path: params.path,
+      elapsedMs: Date.now() - startedAt,
+      errorName: error instanceof Error ? error.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : undefined,
+    });
 
     throw new AiServiceError({
       code: "ai_service_unreachable",
@@ -150,7 +203,18 @@ async function postToAiService(params: {
 export async function analyzeProduct(
   productInput: ProductInput,
 ): Promise<GeoAnalysisOutput> {
+  debugLog("analysis:input-parse:start", {
+    productId: productInput.productId,
+    source: productInput.source,
+    url: productInput.url,
+    crawlStatus: productInput.crawlMetadata?.crawlStatus,
+  });
   const parsedInput = productInputSchema.parse(productInput);
+  debugLog("analysis:input-parse:success", {
+    productId: parsedInput.productId,
+    source: parsedInput.source,
+    crawlStatus: parsedInput.crawlMetadata.crawlStatus,
+  });
   const payload = await postToAiService({
     path: "/ai/analyze-product",
     body: parsedInput,
@@ -159,12 +223,29 @@ export async function analyzeProduct(
   const parsedOutput = geoAnalysisOutputSchema.safeParse(payload);
 
   if (!parsedOutput.success) {
+    console.error("[ai-service-debug] analysis:output-parse:failed", {
+      at: new Date().toISOString(),
+      productId: parsedInput.productId,
+      issues: parsedOutput.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+      topLevelKeys:
+        payload && typeof payload === "object" ? Object.keys(payload) : [],
+    });
+
     throw new AiServiceError({
       code: "invalid_ai_analysis_response",
       message: "AI analiz cevabı beklenen sözleşmeye uymuyor.",
       status: 502,
     });
   }
+
+  debugLog("analysis:output-parse:success", {
+    productId: parsedInput.productId,
+    overallScore: parsedOutput.data.overallScore,
+    recommendedAction: parsedOutput.data.recommendedAction,
+  });
 
   return parsedOutput.data;
 }

@@ -16,6 +16,7 @@ import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository
 import type {
   GeoAnalysisOutput,
   ProductInput,
+  UserFactQuestion,
 } from "@/types/ai-contract";
 import type {
   ImproveProductApiResponse,
@@ -30,8 +31,16 @@ const paramsSchema = z.object({
 });
 
 const improveRequestSchema = z.object({
-  userFacts: z.record(z.string(), z.union([z.string(), z.null()])).optional(),
+  userFacts: z.record(z.string(), z.unknown()).optional(),
 });
+
+const availabilityValues = [
+  "in_stock",
+  "out_of_stock",
+  "preorder",
+  "backorder",
+  "unknown",
+];
 
 type RouteContext = {
   params: Promise<{
@@ -56,6 +65,73 @@ function failureResponse(error: string, message: string, status: number) {
     } satisfies ImproveProductApiResponse,
     { status },
   );
+}
+
+function questionInputType(question: UserFactQuestion) {
+  return question.field === "availability" ? "select" : question.inputType;
+}
+
+function questionOptionValues(question: UserFactQuestion) {
+  if (question.field === "availability") {
+    return availabilityValues;
+  }
+
+  return question.options.map((option) => option.value);
+}
+
+function validateUserFactsForQuestions(params: {
+  userFacts?: Record<string, unknown>;
+  questions: UserFactQuestion[];
+}):
+  | { ok: true }
+  | { ok: false; message: string; status: number; code: string } {
+  if (!params.userFacts) {
+    return { ok: true };
+  }
+
+  const availabilityAnswer = params.userFacts.availability;
+
+  if (
+    availabilityAnswer !== undefined &&
+    availabilityAnswer !== null &&
+    (typeof availabilityAnswer !== "string" ||
+      !availabilityValues.includes(availabilityAnswer))
+  ) {
+    return {
+      ok: false,
+      code: "invalid_user_fact_answer",
+      message: "Stok durumu icin gecerli bir secenek secin.",
+      status: 400,
+    };
+  }
+
+  for (const question of params.questions) {
+    const answer = params.userFacts[question.field];
+
+    if (answer === undefined || answer === null) {
+      continue;
+    }
+
+    if (questionInputType(question) !== "select") {
+      continue;
+    }
+
+    const allowedValues = questionOptionValues(question);
+
+    if (typeof answer !== "string" || !allowedValues.includes(answer)) {
+      return {
+        ok: false,
+        code: "invalid_user_fact_answer",
+        message:
+          question.field === "availability"
+            ? "Stok durumu iÃ§in geÃ§erli bir seÃ§enek seÃ§in."
+            : "Eksik bilgi sorusu iÃ§in geÃ§erli bir seÃ§enek seÃ§in.",
+        status: 400,
+      };
+    }
+  }
+
+  return { ok: true };
 }
 
 async function runProductOptimizationInBackground(params: {
@@ -246,6 +322,19 @@ export async function POST(request: Request, context: RouteContext) {
       productResult.data.analysisUnavailableMessage ??
         "Optimizasyon için AI uyumlu ürün URL adresi ve tarama bilgisi gerekli.",
       422,
+    );
+  }
+
+  const userFactValidation = validateUserFactsForQuestions({
+    userFacts: parsedBody.data.userFacts,
+    questions: optimizationResult.data?.needsUserInput ?? [],
+  });
+
+  if (!userFactValidation.ok) {
+    return failureResponse(
+      userFactValidation.code,
+      userFactValidation.message,
+      userFactValidation.status,
     );
   }
 

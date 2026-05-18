@@ -132,11 +132,18 @@ export const geoAnalysisOutputSchema = z.object({
   recommendedAction: z.string().optional(),
 });
 
+export const userFactQuestionOptionSchema = z.object({
+  value: z.string(),
+  label: z.string(),
+});
+
 export const userFactQuestionSchema = z.object({
   field: z.string(),
   question: z.string(),
   reason: z.string(),
   requiredFor: z.array(z.string()).default([]),
+  inputType: z.enum(["text", "select"]).default("text"),
+  options: z.array(userFactQuestionOptionSchema).default([]),
 });
 
 const generatedFaqItemSchema = z.object({

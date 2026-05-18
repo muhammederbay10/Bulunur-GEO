@@ -27,9 +27,17 @@ import type {
 } from "@/types/analysis";
 import type { UserFactQuestion } from "@/types/ai-contract";
 
+const availabilityOptions = [
+  { value: "in_stock", label: "Stokta var" },
+  { value: "out_of_stock", label: "Stokta yok" },
+  { value: "preorder", label: "On siparis" },
+  { value: "backorder", label: "Tedarik bekleniyor" },
+  { value: "unknown", label: "Bilinmiyor" },
+];
+
 async function requestImprovement(
   productId: string,
-  userFacts?: Record<string, string | null>,
+  userFacts?: Record<string, unknown>,
 ) {
   const response = await fetch(`/api/products/${productId}/improve`, {
     method: "POST",
@@ -41,6 +49,18 @@ async function requestImprovement(
   const payload = (await response.json()) as ImproveProductApiResponse;
 
   return { response, payload };
+}
+
+function getQuestionInputType(question: UserFactQuestion) {
+  return question.field === "availability" ? "select" : question.inputType;
+}
+
+function getQuestionOptions(question: UserFactQuestion) {
+  if (question.field === "availability") {
+    return availabilityOptions;
+  }
+
+  return question.options;
 }
 
 function useOptimizationPolling({
@@ -323,7 +343,11 @@ export function MissingFactsForm({
     if (!currentQuestion) return;
 
     if (!currentAnswer.trim()) {
-      setErrorMessage("Devam etmek için bu bilgiyi yazın.");
+      setErrorMessage(
+        getQuestionInputType(currentQuestion) === "select"
+          ? "Devam etmek için bir seçenek belirleyin."
+          : "Devam etmek için bu bilgiyi yazın.",
+      );
       return;
     }
 
@@ -339,7 +363,7 @@ export function MissingFactsForm({
       return;
     }
 
-    const userFacts: Record<string, string | null> = {};
+    const userFacts: Record<string, unknown> = {};
 
     for (const question of questions) {
       const answer = answers[question.field]?.trim();
@@ -348,6 +372,19 @@ export function MissingFactsForm({
         setCurrentIndex(questions.indexOf(question));
         return;
       }
+      const optionValues = getQuestionOptions(question).map(
+        (option) => option.value,
+      );
+
+      if (
+        getQuestionInputType(question) === "select" &&
+        !optionValues.includes(answer)
+      ) {
+        setErrorMessage("Lütfen listeden geçerli bir seçenek belirleyin.");
+        setCurrentIndex(questions.indexOf(question));
+        return;
+      }
+
       userFacts[question.field] = answer;
     }
 
@@ -454,15 +491,40 @@ export function MissingFactsForm({
               <Label htmlFor={`fact-${currentQuestion.field}`}>
                 {currentQuestion.question}
               </Label>
-              <Input
-                autoFocus
-                disabled={isBusy}
-                id={`fact-${currentQuestion.field}`}
-                name={currentQuestion.field}
-                onChange={(event) => updateCurrentAnswer(event.target.value)}
-                placeholder="Kısa ve doğrulanmış bilgiyi yazın"
-                value={currentAnswer}
-              />
+              {getQuestionInputType(currentQuestion) === "select" ? (
+                <div
+                  className="grid gap-2"
+                  id={`fact-${currentQuestion.field}`}
+                >
+                  {getQuestionOptions(currentQuestion).map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-background/70 px-3 py-2 text-sm transition-colors hover:border-primary/40"
+                    >
+                      <input
+                        checked={currentAnswer === option.value}
+                        className="h-4 w-4 accent-primary"
+                        disabled={isBusy}
+                        name={currentQuestion.field}
+                        onChange={() => updateCurrentAnswer(option.value)}
+                        type="radio"
+                        value={option.value}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <Input
+                  autoFocus
+                  disabled={isBusy}
+                  id={`fact-${currentQuestion.field}`}
+                  name={currentQuestion.field}
+                  onChange={(event) => updateCurrentAnswer(event.target.value)}
+                  placeholder="Kısa ve doğrulanmış bilgiyi yazın"
+                  value={currentAnswer}
+                />
+              )}
               <p className="text-xs leading-5 text-muted-foreground">
                 {currentQuestion.reason}
               </p>

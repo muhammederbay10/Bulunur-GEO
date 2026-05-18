@@ -62,6 +62,13 @@ function toScoreInteger(value: number) {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
+function analysisDbDebug(label: string, details: Record<string, unknown>) {
+  console.log(`[analysis-db-debug] ${label}`, {
+    at: new Date().toISOString(),
+    ...details,
+  });
+}
+
 function mapAnalysisRow(row: ProductAnalysisRow): ProductAnalysisRecord {
   return {
     id: row.id,
@@ -133,6 +140,14 @@ export async function startProductAnalysisRun(params: {
 }): Promise<AnalysisRepositoryResult<{ analysisId: string }>> {
   const supabase = createAdminClient();
   const now = new Date().toISOString();
+  const startedAt = Date.now();
+
+  analysisDbDebug("start-run:snapshot-insert:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+  });
+
   const { error: snapshotError } = await supabase
     .from("product_snapshots")
     .insert({
@@ -150,6 +165,16 @@ export async function startProductAnalysisRun(params: {
     });
 
   if (snapshotError) {
+    analysisDbDebug("start-run:snapshot-insert:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      code: snapshotError.code,
+      message: snapshotError.message,
+      details: snapshotError.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: isMissingAnalysisTable(snapshotError)
@@ -159,6 +184,19 @@ export async function startProductAnalysisRun(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("start-run:snapshot-insert:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    elapsedMs: Date.now() - startedAt,
+  });
+
+  analysisDbDebug("start-run:analysis-insert:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+  });
 
   const { data, error } = await supabase
     .from("product_analyses")
@@ -173,6 +211,16 @@ export async function startProductAnalysisRun(params: {
     .single<{ id: string }>();
 
   if (error || !data?.id) {
+    analysisDbDebug("start-run:analysis-insert:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: error && isMissingAnalysisTable(error)
@@ -183,6 +231,21 @@ export async function startProductAnalysisRun(params: {
     };
   }
 
+  analysisDbDebug("start-run:analysis-insert:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+    elapsedMs: Date.now() - startedAt,
+  });
+
+  analysisDbDebug("start-run:product-status:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+  });
+
   const { error: productError } = await supabase
     .from("products")
     .update({ workflow_status: "analysis_running" })
@@ -191,6 +254,17 @@ export async function startProductAnalysisRun(params: {
     .eq("store_id", params.storeId);
 
   if (productError) {
+    analysisDbDebug("start-run:product-status:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: data.id,
+      code: productError.code,
+      message: productError.message,
+      details: productError.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: "Ürün analiz durumu güncellenemedi.",
@@ -198,6 +272,14 @@ export async function startProductAnalysisRun(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("start-run:product-status:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+    elapsedMs: Date.now() - startedAt,
+  });
 
   return {
     ok: true,
@@ -214,6 +296,16 @@ export async function saveProductAnalysisSuccess(params: {
 }): Promise<AnalysisRepositoryResult<ProductAnalysisRecord>> {
   const supabase = createAdminClient();
   const completedAt = new Date().toISOString();
+  const startedAt = Date.now();
+
+  analysisDbDebug("save-success:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    overallScore: params.analysis.overallScore,
+  });
+
   const analysisPayload = {
     status: "succeeded",
     overall_score: toScoreInteger(params.analysis.overallScore),
@@ -271,6 +363,17 @@ export async function saveProductAnalysisSuccess(params: {
       });
     }
 
+    analysisDbDebug("save-success:analysis-update:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: analysisResult.error?.code,
+      message: analysisResult.error?.message,
+      details: analysisResult.error?.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: analysisResult.error?.message ?? "Analiz sonucu kaydedilemedi.",
@@ -289,6 +392,17 @@ export async function saveProductAnalysisSuccess(params: {
       productId: params.productId,
     });
 
+    analysisDbDebug("save-success:product-update:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: productResult.error.code,
+      message: productResult.error.message,
+      details: productResult.error.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: "Ürün analiz ozeti güncellenemedi.",
@@ -296,6 +410,14 @@ export async function saveProductAnalysisSuccess(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("save-success:complete", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    elapsedMs: Date.now() - startedAt,
+  });
 
   return {
     ok: true,
@@ -313,8 +435,18 @@ export async function saveProductAnalysisFailure(params: {
 }): Promise<void> {
   const supabase = createAdminClient();
   const completedAt = new Date().toISOString();
+  const startedAt = Date.now();
 
-  await Promise.all([
+  analysisDbDebug("save-failure:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    errorCode: params.errorCode,
+    errorMessage: params.errorMessage,
+  });
+
+  const [analysisResult, productResult] = await Promise.all([
     supabase
       .from("product_analyses")
       .update({
@@ -334,4 +466,38 @@ export async function saveProductAnalysisFailure(params: {
       .eq("profile_id", params.profileId)
       .eq("store_id", params.storeId),
   ]);
+
+  if (analysisResult.error || productResult.error) {
+    console.error("[analysis-db-debug] save-failure:failed", {
+      at: new Date().toISOString(),
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      analysisError: analysisResult.error
+        ? {
+            code: analysisResult.error.code,
+            message: analysisResult.error.message,
+            details: analysisResult.error.details,
+          }
+        : null,
+      productError: productResult.error
+        ? {
+            code: productResult.error.code,
+            message: productResult.error.message,
+            details: productResult.error.details,
+          }
+        : null,
+      elapsedMs: Date.now() - startedAt,
+    });
+    return;
+  }
+
+  analysisDbDebug("save-failure:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    elapsedMs: Date.now() - startedAt,
+  });
 }

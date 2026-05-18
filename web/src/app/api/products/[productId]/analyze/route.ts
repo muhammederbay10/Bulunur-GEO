@@ -39,6 +39,13 @@ function failureResponse(error: string, message: string, status: number) {
   );
 }
 
+function analysisDebug(label: string, details: Record<string, unknown>) {
+  console.log(`[analysis-debug] ${label}`, {
+    at: new Date().toISOString(),
+    ...details,
+  });
+}
+
 async function runProductAnalysisInBackground(params: {
   profileId: string;
   storeId: string;
@@ -46,8 +53,33 @@ async function runProductAnalysisInBackground(params: {
   analysisId: string;
   productInput: ProductInput;
 }) {
+  const startedAt = Date.now();
+
+  analysisDebug("background:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    source: params.productInput.source,
+    crawlStatus: params.productInput.crawlMetadata.crawlStatus,
+  });
+
   try {
+    analysisDebug("background:ai-call:start", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+    });
     const analysis = await analyzeProduct(params.productInput);
+    analysisDebug("background:ai-call:success", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+      elapsedMs: Date.now() - startedAt,
+      overallScore: analysis.overallScore,
+    });
+    analysisDebug("background:db-save:start", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+    });
     const saveResult = await saveProductAnalysisSuccess({
       profileId: params.profileId,
       storeId: params.storeId,
@@ -57,6 +89,13 @@ async function runProductAnalysisInBackground(params: {
     });
 
     if (!saveResult.ok) {
+      analysisDebug("background:db-save:failed", {
+        productId: params.productId,
+        analysisId: params.analysisId,
+        code: saveResult.code,
+        message: saveResult.message,
+        elapsedMs: Date.now() - startedAt,
+      });
       await saveProductAnalysisFailure({
         profileId: params.profileId,
         storeId: params.storeId,
@@ -65,7 +104,21 @@ async function runProductAnalysisInBackground(params: {
         errorCode: saveResult.code ?? "analysis_save_failed",
         errorMessage: saveResult.message,
       });
+      analysisDebug("background:failure-saved", {
+        productId: params.productId,
+        analysisId: params.analysisId,
+        code: saveResult.code ?? "analysis_save_failed",
+      });
+      return;
     }
+
+    analysisDebug("background:db-save:success", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+      elapsedMs: Date.now() - startedAt,
+      status: saveResult.data.status,
+      overallScore: saveResult.data.overallScore,
+    });
   } catch (error) {
     const serviceError =
       error instanceof AiServiceError
@@ -76,6 +129,15 @@ async function runProductAnalysisInBackground(params: {
             status: 500,
           });
 
+    analysisDebug("background:failed", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: serviceError.code,
+      status: serviceError.status,
+      message: serviceError.message,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     await saveProductAnalysisFailure({
       profileId: params.profileId,
       storeId: params.storeId,
@@ -83,6 +145,11 @@ async function runProductAnalysisInBackground(params: {
       analysisId: params.analysisId,
       errorCode: serviceError.code,
       errorMessage: serviceError.message,
+    });
+    analysisDebug("background:failure-saved", {
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: serviceError.code,
     });
   }
 }
@@ -104,18 +171,36 @@ export async function GET(_request: Request, context: RouteContext) {
     );
   }
 
+  analysisDebug("poll:start", {
+    profileId: user.id,
+    productId: params.data.productId,
+  });
+
   const analysisResult = await getLatestProductAnalysis({
     profileId: user.id,
     productId: params.data.productId,
   });
 
   if (!analysisResult.ok) {
+    analysisDebug("poll:lookup:failed", {
+      profileId: user.id,
+      productId: params.data.productId,
+      code: analysisResult.code,
+      message: analysisResult.message,
+    });
     return failureResponse(
       analysisResult.code ?? "analysis_lookup_failed",
       analysisResult.message,
       analysisResult.status ?? 400,
     );
   }
+
+  analysisDebug("poll:lookup:success", {
+    profileId: user.id,
+    productId: params.data.productId,
+    status: analysisResult.data?.status ?? null,
+    analysisId: analysisResult.data?.id ?? null,
+  });
 
   return NextResponse.json({
     ok: true,
@@ -125,6 +210,7 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function POST(_request: Request, context: RouteContext) {
+  const requestStartedAt = Date.now();
   const user = await getCurrentUser();
 
   if (!user) {
@@ -141,12 +227,23 @@ export async function POST(_request: Request, context: RouteContext) {
     );
   }
 
+  analysisDebug("post:start", {
+    profileId: user.id,
+    productId: params.data.productId,
+  });
+
   const productResult = await getProductAnalysisContextForProfile({
     profileId: user.id,
     productId: params.data.productId,
   });
 
   if (!productResult.ok) {
+    analysisDebug("post:product-context:failed", {
+      profileId: user.id,
+      productId: params.data.productId,
+      code: productResult.code,
+      message: productResult.message,
+    });
     return failureResponse(
       productResult.code ?? "product_lookup_failed",
       productResult.message,
@@ -157,6 +254,11 @@ export async function POST(_request: Request, context: RouteContext) {
   const { product, productInput } = productResult.data;
 
   if (!productInput) {
+    analysisDebug("post:product-input:unavailable", {
+      profileId: user.id,
+      productId: params.data.productId,
+      message: productResult.data.analysisUnavailableMessage,
+    });
     return failureResponse(
       "analysis_unavailable",
       productResult.data.analysisUnavailableMessage ??
@@ -164,6 +266,15 @@ export async function POST(_request: Request, context: RouteContext) {
       422,
     );
   }
+
+  analysisDebug("post:product-input:ready", {
+    profileId: user.id,
+    productId: product.id,
+    storeId: product.storeId,
+    source: productInput.source,
+    url: productInput.url,
+    crawlStatus: productInput.crawlMetadata.crawlStatus,
+  });
 
   const runResult = await startProductAnalysisRun({
     profileId: user.id,
@@ -181,12 +292,27 @@ export async function POST(_request: Request, context: RouteContext) {
   });
 
   if (!runResult.ok) {
+    analysisDebug("post:run-start:failed", {
+      profileId: user.id,
+      productId: product.id,
+      storeId: product.storeId,
+      code: runResult.code,
+      message: runResult.message,
+    });
     return failureResponse(
       runResult.code ?? "analysis_start_failed",
       runResult.message,
       runResult.status ?? 500,
     );
   }
+
+  analysisDebug("post:run-start:success", {
+    profileId: user.id,
+    productId: product.id,
+    storeId: product.storeId,
+    analysisId: runResult.data.analysisId,
+    elapsedMs: Date.now() - requestStartedAt,
+  });
 
   after(() =>
     runProductAnalysisInBackground({
@@ -197,6 +323,13 @@ export async function POST(_request: Request, context: RouteContext) {
       productInput,
     }),
   );
+
+  analysisDebug("post:after-scheduled", {
+    profileId: user.id,
+    productId: product.id,
+    analysisId: runResult.data.analysisId,
+    elapsedMs: Date.now() - requestStartedAt,
+  });
 
   return NextResponse.json(
     {

@@ -90,9 +90,30 @@ function toQuestionArray(value: unknown) {
             (entry): entry is string => typeof entry === "string",
           )
         : [];
+      const inputType =
+        item.inputType === "select" || item.inputType === "text"
+          ? item.inputType
+          : "text";
+      const options = Array.isArray(item.options)
+        ? item.options
+            .map((option) => {
+              if (!isRecord(option)) return null;
+
+              const value =
+                typeof option.value === "string" ? option.value : null;
+              const label =
+                typeof option.label === "string" ? option.label : null;
+
+              return value && label ? { value, label } : null;
+            })
+            .filter(
+              (option): option is { value: string; label: string } =>
+                Boolean(option),
+            )
+        : [];
 
       return field && question && reason
-        ? { field, question, reason, requiredFor }
+        ? { field, question, reason, requiredFor, inputType, options }
         : null;
     })
     .filter(
@@ -103,6 +124,8 @@ function toQuestionArray(value: unknown) {
         question: string;
         reason: string;
         requiredFor: string[];
+        inputType: "text" | "select";
+        options: Array<{ value: string; label: string }>;
       } => Boolean(item),
     );
 }

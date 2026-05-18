@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Loader2, Store } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ import {
 } from "@/features/sources/actions";
 import { CompactSourceSetupForm } from "@/features/sources/components/compact-source-setup-form";
 import type { SourceChoice } from "@/features/sources/components/source-choice-selector";
+import { useInlineSourceSetupRedirect } from "@/features/sources/use-inline-source-setup-redirect";
 import type { UserProfile } from "@/types/profile";
 
 const onboardingInitialState: OnboardingFormState = { status: "idle" };
@@ -56,7 +56,6 @@ export function OnboardingForm({
   databaseReady,
   setupMessage,
 }: OnboardingFormProps) {
-  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [fullName, setFullName] = useState(profile?.fullName ?? "");
   const [businessName, setBusinessName] = useState(profile?.businessName ?? "");
@@ -84,23 +83,7 @@ export function OnboardingForm({
     }
   }, [onboardingState.status]);
 
-  useEffect(() => {
-    if (shopifyState.status === "success" && shopifyState.connectUrl) {
-      const timeoutId = window.setTimeout(() => {
-        window.location.assign(shopifyState.connectUrl as string);
-      }, 500);
-
-      return () => window.clearTimeout(timeoutId);
-    }
-
-    if (nativeState.status === "success") {
-      const timeoutId = window.setTimeout(() => {
-        router.replace("/dashboard");
-      }, 900);
-
-      return () => window.clearTimeout(timeoutId);
-    }
-  }, [nativeState.status, router, shopifyState.connectUrl, shopifyState.status]);
+  useInlineSourceSetupRedirect({ nativeState, shopifyState });
 
   return (
     <div className="page-enter mx-auto w-full max-w-2xl">
