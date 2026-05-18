@@ -5,12 +5,12 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 from ai.api_contracts.crawl_metadata import CrawlMetadata
 
 
-ProductSource = Literal["shopify", "native", "woocommerce"]
+ProductSource = Literal["shopify", "native"]
 AvailabilityStatus = Literal[
     "in_stock",
     "out_of_stock",
@@ -43,7 +43,7 @@ class ProductInput(BaseModel):
     product_id: str = Field(alias="productId", min_length=1)
     store_id: str | None = Field(default=None, alias="storeId")
     source: ProductSource
-    url: HttpUrl
+    url: HttpUrl | None = None
     language: str = Field(default="tr", min_length=2, max_length=5)
     market: str = Field(default="TR", min_length=2, max_length=2)
     title: str = Field(min_length=1)
@@ -61,6 +61,13 @@ class ProductInput(BaseModel):
         alias="rawExtracted",
     )
     crawl_metadata: CrawlMetadata = Field(alias="crawlMetadata")
+
+    @model_validator(mode="after")
+    def validate_source_url_contract(self) -> "ProductInput":
+        """Require URL for native crawled products while allowing Shopify catalog products."""
+        if self.source != "shopify" and self.url is None:
+            raise ValueError("url is required for native products")
+        return self
 
     @field_validator("language")
     @classmethod

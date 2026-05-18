@@ -135,7 +135,7 @@ def build_product_schema_json_ld(
 def _product_to_facts(product: ProductSchemaInput) -> JsonObject:
     if isinstance(product, ProductInput):
         return {
-            "url": str(product.url),
+            "url": str(product.url) if product.url is not None else None,
             "title": product.title,
             "description": product.description,
             "short_description": product.short_description,
