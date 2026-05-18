@@ -74,23 +74,15 @@ class ImprovementValidation(BaseModel):
 
 
 class ScoreEstimate(BaseModel):
-    """Estimated GEO score movement after applying approved improvements."""
+    """Estimated GEO score after applying approved improvements."""
 
     model_config = ConfigDict(populate_by_name=True)
 
-    before: float = Field(ge=0, le=100)
     after: float = Field(ge=0, le=100)
     expected_gain_reasons: list[str] = Field(
         default_factory=list,
         alias="expectedGainReasons",
     )
-
-    @model_validator(mode="after")
-    def validate_score_direction(self) -> "ScoreEstimate":
-        """Reject estimates where the improvement lowers the score."""
-        if self.after < self.before:
-            raise ValueError("score estimate after value cannot be lower than before")
-        return self
 
 
 class BeforeAfterChange(BaseModel):

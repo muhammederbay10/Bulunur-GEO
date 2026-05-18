@@ -82,20 +82,6 @@ def _validation_with_score_estimate_errors(
     state: OptimizationGraphState,
     validation: ImprovementValidation,
 ) -> ImprovementValidation:
-    estimate = state.get("estimated_score")
-    if estimate is None:
-        return validation
-    try:
-        estimate.to_api_score_estimate()
-    except ValueError as exc:
-        return ImprovementValidation(
-            passed=False,
-            warnings=validation.warnings,
-            errors=[
-                *validation.errors,
-                f"Iyilestirme skor tahminini dusuruyor veya yayinlanabilir degil: {exc}",
-            ],
-        )
     return validation
 
 

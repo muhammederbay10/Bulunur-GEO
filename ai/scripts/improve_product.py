@@ -82,7 +82,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         for question in output.needs_user_input:
             print(f"- {question.field}: {question.question}")
     elif output.score_estimate is not None:
-        print(f"Estimated score: {output.score_estimate.before} -> {output.score_estimate.after}")
+        print(f"Estimated improved score: {output.score_estimate.after}")
     print(f"Validation passed: {output.validation.passed}")
     return 0
 
