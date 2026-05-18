@@ -36,6 +36,8 @@ nul
 tests
 deck-assets
 .json
+.tmp
+.pytest_tmp
 
 # ── Codex ───────────────────────────────────────
 AGENTS.md
