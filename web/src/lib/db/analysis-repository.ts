@@ -20,7 +20,7 @@ type ProductAnalysisRow = {
   reranking_strength_score: number | null;
   ai_answer_readiness_score: number | null;
   detected_category: string | null;
-  buyer_intent_variants: string[] | null;
+  buyer_intent_variants: unknown;
   known_facts: Record<string, unknown> | null;
   missing_facts: unknown;
   main_problems: unknown;
@@ -56,6 +56,12 @@ function toStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+function toScoreInteger(value: number) {
+  if (!Number.isFinite(value)) return null;
+
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
 function mapAnalysisRow(row: ProductAnalysisRow): ProductAnalysisRecord {
   return {
     id: row.id,
@@ -66,7 +72,7 @@ function mapAnalysisRow(row: ProductAnalysisRow): ProductAnalysisRecord {
     rerankingStrengthScore: row.reranking_strength_score ?? undefined,
     aiAnswerReadinessScore: row.ai_answer_readiness_score ?? undefined,
     detectedCategory: row.detected_category ?? undefined,
-    buyerIntentVariants: row.buyer_intent_variants ?? [],
+    buyerIntentVariants: toStringArray(row.buyer_intent_variants),
     knownFacts: row.known_facts ?? {},
     missingFacts: toStringArray(row.missing_facts),
     mainProblems: toStringArray(row.main_problems),
@@ -210,13 +216,15 @@ export async function saveProductAnalysisSuccess(params: {
   const completedAt = new Date().toISOString();
   const analysisPayload = {
     status: "succeeded",
-    overall_score: params.analysis.overallScore,
-    retrieval_score: params.analysis.scores.retrieval.score,
+    overall_score: toScoreInteger(params.analysis.overallScore),
+    retrieval_score: toScoreInteger(params.analysis.scores.retrieval.score),
     machine_understanding_score:
-      params.analysis.scores.machineUnderstanding.score,
-    reranking_strength_score: params.analysis.scores.rerankingStrength.score,
+      toScoreInteger(params.analysis.scores.machineUnderstanding.score),
+    reranking_strength_score: toScoreInteger(
+      params.analysis.scores.rerankingStrength.score,
+    ),
     ai_answer_readiness_score:
-      params.analysis.scores.aiAnswerReadiness.score,
+      toScoreInteger(params.analysis.scores.aiAnswerReadiness.score),
     detected_category: params.analysis.detectedCategory ?? null,
     buyer_intent_variants: params.analysis.buyerIntentVariants,
     known_facts: params.analysis.knownFacts,
@@ -243,7 +251,7 @@ export async function saveProductAnalysisSuccess(params: {
       .update({
         workflow_status: "analyzed",
         latest_analysis_id: params.analysisId,
-        latest_score: params.analysis.overallScore,
+        latest_score: toScoreInteger(params.analysis.overallScore),
         last_analyzed_at: completedAt,
       })
       .eq("id", params.productId)
@@ -252,15 +260,35 @@ export async function saveProductAnalysisSuccess(params: {
   ]);
 
   if (analysisResult.error || !analysisResult.data) {
+    if (analysisResult.error) {
+      console.error("[analysis] save result failed", {
+        code: analysisResult.error.code,
+        message: analysisResult.error.message,
+        details: analysisResult.error.details,
+        hint: analysisResult.error.hint,
+        analysisId: params.analysisId,
+        productId: params.productId,
+      });
+    }
+
     return {
       ok: false,
-      message: "Analiz sonucu kaydedilemedi.",
+      message: analysisResult.error?.message ?? "Analiz sonucu kaydedilemedi.",
       code: analysisResult.error?.code,
       status: 500,
     };
   }
 
   if (productResult.error) {
+    console.error("[analysis] product summary update failed", {
+      code: productResult.error.code,
+      message: productResult.error.message,
+      details: productResult.error.details,
+      hint: productResult.error.hint,
+      analysisId: params.analysisId,
+      productId: params.productId,
+    });
+
     return {
       ok: false,
       message: "Ürün analiz ozeti güncellenemedi.",

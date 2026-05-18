@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { AiServiceError, improveProduct } from "@/lib/ai/client";
 import { getLatestProductAnalysis } from "@/lib/db/analysis-repository";
 import {
+  getLatestOptimizationResult,
   normalizeUserFacts,
   saveOptimizationFailure,
   saveOptimizationResult,
@@ -11,7 +12,17 @@ import {
 } from "@/lib/db/optimization-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
-import type { ImproveProductApiResponse } from "@/types/analysis";
+import type {
+  GeoAnalysisOutput,
+  ProductInput,
+} from "@/types/ai-contract";
+import type {
+  ImproveProductApiResponse,
+  ImproveProductStatusApiResponse,
+  ProductAnalysisDetail,
+} from "@/types/analysis";
+
+export const maxDuration = 60;
 
 const paramsSchema = z.object({
   productId: z.uuid(),
@@ -44,6 +55,111 @@ function failureResponse(error: string, message: string, status: number) {
     } satisfies ImproveProductApiResponse,
     { status },
   );
+}
+
+async function runProductOptimizationInBackground(params: {
+  profileId: string;
+  product: ProductAnalysisDetail;
+  productInput: ProductInput;
+  analysisId: string;
+  analysis: GeoAnalysisOutput;
+  userFacts?: Record<string, string | null>;
+}) {
+  try {
+    const improvement = await improveProduct({
+      productInput: params.productInput,
+      analysis: params.analysis,
+      userFacts: params.userFacts,
+    });
+    const saveResult = await saveOptimizationResult({
+      profileId: params.profileId,
+      storeId: params.product.storeId,
+      productId: params.product.id,
+      analysisId: params.analysisId,
+      improvement,
+    });
+
+    if (!saveResult.ok) {
+      await saveOptimizationFailure({
+        profileId: params.profileId,
+        storeId: params.product.storeId,
+        productId: params.product.id,
+        analysisId: params.analysisId,
+        errorCode: saveResult.code ?? "optimization_save_failed",
+        errorMessage: saveResult.message,
+      });
+    }
+  } catch (error) {
+    const serviceError =
+      error instanceof AiServiceError
+        ? error
+        : new AiServiceError({
+            code: "optimization_failed",
+            message: "Optimizasyon tamamlanamadı.",
+            status: 500,
+          });
+
+    await saveOptimizationFailure({
+      profileId: params.profileId,
+      storeId: params.product.storeId,
+      productId: params.product.id,
+      analysisId: params.analysisId,
+      errorCode: serviceError.code,
+      errorMessage: serviceError.message,
+    });
+  }
+}
+
+export async function GET(_request: Request, context: RouteContext) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return failureResponse("unauthorized", "Oturum gerekli.", 401);
+  }
+
+  const params = paramsSchema.safeParse(await context.params);
+
+  if (!params.success) {
+    return failureResponse(
+      "invalid_product_id",
+      "Geçersiz ürün kimliği.",
+      400,
+    );
+  }
+
+  const [productResult, optimizationResult] = await Promise.all([
+    getProductAnalysisContextForProfile({
+      profileId: user.id,
+      productId: params.data.productId,
+    }),
+    getLatestOptimizationResult({
+      profileId: user.id,
+      productId: params.data.productId,
+    }),
+  ]);
+
+  if (!productResult.ok) {
+    return failureResponse(
+      productResult.code ?? "product_lookup_failed",
+      productResult.message,
+      productResult.code === "product_not_found" ? 404 : 400,
+    );
+  }
+
+  if (!optimizationResult.ok) {
+    return failureResponse(
+      optimizationResult.code ?? "optimization_lookup_failed",
+      optimizationResult.message,
+      optimizationResult.status ?? 400,
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    productId: params.data.productId,
+    workflowStatus: productResult.data.product.workflowStatus,
+    optimization: optimizationResult.data,
+  } satisfies ImproveProductStatusApiResponse);
 }
 
 export async function POST(request: Request, context: RouteContext) {
@@ -108,13 +224,14 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
+  const latestAnalysis = analysisResult.data;
   const { product, productInput } = productResult.data;
 
   if (!productInput) {
     return failureResponse(
       "optimization_unavailable",
       productResult.data.analysisUnavailableMessage ??
-        "Optimizasyon icin AI uyumlu urun URL adresi ve tarama bilgisi gerekli.",
+        "Optimizasyon için AI uyumlu ürün URL adresi ve tarama bilgisi gerekli.",
       422,
     );
   }
@@ -135,7 +252,7 @@ export async function POST(request: Request, context: RouteContext) {
       tags: product.tags,
       rawPayload: {
         productInput,
-        analysis: analysisResult.data.rawOutput,
+        analysis: latestAnalysis.rawOutput,
         userFacts: userFacts ?? null,
       },
     },
@@ -149,58 +266,24 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
-  try {
-    const improvement = await improveProduct({
-      productInput,
-      analysis: analysisResult.data.rawOutput,
-      userFacts,
-    });
-    const saveResult = await saveOptimizationResult({
+  after(() =>
+    runProductOptimizationInBackground({
       profileId: user.id,
-      storeId: product.storeId,
-      productId: product.id,
-      analysisId: analysisResult.data.id,
-      improvement,
-    });
+      product,
+      productInput,
+      analysisId: latestAnalysis.id,
+      analysis: latestAnalysis.rawOutput as GeoAnalysisOutput,
+      userFacts,
+    }),
+  );
 
-    if (!saveResult.ok) {
-      return failureResponse(
-        saveResult.code ?? "optimization_save_failed",
-        saveResult.message,
-        saveResult.status ?? 500,
-      );
-    }
-
-    return NextResponse.json({
+  return NextResponse.json(
+    {
       ok: true,
       productId: product.id,
-      optimizationResultId: saveResult.data.id,
-      status: saveResult.data.status,
-      improvement,
-    } satisfies ImproveProductApiResponse);
-  } catch (error) {
-    const serviceError =
-      error instanceof AiServiceError
-        ? error
-        : new AiServiceError({
-            code: "optimization_failed",
-            message: "Optimizasyon tamamlanamadı.",
-            status: 500,
-          });
-
-    await saveOptimizationFailure({
-      profileId: user.id,
-      storeId: product.storeId,
-      productId: product.id,
-      analysisId: analysisResult.data.id,
-      errorCode: serviceError.code,
-      errorMessage: serviceError.message,
-    });
-
-    return failureResponse(
-      serviceError.code,
-      serviceError.message,
-      serviceError.status,
-    );
-  }
+      status: "optimization_running",
+      message: "Optimizasyon başlatıldı.",
+    } satisfies ImproveProductApiResponse,
+    { status: 202 },
+  );
 }

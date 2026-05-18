@@ -1,11 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { AnalyzeProductApiResponse } from "@/types/analysis";
+import type {
+  AnalyzeProductApiResponse,
+  AnalyzeProductStatusApiResponse,
+} from "@/types/analysis";
 
 export function AnalyzeProductButton({
   productId,
@@ -17,7 +20,55 @@ export function AnalyzeProductButton({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const startedAt = Date.now();
+    const intervalId = window.setInterval(async () => {
+      try {
+        const response = await fetch(`/api/products/${productId}/analyze`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload =
+          (await response.json()) as AnalyzeProductStatusApiResponse;
+
+        if (!response.ok || !payload.ok) {
+          return;
+        }
+
+        if (
+          payload.analysis?.status === "succeeded" ||
+          payload.analysis?.status === "failed"
+        ) {
+          window.clearInterval(intervalId);
+          setIsPolling(false);
+          startTransition(() => {
+            router.refresh();
+          });
+          return;
+        }
+
+        if (Date.now() - startedAt > 75_000) {
+          window.clearInterval(intervalId);
+          setIsPolling(false);
+          setErrorMessage(
+            "Analiz devam ediyor. Birazdan sayfayı yenileyerek sonucu kontrol edin.",
+          );
+          startTransition(() => {
+            router.refresh();
+          });
+        }
+      } catch {
+        // Keep polling; transient network errors should not stop the run.
+      }
+    }, 2_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isPolling, productId, router]);
 
   async function handleAnalyze() {
     setErrorMessage(null);
@@ -35,11 +86,12 @@ export function AnalyzeProductButton({
 
       if (!response.ok || !payload.ok) {
         setErrorMessage(
-          payload.ok ? "Analiz başlatilamadi." : payload.message,
+          payload.ok ? "Analiz başlatılamadı." : payload.message,
         );
         return;
       }
 
+      setIsPolling(payload.status === "running");
       startTransition(() => {
         router.refresh();
       });
@@ -50,7 +102,7 @@ export function AnalyzeProductButton({
     }
   }
 
-  const isBusy = isSubmitting || isPending;
+  const isBusy = isSubmitting || isPending || isPolling;
 
   return (
     <div className="grid gap-2">
@@ -65,7 +117,7 @@ export function AnalyzeProductButton({
         ) : (
           <Sparkles className="h-4 w-4" />
         )}
-        {isBusy ? "Analiz yenileniyor" : "Analiz Et"}
+        {isBusy ? "Analiz ediliyor" : "Analiz Et"}
       </Button>
       {errorMessage ? (
         <p className="text-sm text-destructive">{errorMessage}</p>

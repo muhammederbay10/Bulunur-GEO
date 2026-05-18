@@ -1,15 +1,22 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { AiServiceError, analyzeProduct } from "@/lib/ai/client";
 import {
+  getLatestProductAnalysis,
   saveProductAnalysisFailure,
   saveProductAnalysisSuccess,
   startProductAnalysisRun,
 } from "@/lib/db/analysis-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
-import type { AnalyzeProductApiResponse } from "@/types/analysis";
+import type {
+  AnalyzeProductApiResponse,
+  AnalyzeProductStatusApiResponse,
+} from "@/types/analysis";
+import type { ProductInput } from "@/types/ai-contract";
+
+export const maxDuration = 60;
 
 const paramsSchema = z.object({
   productId: z.uuid(),
@@ -21,11 +28,7 @@ type RouteContext = {
   }>;
 };
 
-function failureResponse(
-  error: string,
-  message: string,
-  status: number,
-) {
+function failureResponse(error: string, message: string, status: number) {
   return NextResponse.json(
     {
       ok: false,
@@ -34,6 +37,91 @@ function failureResponse(
     } satisfies AnalyzeProductApiResponse,
     { status },
   );
+}
+
+async function runProductAnalysisInBackground(params: {
+  profileId: string;
+  storeId: string;
+  productId: string;
+  analysisId: string;
+  productInput: ProductInput;
+}) {
+  try {
+    const analysis = await analyzeProduct(params.productInput);
+    const saveResult = await saveProductAnalysisSuccess({
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      analysis,
+    });
+
+    if (!saveResult.ok) {
+      await saveProductAnalysisFailure({
+        profileId: params.profileId,
+        storeId: params.storeId,
+        productId: params.productId,
+        analysisId: params.analysisId,
+        errorCode: saveResult.code ?? "analysis_save_failed",
+        errorMessage: saveResult.message,
+      });
+    }
+  } catch (error) {
+    const serviceError =
+      error instanceof AiServiceError
+        ? error
+        : new AiServiceError({
+            code: "analysis_failed",
+            message: "Analiz tamamlanamadı.",
+            status: 500,
+          });
+
+    await saveProductAnalysisFailure({
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      errorCode: serviceError.code,
+      errorMessage: serviceError.message,
+    });
+  }
+}
+
+export async function GET(_request: Request, context: RouteContext) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return failureResponse("unauthorized", "Oturum gerekli.", 401);
+  }
+
+  const params = paramsSchema.safeParse(await context.params);
+
+  if (!params.success) {
+    return failureResponse(
+      "invalid_product_id",
+      "Geçersiz ürün kimliği.",
+      400,
+    );
+  }
+
+  const analysisResult = await getLatestProductAnalysis({
+    profileId: user.id,
+    productId: params.data.productId,
+  });
+
+  if (!analysisResult.ok) {
+    return failureResponse(
+      analysisResult.code ?? "analysis_lookup_failed",
+      analysisResult.message,
+      analysisResult.status ?? 400,
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    productId: params.data.productId,
+    analysis: analysisResult.data,
+  } satisfies AnalyzeProductStatusApiResponse);
 }
 
 export async function POST(_request: Request, context: RouteContext) {
@@ -72,7 +160,7 @@ export async function POST(_request: Request, context: RouteContext) {
     return failureResponse(
       "analysis_unavailable",
       productResult.data.analysisUnavailableMessage ??
-        "AI analizi icin urun URL adresi ve tarama bilgisi gerekli.",
+        "AI analizi için ürün URL adresi ve tarama bilgisi gerekli.",
       422,
     );
   }
@@ -100,53 +188,24 @@ export async function POST(_request: Request, context: RouteContext) {
     );
   }
 
-  try {
-    const analysis = await analyzeProduct(productInput);
-    const saveResult = await saveProductAnalysisSuccess({
+  after(() =>
+    runProductAnalysisInBackground({
       profileId: user.id,
       storeId: product.storeId,
       productId: product.id,
       analysisId: runResult.data.analysisId,
-      analysis,
-    });
+      productInput,
+    }),
+  );
 
-    if (!saveResult.ok) {
-      return failureResponse(
-        saveResult.code ?? "analysis_save_failed",
-        saveResult.message,
-        saveResult.status ?? 500,
-      );
-    }
-
-    return NextResponse.json({
+  return NextResponse.json(
+    {
       ok: true,
       productId: product.id,
-      analysisId: saveResult.data.id,
-      analysis,
-    } satisfies AnalyzeProductApiResponse);
-  } catch (error) {
-    const serviceError =
-      error instanceof AiServiceError
-        ? error
-        : new AiServiceError({
-            code: "analysis_failed",
-            message: "Analiz tamamlanamadı.",
-            status: 500,
-          });
-
-    await saveProductAnalysisFailure({
-      profileId: user.id,
-      storeId: product.storeId,
-      productId: product.id,
       analysisId: runResult.data.analysisId,
-      errorCode: serviceError.code,
-      errorMessage: serviceError.message,
-    });
-
-    return failureResponse(
-      serviceError.code,
-      serviceError.message,
-      serviceError.status,
-    );
-  }
+      status: "running",
+      message: "Analiz başlatıldı.",
+    } satisfies AnalyzeProductApiResponse,
+    { status: 202 },
+  );
 }

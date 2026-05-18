@@ -178,6 +178,15 @@ export async function improveProduct(
   const parsedOutput = geoImprovementOutputSchema.safeParse(payload);
 
   if (!parsedOutput.success) {
+    console.error("[ai-service] invalid improvement response", {
+      issues: parsedOutput.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+      topLevelKeys:
+        payload && typeof payload === "object" ? Object.keys(payload) : [],
+    });
+
     throw new AiServiceError({
       code: "invalid_ai_improvement_response",
       message: "AI iyileştirme cevabı beklenen sözleşmeye uymuyor.",

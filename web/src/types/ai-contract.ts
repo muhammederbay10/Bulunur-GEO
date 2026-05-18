@@ -139,6 +139,38 @@ export const userFactQuestionSchema = z.object({
   requiredFor: z.array(z.string()).default([]),
 });
 
+const generatedFaqItemSchema = z.object({
+  question: z.string(),
+  answer: z.string(),
+  groundedIn: z.array(z.string()).default([]),
+});
+
+const suggestedAttributeSchema = z.object({
+  name: z.string(),
+  label: z.string(),
+  reason: z.string(),
+  status: z.enum(["missing", "suggested", "confirmed"]).default("suggested"),
+});
+
+const generatedProductContentSchema = z
+  .object({
+    title: z.string().nullable().optional(),
+    shortDescription: z.string().nullable().optional(),
+    longDescription: z.string().nullable().optional(),
+    faq: z.array(generatedFaqItemSchema).default([]),
+    suggestedAttributes: z.array(suggestedAttributeSchema).default([]),
+    schemaJsonLd: z.record(z.string(), z.unknown()).default({}),
+    seoTitle: z.string().nullable().optional(),
+    metaDescription: z.string().nullable().optional(),
+    aiAnswerPreview: z.string().nullable().optional(),
+  })
+  .passthrough();
+
+const beforeAfterChangeSchema = z.object({
+  before: z.string().nullable().optional(),
+  after: z.string().nullable().optional(),
+});
+
 export const geoImprovementOutputSchema = z.object({
   selectedStrategies: z
     .array(
@@ -150,15 +182,27 @@ export const geoImprovementOutputSchema = z.object({
     .default([]),
   needsUserInput: z.array(userFactQuestionSchema).default([]),
   userConfirmedFacts: z.record(z.string(), z.unknown()).default({}),
-  generated: z.record(z.string(), z.unknown()).default({}),
+  generated: generatedProductContentSchema.default({
+    faq: [],
+    suggestedAttributes: [],
+    schemaJsonLd: {},
+  }),
   validation: z
     .object({
       passed: z.boolean(),
       warnings: z.array(z.string()).default([]),
+      errors: z.array(z.string()).default([]),
     })
+    .default({ passed: false, warnings: [], errors: [] }),
+  scoreEstimate: z
+    .object({
+      before: z.number().min(0).max(100),
+      after: z.number().min(0).max(100),
+      expectedGainReasons: z.array(z.string()).default([]),
+    })
+    .nullable()
     .optional(),
-  scoreEstimate: z.record(z.string(), z.unknown()).optional(),
-  beforeAfter: z.record(z.string(), z.unknown()).optional(),
+  beforeAfter: z.record(z.string(), beforeAfterChangeSchema).default({}),
 });
 
 export type ProductInput = z.infer<typeof productInputSchema>;

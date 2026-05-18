@@ -2,13 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
 import { ArrowRight, CheckCircle2, Loader2, WandSparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { ImproveProductApiResponse } from "@/types/analysis";
+import type {
+  ImproveProductApiResponse,
+  ImproveProductStatusApiResponse,
+} from "@/types/analysis";
 import type { UserFactQuestion } from "@/types/ai-contract";
 
 async function requestImprovement(
@@ -27,6 +30,96 @@ async function requestImprovement(
   return { response, payload };
 }
 
+function useOptimizationPolling({
+  productId,
+  enabled,
+  optimizationHref,
+  onDone,
+  onTimeout,
+}: {
+  productId: string;
+  enabled: boolean;
+  optimizationHref?: string;
+  onDone?: () => void;
+  onTimeout?: () => void;
+}) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const startedAt = Date.now();
+    const intervalId = window.setInterval(async () => {
+      try {
+        const response = await fetch(`/api/products/${productId}/improve`, {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload =
+          (await response.json()) as ImproveProductStatusApiResponse;
+
+        if (!response.ok || !payload.ok) {
+          return;
+        }
+
+        const status = payload.optimization?.status;
+
+        if (status === "needs_user_input" || status === "failed") {
+          window.clearInterval(intervalId);
+          onDone?.();
+          startTransition(() => {
+            router.refresh();
+          });
+          return;
+        }
+
+        if (
+          status === "ready_for_review" ||
+          status === "approved" ||
+          status === "exported" ||
+          status === "published"
+        ) {
+          window.clearInterval(intervalId);
+          onDone?.();
+          startTransition(() => {
+            if (optimizationHref) {
+              router.push(optimizationHref);
+            }
+            router.refresh();
+          });
+          return;
+        }
+
+        if (
+          payload.workflowStatus !== "optimization_running" &&
+          Date.now() - startedAt > 4_000
+        ) {
+          window.clearInterval(intervalId);
+          onDone?.();
+          startTransition(() => {
+            router.refresh();
+          });
+          return;
+        }
+
+        if (Date.now() - startedAt > 75_000) {
+          window.clearInterval(intervalId);
+          onTimeout?.();
+          onDone?.();
+          startTransition(() => {
+            router.refresh();
+          });
+        }
+      } catch {
+        // Keep polling while the background job is still expected to finish.
+      }
+    }, 2_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [enabled, onDone, onTimeout, optimizationHref, productId, router]);
+}
+
 export function ImproveProductButton({
   productId,
   disabled,
@@ -43,9 +136,20 @@ export function ImproveProductButton({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPolling, setIsPolling] = useState(Boolean(isOptimizationRunning));
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const isBusy = isSubmitting || isPending;
   const optimizationHref = reviewHref ?? `/products/${productId}/optimization`;
+
+  useOptimizationPolling({
+    productId,
+    enabled: isPolling || Boolean(isOptimizationRunning),
+    optimizationHref,
+    onDone: () => setIsPolling(false),
+    onTimeout: () =>
+      setErrorMessage(
+        "Optimizasyon devam ediyor. Birazdan sayfayı yenileyerek sonucu kontrol edin.",
+      ),
+  });
 
   async function handleImprove() {
     setErrorMessage(null);
@@ -56,18 +160,13 @@ export function ImproveProductButton({
 
       if (!response.ok || !payload.ok) {
         setErrorMessage(
-          payload.ok ? "Optimizasyon başlatilamadi." : payload.message,
+          payload.ok ? "Optimizasyon başlatılamadı." : payload.message,
         );
         return;
       }
 
+      setIsPolling(payload.status === "optimization_running");
       startTransition(() => {
-        if (payload.status === "needs_user_input") {
-          router.refresh();
-          return;
-        }
-
-        router.push(optimizationHref);
         router.refresh();
       });
     } catch {
@@ -79,12 +178,14 @@ export function ImproveProductButton({
     }
   }
 
+  const isBusy = isSubmitting || isPending || isPolling || isOptimizationRunning;
+
   if (hasOptimization) {
     return (
       <Button asChild className="gap-2">
         <Link href={optimizationHref}>
           <CheckCircle2 className="h-4 w-4" />
-          Optimize Edilmis Halini Gor
+          Optimize Edilmiş Halini Gör
           <ArrowRight className="h-4 w-4" />
         </Link>
       </Button>
@@ -96,15 +197,15 @@ export function ImproveProductButton({
       <Button
         type="button"
         className="gap-2"
-        disabled={disabled || isBusy || isOptimizationRunning}
+        disabled={disabled || isBusy}
         onClick={handleImprove}
       >
-        {isBusy || isOptimizationRunning ? (
+        {isBusy ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <WandSparkles className="h-4 w-4" />
         )}
-        {isBusy || isOptimizationRunning ? "Optimizasyon Hazırlanıyor" : "Optimize Et"}
+        {isBusy ? "Optimizasyon hazırlanıyor" : "Optimize Et"}
       </Button>
       {isBusy ? <OptimizationLoadingState /> : null}
       {errorMessage ? (
@@ -116,8 +217,8 @@ export function ImproveProductButton({
 
 function OptimizationLoadingState() {
   const steps = [
-    "Ürün içerigi okunuyor",
-    "Görünürlük sinyalleri isleniyor",
+    "Ürün içeriği okunuyor",
+    "Görünürlük sinyalleri işleniyor",
     "Optimize taslak kaydediliyor",
   ];
 
@@ -148,11 +249,20 @@ export function MissingFactsForm({
   productId: string;
   questions: UserFactQuestion[];
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const isBusy = isSubmitting || isPending;
+
+  useOptimizationPolling({
+    productId,
+    enabled: isPolling,
+    onDone: () => setIsPolling(false),
+    onTimeout: () =>
+      setErrorMessage(
+        "Optimizasyon devam ediyor. Birazdan sayfayı yenileyerek sonucu kontrol edin.",
+      ),
+  });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -187,15 +297,16 @@ export function MissingFactsForm({
         return;
       }
 
-      startTransition(() => {
-        router.refresh();
-      });
+      setIsPolling(payload.status === "optimization_running");
+      startTransition(() => undefined);
     } catch {
       setErrorMessage("Bilgiler gönderilemedi. Bağlantıyı kontrol edin.");
     } finally {
       setIsSubmitting(false);
     }
   }
+
+  const isBusy = isSubmitting || isPending || isPolling;
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">
@@ -205,7 +316,7 @@ export function MissingFactsForm({
           <Input
             id={`fact-${question.field}`}
             name={question.field}
-            placeholder="Biliyorsaniz yazin, bilmiyorsaniz bos birakin"
+            placeholder="Biliyorsanız yazın, bilmiyorsanız boş bırakın"
             disabled={isBusy}
           />
           <p className="text-xs leading-5 text-muted-foreground">
@@ -223,7 +334,7 @@ export function MissingFactsForm({
           Bilgilerle Optimize Et
         </Button>
         <p className="text-sm text-muted-foreground">
-          Bos birakilan alanlar uydurulmaz.
+          Boş bırakılan alanlar uydurulmaz.
         </p>
       </div>
       {errorMessage ? (

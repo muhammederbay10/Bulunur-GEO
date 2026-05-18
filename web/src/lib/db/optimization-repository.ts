@@ -127,6 +127,10 @@ function mapOptimizationRow(row: OptimizationResultRow): OptimizationResultRecor
   };
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
 function resolveOptimizationStatus(
   improvement: GeoImprovementOutput,
 ): OptimizationResultStatus {
@@ -282,8 +286,8 @@ export async function saveOptimizationResult(params: {
       selected_strategies: params.improvement.selectedStrategies,
       needs_user_input: params.improvement.needsUserInput,
       user_confirmed_facts: params.improvement.userConfirmedFacts,
-      generated: params.improvement.generated,
-      validation: params.improvement.validation ?? {},
+      generated: asRecord(params.improvement.generated),
+      validation: asRecord(params.improvement.validation),
       score_estimate: params.improvement.scoreEstimate ?? {},
       before_after: params.improvement.beforeAfter ?? {},
       raw_output: params.improvement,
@@ -292,11 +296,22 @@ export async function saveOptimizationResult(params: {
     .single<OptimizationResultRow>();
 
   if (error || !data?.id) {
+    if (error) {
+      console.error("[optimization] save result failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        analysisId: params.analysisId,
+        productId: params.productId,
+      });
+    }
+
     return {
       ok: false,
       message: error && isMissingOptimizationTable(error)
         ? optimizationStorageSetupMessage()
-        : "Optimizasyon sonucu kaydedilemedi.",
+        : error?.message ?? "Optimizasyon sonucu kaydedilemedi.",
       code: error?.code,
       status: 500,
     };
