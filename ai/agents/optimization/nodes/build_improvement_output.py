@@ -42,9 +42,61 @@ def build_improvement_output(state: OptimizationGraphState) -> OptimizationGraph
 
 def _generated_content(state: OptimizationGraphState) -> GeneratedProductContent:
     generated_state = state.get("generated_improvements")
-    if generated_state is None:
-        return GeneratedProductContent()
-    return generated_state.content
+    generated = generated_state.content if generated_state is not None else GeneratedProductContent()
+    product = state.get("product_input")
+    if product is None:
+        return generated
+
+    return GeneratedProductContent(
+        title=_first_text(generated.title, product.title),
+        short_description=_first_text(
+            generated.short_description,
+            product.short_description,
+            product.raw_extracted.meta_description,
+            product.description,
+            product.title,
+        ),
+        long_description=_first_text(
+            generated.long_description,
+            product.description,
+            product.raw_extracted.body_text,
+            product.short_description,
+            product.title,
+        ),
+        faq=generated.faq,
+        suggested_attributes=generated.suggested_attributes,
+        schema_json_ld=generated.schema_json_ld,
+        seo_title=_first_text(
+            generated.seo_title,
+            product.raw_extracted.page_title,
+            product.title,
+        ),
+        meta_description=_first_text(
+            generated.meta_description,
+            product.raw_extracted.meta_description,
+            product.short_description,
+            product.description,
+            product.title,
+        ),
+        ai_answer_preview=_first_text(
+            generated.ai_answer_preview,
+            product.short_description,
+            product.description,
+            product.raw_extracted.meta_description,
+            product.title,
+        ),
+    )
+
+
+def _first_text(*values: object) -> str:
+    """Return the first non-empty text value for public display fields."""
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return ""
 
 
 def _api_validation(state: OptimizationGraphState) -> ImprovementValidation:
