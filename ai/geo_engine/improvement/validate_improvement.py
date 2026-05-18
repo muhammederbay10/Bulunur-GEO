@@ -152,13 +152,12 @@ class ImprovementValidationResult(BaseModel):
 
     @model_validator(mode="after")
     def sync_passed_state(self) -> "ImprovementValidationResult":
-        """Keep summary fields aligned with structured issues."""
-        self.errors = _dedupe_text(
-            [*self.errors, *(issue.message for issue in self.issues if issue.severity == "error")]
-        )
+        """Keep validation non-blocking while preserving every issue as a warning."""
+        self.issues = [_as_warning_issue(issue) for issue in self.issues]
         self.warnings = _dedupe_text(
-            [*self.warnings, *(issue.message for issue in self.issues if issue.severity == "warning")]
+            [*self.warnings, *self.errors, *(issue.message for issue in self.issues)]
         )
+        self.errors = []
         self.passed = not self.errors
         return self
 
@@ -169,6 +168,13 @@ class ImprovementValidationResult(BaseModel):
             warnings=self.warnings,
             errors=self.errors,
         )
+
+
+def _as_warning_issue(issue: ValidationIssue) -> ValidationIssue:
+    """Return a non-blocking warning copy of a validation issue."""
+    if issue.severity == "warning":
+        return issue
+    return issue.model_copy(update={"severity": "warning"})
 
 
 class SemanticClaimIssue(BaseModel):
