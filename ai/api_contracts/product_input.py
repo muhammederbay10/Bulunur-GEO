@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 from ai.api_contracts.crawl_metadata import CrawlMetadata
 
 
-ProductSource = Literal["shopify", "native"]
+ProductSource = Literal["shopify", "native", "woocommerce"]
 AvailabilityStatus = Literal[
     "in_stock",
     "out_of_stock",

@@ -60,6 +60,20 @@ RESERVED_ATTRIBUTE_KEYS = {
     "title",
     "url",
 }
+INTERNAL_ATTRIBUTE_KEYS = {
+    "confidencestatus",
+    "extractionconfidence",
+    "extractionmethods",
+    "externalid",
+    "nativeimportmethod",
+    "contenttype",
+    "rawsourcepayload",
+    "rawavailabilitytext",
+    "seotitle",
+    "seodescription",
+    "vendor",
+    "producttype",
+}
 
 
 def build_product_schema(
@@ -241,7 +255,7 @@ def _set_attributes(
 
     for name, value in attributes.items():
         normalized_name = _normalize_key(name)
-        if normalized_name in RESERVED_ATTRIBUTE_KEYS:
+        if normalized_name in RESERVED_ATTRIBUTE_KEYS or normalized_name in INTERNAL_ATTRIBUTE_KEYS:
             continue
 
         if not is_known_value(value):
@@ -266,14 +280,16 @@ def _build_offer(
     warnings: list[str],
     omitted_fields: list[str],
 ) -> JsonObject | None:
+    price = _first_normalized_offer_value(sources, PRICE_ALIASES, normalize_price)
+    currency = _first_normalized_offer_value(sources, CURRENCY_ALIASES_KEYS, normalize_currency)
+    availability = _first_normalized_offer_value(
+        sources,
+        AVAILABILITY_ALIASES_KEYS,
+        normalize_availability,
+    )
     raw_availability = _first_known_offer_value(sources, AVAILABILITY_ALIASES_KEYS)
-    availability_mapping = map_availability(raw_availability)
-    if raw_availability is not None and not availability_mapping.valid:
-        warnings.append(f"Unsupported availability value was omitted: {raw_availability}.")
-
-    price = normalize_price(_first_known_offer_value(sources, PRICE_ALIASES))
-    currency = normalize_currency(_first_known_offer_value(sources, CURRENCY_ALIASES_KEYS))
-    availability = normalize_availability(raw_availability)
+    if raw_availability is not None and not map_availability(raw_availability).valid:
+        warnings.append(f"Unsupported availability value was ignored: {raw_availability}.")
 
     missing_fields: list[str] = []
     if price is None:
@@ -300,6 +316,19 @@ def _build_offer(
     offer["availability"] = availability
 
     return offer
+
+
+def _first_normalized_offer_value(
+    sources: Sequence[Mapping[str, Any]],
+    aliases: Sequence[str],
+    normalizer: Any,
+) -> str | None:
+    for source in sources:
+        raw_value = _first_known_offer_value([source], aliases)
+        normalized_value = normalizer(raw_value)
+        if normalized_value is not None:
+            return normalized_value
+    return None
 
 
 def _first_known_value(
