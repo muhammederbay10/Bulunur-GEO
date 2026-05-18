@@ -412,6 +412,99 @@ function firstValidDateString(values: unknown[]) {
   return new Date().toISOString();
 }
 
+const aiTextLimits = {
+  description: 4_000,
+  shortDescription: 1_200,
+  seoDescription: 500,
+  bodyText: 6_000,
+  structuredDataJson: 4_000,
+};
+const maxAiImageUrls = 5;
+const maxAiDetectedSchemaItems = 3;
+
+function stripHtml(value: string) {
+  return value
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+}
+
+function decodeBasicHtmlEntities(value: string) {
+  return value
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+}
+
+function compactAiText(value: string | null | undefined, maxLength: number) {
+  if (!value) return undefined;
+
+  const cleaned = decodeBasicHtmlEntities(stripHtml(value))
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return undefined;
+
+  return cleaned.length > maxLength
+    ? `${cleaned.slice(0, maxLength).trimEnd()}...`
+    : cleaned;
+}
+
+function isLikelyDecorativeImage(url: string) {
+  const normalized = url.toLocaleLowerCase("en-US");
+
+  return (
+    normalized.endsWith(".svg") ||
+    normalized.includes("logo") ||
+    normalized.includes("payment") ||
+    normalized.includes("payments") ||
+    normalized.includes("paypal") ||
+    normalized.includes("visa") ||
+    normalized.includes("mastercard") ||
+    normalized.includes("worldwide")
+  );
+}
+
+function isHttpImageUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function compactAiImageUrls(imageUrls: string[]) {
+  const deduped = Array.from(new Set(imageUrls.filter(isHttpImageUrl)));
+  const productLike = deduped.filter((url) => !isLikelyDecorativeImage(url));
+  const selected = productLike.length > 0 ? productLike : deduped;
+
+  return selected.slice(0, maxAiImageUrls);
+}
+
+function compactDetectedSchemaForAi(
+  detectedSchema: Array<Record<string, unknown>>,
+) {
+  return detectedSchema
+    .slice(0, maxAiDetectedSchemaItems)
+    .map((item) => {
+      const compactItem = JSON.stringify(item);
+
+      if (compactItem.length <= aiTextLimits.structuredDataJson) {
+        return item;
+      }
+
+      return {
+        compacted: true,
+        preview: compactAiText(compactItem, aiTextLimits.structuredDataJson),
+      };
+    });
+}
+
 function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetail {
   return {
     id: row.id,
@@ -457,7 +550,6 @@ function buildProductInput(
   }
 
   const attributes = asRecord(row.attributes);
-  const rawSourcePayload = asRecord(row.raw_source_payload);
   const rawExtracted = asRecord(row.raw_extracted);
   const crawlMetadata = asRecord(row.crawl_metadata);
   const nestedRobots = asRecord(crawlMetadata.robots);
@@ -465,6 +557,7 @@ function buildProductInput(
   const snakeDetectedSchema = asRecordArray(rawExtracted.detected_schema);
   const detectedSchema =
     camelDetectedSchema.length > 0 ? camelDetectedSchema : snakeDetectedSchema;
+  const compactDetectedSchema = compactDetectedSchemaForAi(detectedSchema);
   const pageTitle =
     asString(rawExtracted.pageTitle) ??
     asString(rawExtracted.page_title) ??
@@ -483,6 +576,18 @@ function buildProductInput(
     row.description_html ??
     row.short_description ??
     undefined;
+  const compactDescription =
+    compactAiText(row.description, aiTextLimits.description) ??
+    compactAiText(row.description_html, aiTextLimits.description);
+  const compactShortDescription = compactAiText(
+    row.short_description,
+    aiTextLimits.shortDescription,
+  );
+  const compactMetaDescription = compactAiText(
+    metaDescription,
+    aiTextLimits.seoDescription,
+  );
+  const compactBodyText = compactAiText(bodyText, aiTextLimits.bodyText);
   const requestedUrl =
     asOptionalUrl(crawlMetadata.requestedUrl) ??
     asOptionalUrl(crawlMetadata.requested_url) ??
@@ -502,7 +607,7 @@ function buildProductInput(
     requestedUrl;
   const url = productUrl ?? canonicalUrl;
 
-  if (!url) {
+  if (!url && source !== "shopify") {
     return {
       ok: false,
       code: "ai_product_url_required",
@@ -573,7 +678,11 @@ function buildProductInput(
     crawlStatus = "blocked";
   }
 
-  const imageUrls = (row.image_urls ?? []).map(asOptionalUrl).filter(Boolean);
+  const imageUrls = compactAiImageUrls(
+    (row.image_urls ?? [])
+      .map(asOptionalUrl)
+      .filter((url): url is string => Boolean(url)),
+  );
   const availability = normalizeAvailability(row.availability);
   const currency = normalizeCurrency(row.currency);
   const enrichedAttributes = {
@@ -583,7 +692,10 @@ function buildProductInput(
     vendor: row.vendor,
     productType: row.product_type,
     seoTitle: row.seo_title,
-    seoDescription: row.seo_description,
+    seoDescription: compactAiText(
+      row.seo_description,
+      aiTextLimits.seoDescription,
+    ),
     tags: row.tags ?? [],
     rawAvailabilityText: availability.rawText,
     nativeImportMethod:
@@ -597,10 +709,10 @@ function buildProductInput(
   };
   const rawExtractedPayload = {
     pageTitle,
-    metaDescription,
+    metaDescription: compactMetaDescription,
     headings,
-    bodyText,
-    detectedSchema,
+    bodyText: compactBodyText,
+    detectedSchema: compactDetectedSchema,
   };
   const crawlMetadataPayload = {
     crawlStatus,
@@ -622,12 +734,14 @@ function buildProductInput(
     robotsAllowed,
     indexable: asBoolean(crawlMetadata.indexable) ?? undefined,
     pageTitle,
-    metaDescription: metaDescription ?? undefined,
+    metaDescription: compactMetaDescription,
     headings,
     detectedStructuredData:
       asRecordArray(crawlMetadata.detectedStructuredData).length > 0
-        ? asRecordArray(crawlMetadata.detectedStructuredData)
-        : detectedSchema,
+        ? compactDetectedSchemaForAi(
+            asRecordArray(crawlMetadata.detectedStructuredData),
+          )
+        : compactDetectedSchema,
     imageUrls,
     imagesAccessible:
       asBoolean(crawlMetadata.imagesAccessible) ??
@@ -642,18 +756,15 @@ function buildProductInput(
     language: "tr",
     market: "TR",
     title: row.title,
-    description: row.description ?? row.description_html ?? undefined,
-    shortDescription: row.short_description ?? undefined,
+    description: compactDescription,
+    shortDescription: compactShortDescription,
     price: row.price_display ?? undefined,
     currency,
     availability: availability.status,
     brand: row.brand ?? row.vendor ?? undefined,
     category: row.category ?? row.product_type ?? undefined,
     imageUrls,
-    attributes: {
-      ...enrichedAttributes,
-      rawSourcePayload,
-    },
+    attributes: enrichedAttributes,
     rawExtracted: rawExtractedPayload,
     crawlMetadata: crawlMetadataPayload,
   });

@@ -572,6 +572,14 @@ export function BeforeAfterPanel({
         (item): item is string => typeof item === "string",
       )
     : [];
+  const validationErrors = Array.isArray(optimization.validation.errors)
+    ? optimization.validation.errors.filter(
+        (item): item is string => typeof item === "string",
+      )
+    : [];
+  const reviewWarnings = Array.from(
+    new Set([...validationWarnings, ...validationErrors]),
+  );
   const beforeScore = asText(optimization.scoreEstimate.before);
   const afterScore = asText(optimization.scoreEstimate.after);
   const beforeTitle =
@@ -600,11 +608,11 @@ export function BeforeAfterPanel({
 
   return (
     <section className="grid gap-3">
-      {validationWarnings.length > 0 ? (
+      {reviewWarnings.length > 0 ? (
         <div className="rounded-md border border-primary/40 bg-primary/10 p-3">
           <p className="text-sm font-medium">Dogrulama uyarilari</p>
           <ul className="mt-2 grid gap-1 text-xs">
-            {validationWarnings.slice(0, 3).map((warning) => (
+            {reviewWarnings.slice(0, 3).map((warning) => (
               <li key={warning}>{warning}</li>
             ))}
           </ul>
@@ -651,8 +659,8 @@ export function BeforeAfterPanel({
                 <h4 className="text-sm font-semibold text-destructive">Eksikler</h4>
               </div>
               <ul className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                {validationWarnings.length > 0
-                  ? validationWarnings.slice(0, 4).map((item) => <li key={item}>- {item}</li>)
+                {reviewWarnings.length > 0
+                  ? reviewWarnings.slice(0, 4).map((item) => <li key={item}>- {item}</li>)
                   : optimization.selectedStrategies
                       .slice(0, 3)
                       .map((strategy) => <li key={strategy.name}>- {strategy.reason}</li>)}

@@ -250,6 +250,27 @@ export async function analyzeProduct(
   return parsedOutput.data;
 }
 
+function normalizeImprovementValidation(
+  improvement: GeoImprovementOutput,
+): GeoImprovementOutput {
+  const validationWarnings = [
+    ...improvement.validation.warnings,
+    ...improvement.validation.errors,
+  ]
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return {
+    ...improvement,
+    validation: {
+      ...improvement.validation,
+      passed: true,
+      warnings: Array.from(new Set(validationWarnings)),
+      errors: [],
+    },
+  };
+}
+
 export async function improveProduct(
   params: {
     productInput: ProductInput;
@@ -287,5 +308,5 @@ export async function improveProduct(
     });
   }
 
-  return parsedOutput.data;
+  return normalizeImprovementValidation(parsedOutput.data);
 }

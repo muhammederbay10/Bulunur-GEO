@@ -15,6 +15,7 @@ import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
 import type {
   GeoAnalysisOutput,
+  GeoImprovementOutput,
   ProductInput,
   UserFactQuestion,
 } from "@/types/ai-contract";
@@ -134,6 +135,32 @@ function validateUserFactsForQuestions(params: {
   return { ok: true };
 }
 
+function withAnalysisBeforeScore(params: {
+  improvement: GeoImprovementOutput;
+  analysis: GeoAnalysisOutput;
+}): GeoImprovementOutput {
+  const beforeScore = params.analysis.overallScore;
+  const scoreEstimate = params.improvement.scoreEstimate;
+  const afterScore = scoreEstimate?.after;
+
+  if (
+    params.improvement.needsUserInput.length > 0 ||
+    !scoreEstimate ||
+    typeof beforeScore !== "number" ||
+    typeof afterScore !== "number"
+  ) {
+    return params.improvement;
+  }
+
+  return {
+    ...params.improvement,
+    scoreEstimate: {
+      ...scoreEstimate,
+      before: beforeScore,
+    },
+  };
+}
+
 async function runProductOptimizationInBackground(params: {
   profileId: string;
   product: ProductAnalysisDetail;
@@ -148,12 +175,16 @@ async function runProductOptimizationInBackground(params: {
       analysis: params.analysis,
       userFacts: params.userFacts,
     });
+    const improvementWithBeforeScore = withAnalysisBeforeScore({
+      improvement,
+      analysis: params.analysis,
+    });
     const saveResult = await saveOptimizationResult({
       profileId: params.profileId,
       storeId: params.product.storeId,
       productId: params.product.id,
       analysisId: params.analysisId,
-      improvement,
+      improvement: improvementWithBeforeScore,
     });
 
     if (!saveResult.ok) {

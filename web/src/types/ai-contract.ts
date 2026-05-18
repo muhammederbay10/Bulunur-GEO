@@ -83,29 +83,39 @@ export const rawExtractedSchema = z.object({
 
 const scoreValueSchema = z.number().min(0).max(100);
 
-export const productInputSchema = z.object({
-  productId: z.string(),
-  storeId: z.string().optional(),
-  source: supportedAiSourceSchema,
-  url: z.string().url(),
-  language: z.literal("tr").default("tr"),
-  market: z.literal("TR").default("TR"),
-  title: z.string(),
-  description: z.string().optional(),
-  shortDescription: z.string().optional(),
-  price: z.string().optional(),
-  currency: z.string().regex(/^[A-Z]{3}$/).nullable().optional(),
-  availability: availabilityStatusSchema.default("unknown"),
-  brand: z.string().optional(),
-  category: z.string().optional(),
-  imageUrls: z.array(z.string().url()).default([]),
-  attributes: z.record(z.string(), z.unknown()).default({}),
-  rawExtracted: rawExtractedSchema.default({
-    headings: {},
-    detectedSchema: [],
-  }),
-  crawlMetadata: crawlMetadataSchema,
-});
+export const productInputSchema = z
+  .object({
+    productId: z.string(),
+    storeId: z.string().optional(),
+    source: supportedAiSourceSchema,
+    url: z.string().url().optional(),
+    language: z.literal("tr").default("tr"),
+    market: z.literal("TR").default("TR"),
+    title: z.string(),
+    description: z.string().optional(),
+    shortDescription: z.string().optional(),
+    price: z.string().optional(),
+    currency: z.string().regex(/^[A-Z]{3}$/).nullable().optional(),
+    availability: availabilityStatusSchema.default("unknown"),
+    brand: z.string().optional(),
+    category: z.string().optional(),
+    imageUrls: z.array(z.string().url()).default([]),
+    attributes: z.record(z.string(), z.unknown()).default({}),
+    rawExtracted: rawExtractedSchema.default({
+      headings: {},
+      detectedSchema: [],
+    }),
+    crawlMetadata: crawlMetadataSchema,
+  })
+  .superRefine((product, context) => {
+    if (product.source !== "shopify" && !product.url) {
+      context.addIssue({
+        code: "custom",
+        message: "Product URL is required for non-Shopify AI inputs.",
+        path: ["url"],
+      });
+    }
+  });
 
 export const geoScoreLayerSchema = z.object({
   score: scoreValueSchema,
@@ -203,7 +213,7 @@ export const geoImprovementOutputSchema = z.object({
     .default({ passed: false, warnings: [], errors: [] }),
   scoreEstimate: z
     .object({
-      before: z.number().min(0).max(100),
+      before: z.number().min(0).max(100).optional(),
       after: z.number().min(0).max(100),
       expectedGainReasons: z.array(z.string()).default([]),
     })
