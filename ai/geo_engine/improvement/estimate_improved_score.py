@@ -51,7 +51,6 @@ class ImprovedScoreEstimateResult(BaseModel):
     def to_api_score_estimate(self) -> ScoreEstimate:
         """Convert to the public score-estimate contract."""
         return ScoreEstimate(
-            before=self.before,
             after=self.after,
             expectedGainReasons=self.expected_gain_reasons,
         )
