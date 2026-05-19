@@ -12,7 +12,11 @@ from ai.agents.optimization.state import OptimizationGraphState, OptimizationWea
 from ai.geo_engine.improvement.select_strategies import select_strategies as select_rules
 from ai.geo_engine.strategies.base import (
     ImprovementStrategySelection,
+    STRATEGY_BUYER_INTENT_REWRITE,
     STRATEGY_DISPLAY_NAMES,
+    STRATEGY_PRIORITY,
+    STRATEGY_SKILL_PATHS,
+    STRATEGY_TARGET_LAYERS,
     StrategyId,
     StrategySelectionResult,
 )
@@ -25,9 +29,31 @@ from ai.llm.structured_outputs import parse_structured_output
 
 STRATEGY_SELECTION_SKILL_PATH = "optimization/strategy_selection"
 USE_GEMINI_METADATA_KEY = "useGeminiStrategyPrioritization"
+USE_SEMANTIC_CONTENT_JUDGMENT_METADATA_KEY = "useSemanticContentJudgment"
 MAX_STRATEGIES_METADATA_KEY = "maxStrategies"
 IMPLEMENTED_STRATEGY_IDS = set(STRATEGY_DISPLAY_NAMES)
 StrategyPrioritizer = Callable[[dict[str, Any]], Any]
+SemanticContentEvaluator = Callable[[dict[str, Any]], Any]
+
+
+class SemanticContentJudgment(BaseModel):
+    """Gemini judgment for whether product copy is semantically thin."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    is_thin: bool = Field(alias="isThin")
+    confidence: float = Field(default=0.0, ge=0, le=1)
+    reasons: list[str] = Field(default_factory=list)
+    recommended_strategy: StrategyId | None = Field(
+        default=None,
+        alias="recommendedStrategy",
+    )
+
+    @field_validator("reasons", mode="before")
+    @classmethod
+    def normalize_reasons(cls, values: Any) -> list[str]:
+        """Normalize semantic thin-content reasons."""
+        return _dedupe_text(values)
 
 
 class GeminiStrategyChoice(BaseModel):
@@ -102,6 +128,9 @@ def select_strategies(state: OptimizationGraphState) -> OptimizationGraphState:
         state,
         max_strategies=max_strategies,
         use_gemini_prioritization=bool(metadata.get(USE_GEMINI_METADATA_KEY, False)),
+        use_semantic_content_judgment=bool(
+            metadata.get(USE_SEMANTIC_CONTENT_JUDGMENT_METADATA_KEY, False),
+        ),
     )
 
 
@@ -110,7 +139,9 @@ def select_optimization_strategies(
     *,
     max_strategies: int = 4,
     use_gemini_prioritization: bool = False,
+    use_semantic_content_judgment: bool = False,
     prioritizer: StrategyPrioritizer | None = None,
+    semantic_content_evaluator: SemanticContentEvaluator | None = None,
     llm: Any | None = None,
 ) -> OptimizationGraphState:
     """Run deterministic selection and optionally let Gemini reprioritize it."""
@@ -124,10 +155,29 @@ def select_optimization_strategies(
     metadata["strategySelectionMode"] = "deterministic"
     metadata["strategySelectionProductAgnostic"] = True
 
+    if use_semantic_content_judgment:
+        try:
+            content_judgment = _run_semantic_content_judgment(
+                _semantic_content_context(state),
+                evaluator=semantic_content_evaluator,
+                llm=llm,
+            )
+            metadata["semanticContentJudgment"] = content_judgment.model_dump(
+                mode="json",
+                by_alias=True,
+            )
+            selection = _apply_semantic_content_judgment(selection, content_judgment)
+        except LLMError as exc:
+            metadata["semanticContentJudgmentError"] = str(exc)
+            metadata["semanticContentJudgmentRetryable"] = exc.retryable
+        except Exception as exc:
+            metadata["semanticContentJudgmentError"] = str(exc)
+            metadata["semanticContentJudgmentRetryable"] = False
+
     if use_gemini_prioritization or prioritizer is not None:
         context = _gemini_prioritization_context(
             state,
-            deterministic_selection=deterministic_selection,
+            deterministic_selection=selection,
             weakness_list=weakness_list,
         )
         try:
@@ -201,6 +251,77 @@ def _run_gemini_prioritization(
         operation="optimization_strategy_prioritization",
     )
     return parse_structured_output(response, GeminiStrategyPrioritization)
+
+
+def _run_semantic_content_judgment(
+    context: dict[str, Any],
+    *,
+    evaluator: SemanticContentEvaluator | None,
+    llm: Any | None,
+) -> SemanticContentJudgment:
+    if evaluator is not None:
+        raw_output = evaluator(context)
+        if isinstance(raw_output, SemanticContentJudgment):
+            return raw_output
+        return SemanticContentJudgment.model_validate(raw_output)
+
+    resolved_llm = llm or get_gemini_llm(json_mode=True)
+    prompt = build_skill_prompt(
+        STRATEGY_SELECTION_SKILL_PATH,
+        extra_context={
+            "task": "semantic_content_thinness_judgment",
+            **context,
+        },
+    )
+    response = invoke_with_safety(
+        resolved_llm,
+        prompt,
+        operation="semantic_content_thinness_judgment",
+    )
+    return parse_structured_output(response, SemanticContentJudgment)
+
+
+def _apply_semantic_content_judgment(
+    selection: StrategySelectionResult,
+    judgment: SemanticContentJudgment,
+) -> StrategySelectionResult:
+    if not judgment.is_thin:
+        return selection
+    selected = list(selection.selected_strategies)
+    if any(strategy.strategy_id == STRATEGY_BUYER_INTENT_REWRITE for strategy in selected):
+        return selection
+
+    reason = _semantic_buyer_intent_reason(judgment)
+    selected.append(
+        ImprovementStrategySelection(
+            strategyId=STRATEGY_BUYER_INTENT_REWRITE,
+            name=STRATEGY_DISPLAY_NAMES[STRATEGY_BUYER_INTENT_REWRITE],
+            skillPath=STRATEGY_SKILL_PATHS[STRATEGY_BUYER_INTENT_REWRITE],
+            targetLayers=list(STRATEGY_TARGET_LAYERS[STRATEGY_BUYER_INTENT_REWRITE]),
+            reason=reason,
+            priority=STRATEGY_PRIORITY[STRATEGY_BUYER_INTENT_REWRITE],
+        )
+    )
+    ordered = sorted(selected, key=lambda strategy: (strategy.priority, strategy.name))
+    return StrategySelectionResult(
+        selectedStrategies=ordered,
+        weakestLayers=selection.weakest_layers,
+        strategyReasons={strategy.strategy_id: strategy.reason for strategy in ordered},
+    )
+
+
+def _semantic_buyer_intent_reason(judgment: SemanticContentJudgment) -> str:
+    reason = judgment.reasons[0] if judgment.reasons else ""
+    if reason:
+        return (
+            "Turkish Buyer Intent Rewrite secildi cunku Gemini urun icerigini "
+            f"semantik olarak zayif buldu: {reason}"
+        )
+    return (
+        "Turkish Buyer Intent Rewrite secildi cunku Gemini urun iceriginin "
+        "Turkce alici sorularini guvenli ve anlamli sekilde cevaplamak icin "
+        "yeterli olmadigini belirledi."
+    )
 
 
 def _apply_gemini_prioritization(
@@ -297,6 +418,54 @@ def _gemini_prioritization_context(
             "fixed supported categories",
             "unsupported product claims",
         ],
+    }
+
+
+def _semantic_content_context(state: OptimizationGraphState) -> dict[str, Any]:
+    analysis = state["analysis_output"]
+    product = state.get("product_input")
+    raw_extracted = product.raw_extracted if product is not None else None
+    return {
+        "decisionRules": {
+            "judgeMeaningNotLength": True,
+            "doNotInventProductFacts": True,
+            "returnThinOnlyWhenRewriteWouldImproveAnswerability": True,
+            "recommendedStrategyWhenThin": STRATEGY_BUYER_INTENT_REWRITE,
+        },
+        "visibleProductContent": {
+            "title": product.title if product is not None else analysis.known_facts.get("title"),
+            "shortDescription": (
+                product.short_description
+                if product is not None
+                else analysis.known_facts.get("shortDescription")
+            ),
+            "description": (
+                product.description
+                if product is not None
+                else analysis.known_facts.get("description")
+            ),
+            "pageTitle": raw_extracted.page_title if raw_extracted is not None else None,
+            "metaDescription": (
+                raw_extracted.meta_description if raw_extracted is not None else None
+            ),
+            "bodyText": raw_extracted.body_text if raw_extracted is not None else None,
+        },
+        "knownFacts": analysis.known_facts,
+        "missingFacts": list(state.get("missing_facts", analysis.missing_facts)),
+        "buyerIntentVariants": analysis.buyer_intent_variants,
+        "mainProblems": analysis.main_problems,
+        "scoreSummary": {
+            "retrieval": analysis.scores.retrieval.score,
+            "rerankingStrength": analysis.scores.reranking_strength.score,
+            "aiAnswerReadiness": analysis.scores.ai_answer_readiness.score,
+        },
+        "answerReadinessSignals": {
+            "reasons": analysis.scores.ai_answer_readiness.reasons,
+            "missingSignals": analysis.scores.ai_answer_readiness.missing_signals,
+            "recommendedNextAction": (
+                analysis.scores.ai_answer_readiness.recommended_next_action
+            ),
+        },
     }
 
 
