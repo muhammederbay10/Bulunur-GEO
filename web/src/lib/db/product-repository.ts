@@ -30,6 +30,10 @@ type ProductRow = {
   availability: string | null;
   latest_score: number | null;
   workflow_status: ProductSummary["workflowStatus"];
+  latest_analysis_id: string | null;
+  latest_optimization_result_id: string | null;
+  last_analyzed_at: string | null;
+  last_optimized_at: string | null;
   updated_at: string;
 };
 
@@ -62,8 +66,11 @@ type ProductAnalysisRow = {
   raw_extracted: Record<string, unknown> | null;
   crawl_metadata: Record<string, unknown> | null;
   workflow_status: ProductSummary["workflowStatus"];
+  latest_analysis_id: string | null;
+  latest_optimization_result_id: string | null;
   latest_score: number | null;
   last_analyzed_at: string | null;
+  last_optimized_at: string | null;
   updated_at: string;
 };
 
@@ -81,9 +88,9 @@ type SourceSummaryRow = {
 };
 
 const productSummarySelect =
-  "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,updated_at";
+  "id,store_id,source,title,url,image_urls,price_display,availability,latest_score,workflow_status,latest_analysis_id,latest_optimization_result_id,last_analyzed_at,last_optimized_at,updated_at";
 const productAnalysisSelect =
-  "id,external_id,external_handle,store_id,source,url,language,market,title,description,description_html,short_description,seo_title,seo_description,tags,vendor,product_type,price_display,currency,availability,brand,category,image_urls,attributes,raw_source_payload,raw_extracted,crawl_metadata,workflow_status,latest_score,last_analyzed_at,updated_at";
+  "id,external_id,external_handle,store_id,source,url,language,market,title,description,description_html,short_description,seo_title,seo_description,tags,vendor,product_type,price_display,currency,availability,brand,category,image_urls,attributes,raw_source_payload,raw_extracted,crawl_metadata,workflow_status,latest_analysis_id,latest_optimization_result_id,latest_score,last_analyzed_at,last_optimized_at,updated_at";
 
 const sourceSummarySelect =
   "id,name,source_type,status,last_sync_at,updated_at";
@@ -107,6 +114,43 @@ function isMissingProductTable(error: { code?: string; message?: string }) {
   return error.code === "42P01" || message.includes("products");
 }
 
+function resolveProductWorkflowStatus(row: {
+  workflow_status: ProductSummary["workflowStatus"];
+  latest_analysis_id?: string | null;
+  latest_optimization_result_id?: string | null;
+  latest_score?: number | null;
+  last_analyzed_at?: string | null;
+  last_optimized_at?: string | null;
+}): ProductSummary["workflowStatus"] {
+  if (
+    row.workflow_status === "analysis_running" ||
+    row.workflow_status === "optimization_running" ||
+    row.workflow_status === "published" ||
+    row.workflow_status === "failed"
+  ) {
+    return row.workflow_status;
+  }
+
+  if (
+    row.workflow_status === "optimized" ||
+    row.latest_optimization_result_id ||
+    row.last_optimized_at
+  ) {
+    return "optimized";
+  }
+
+  if (
+    row.workflow_status === "analyzed" ||
+    row.latest_analysis_id ||
+    row.last_analyzed_at ||
+    typeof row.latest_score === "number"
+  ) {
+    return "analyzed";
+  }
+
+  return row.workflow_status;
+}
+
 function mapProductSummary(row: ProductRow): ProductSummary {
   return {
     id: row.id,
@@ -118,7 +162,7 @@ function mapProductSummary(row: ProductRow): ProductSummary {
     priceDisplay: row.price_display ?? undefined,
     availability: row.availability ?? undefined,
     latestScore: row.latest_score ?? undefined,
-    workflowStatus: row.workflow_status,
+    workflowStatus: resolveProductWorkflowStatus(row),
     updatedAt: row.updated_at,
   };
 }
@@ -178,6 +222,39 @@ function statusFilterValues(status: ProductListStatusFilter) {
   return [];
 }
 
+function productMatchesStatusFilter(
+  product: ProductSummary,
+  status: ProductListStatusFilter,
+) {
+  if (status === "all") {
+    return true;
+  }
+
+  if (status === "waiting") {
+    return product.workflowStatus === "not_analyzed";
+  }
+
+  if (status === "analyzed") {
+    return (
+      product.workflowStatus === "analyzed" ||
+      product.workflowStatus === "optimization_running"
+    );
+  }
+
+  if (status === "optimized") {
+    return (
+      product.workflowStatus === "optimized" ||
+      product.workflowStatus === "published"
+    );
+  }
+
+  if (status === "low_score") {
+    return typeof product.latestScore === "number" && product.latestScore < 60;
+  }
+
+  return true;
+}
+
 async function countProductsForProfile(
   supabase: ReturnType<typeof createAdminClient>,
   profileId: string,
@@ -193,11 +270,7 @@ async function countProductsForProfile(
     query = query.eq("source", source);
   }
 
-  if (status === "waiting") {
-    query = query.eq("workflow_status", "not_analyzed");
-  } else if (status === "analyzed" || status === "optimized") {
-    query = query.in("workflow_status", statusFilterValues(status));
-  } else if (status === "low_score") {
+  if (status === "low_score") {
     query = query.not("latest_score", "is", null).lt("latest_score", 60);
   }
 
@@ -529,7 +602,7 @@ function mapProductAnalysisDetail(row: ProductAnalysisRow): ProductAnalysisDetai
     tags: row.tags ?? [],
     vendor: row.vendor ?? undefined,
     productType: row.product_type ?? undefined,
-    workflowStatus: row.workflow_status,
+    workflowStatus: resolveProductWorkflowStatus(row),
     latestScore: row.latest_score ?? undefined,
     lastAnalyzedAt: row.last_analyzed_at ?? undefined,
     updatedAt: row.updated_at,
@@ -1140,9 +1213,12 @@ export async function upsertShopifyProducts(
   );
 
   for (const { product, id } of toUpdate) {
+    const { workflow_status: _workflowStatus, ...syncUpdate } = product;
+    void _workflowStatus;
+
     const { error } = await supabase
       .from("products")
-      .update(product)
+      .update(syncUpdate)
       .eq("id", id)
       .eq("profile_id", product.profile_id)
       .eq("store_id", product.store_id)
@@ -1489,9 +1565,13 @@ export async function listProductsForProfile(
     };
   }
 
+  const products = (data ?? []).map(mapProductSummary);
+
   return {
     ok: true,
-    data: (data ?? []).map(mapProductSummary),
+    data: products.filter((product) =>
+      productMatchesStatusFilter(product, status),
+    ),
   };
 }
 

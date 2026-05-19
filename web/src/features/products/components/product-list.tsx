@@ -65,6 +65,18 @@ function ProductImage({ product }: { product: ProductSummary }) {
   );
 }
 
+function getProductActionHref(product: ProductSummary) {
+  if (
+    product.workflowStatus === "optimization_running" ||
+    product.workflowStatus === "optimized" ||
+    product.workflowStatus === "published"
+  ) {
+    return `/products/${product.id}/optimization`;
+  }
+
+  return `/products/${product.id}`;
+}
+
 export function ProductList({ products }: { products: ProductSummary[] }) {
   if (!products.length) {
   return (
@@ -173,11 +185,16 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
               </div>
 
               <div className="md:col-span-2 md:flex md:justify-end">
-                <Button asChild variant="outline" size="sm" className="w-full gap-2 md:w-auto">
-              <Link href={`/products/${product.id}`}>
-                {workflowActionLabels[product.workflowStatus]}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2 md:w-auto"
+                >
+                  <Link href={getProductActionHref(product)}>
+                    {workflowActionLabels[product.workflowStatus]}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </div>
