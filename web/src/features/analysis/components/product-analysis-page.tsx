@@ -102,7 +102,7 @@ export function ScoreRing({ value }: { value?: number }) {
       : 0;
 
   return (
-    <div className="relative h-28 w-28 shrink-0">
+    <div className="relative h-24 w-24 shrink-0 md:h-28 md:w-28">
       <div
         className="absolute inset-0 rounded-full"
         style={{
@@ -111,7 +111,9 @@ export function ScoreRing({ value }: { value?: number }) {
       />
       <div className="absolute inset-3 rounded-full bg-card shadow-inner" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-3xl font-bold leading-none">{score || "--"}</span>
+        <span className="text-2xl font-bold leading-none md:text-3xl">
+          {score || "--"}
+        </span>
         <span className="text-xs text-muted-foreground">/100</span>
       </div>
     </div>
@@ -208,15 +210,17 @@ function AnalysisStatusPanel({
 
   return (
     <section className="grid gap-3">
-      <div className="seller-surface p-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
+      <div className="seller-surface p-4 md:p-5">
+        <div className="flex items-center justify-between gap-5">
+          <div className="min-w-0">
             <p className="mono-label text-primary">Görünürlük skoru</p>
-            <h2 className="mt-2 text-5xl font-bold leading-none text-primary">
+            <h2 className="mt-2 text-5xl font-bold leading-none text-primary md:text-6xl">
               {typeof overallScore === "number" ? overallScore : "--"}
-              <span className="text-xl text-muted-foreground">/100</span>
+              <span className="ml-1 text-2xl text-muted-foreground md:text-3xl">
+                /100
+              </span>
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-5 text-muted-foreground">
+            <p className="mt-3 max-w-xl text-xs leading-5 text-muted-foreground md:text-sm">
               {analysis.recommendedAction ??
                 "Zayif sinyaller ve sıradaki güvenli adım."}
             </p>

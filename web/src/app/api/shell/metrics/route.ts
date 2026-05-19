@@ -1,33 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/db/profile-repository";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-const dailyLimits = {
-  analysis: 10,
-  optimization: 10,
-};
-
-function startOfToday() {
-  const now = new Date();
-  const start = new Date(now);
-
-  start.setHours(0, 0, 0, 0);
-
-  return start;
-}
-
-function startOfTomorrow(start: Date) {
-  const end = new Date(start);
-
-  end.setDate(end.getDate() + 1);
-
-  return end;
-}
-
-function countOrZero(count: number | null) {
-  return typeof count === "number" ? count : 0;
-}
+import { getDailyUsageMetrics } from "@/lib/usage-limits";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -43,49 +17,23 @@ export async function GET() {
     );
   }
 
-  const supabase = createAdminClient();
-  const today = startOfToday();
-  const tomorrow = startOfTomorrow(today);
-  const [analysisResult, optimizationResult] = await Promise.all([
-    supabase
-      .from("product_analyses")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", user.id)
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString()),
-    supabase
-      .from("product_snapshots")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", user.id)
-      .eq("snapshot_type", "before_optimization")
-      .gte("created_at", today.toISOString())
-      .lt("created_at", tomorrow.toISOString()),
-  ]);
+  const metricsResult = await getDailyUsageMetrics(user.id);
 
-  if (analysisResult.error || optimizationResult.error) {
+  if (!metricsResult.ok) {
     return NextResponse.json(
       {
         ok: false,
         error: "shell_metrics_unavailable",
-        message: "Kullanim sayaÃ§lari okunamadÄ±.",
+        message: metricsResult.message,
       },
-      { status: 500 },
+      { status: metricsResult.status },
     );
   }
 
   return NextResponse.json(
     {
       ok: true,
-      metrics: {
-        analysis: {
-          used: countOrZero(analysisResult.count),
-          limit: dailyLimits.analysis,
-        },
-        optimization: {
-          used: countOrZero(optimizationResult.count),
-          limit: dailyLimits.optimization,
-        },
-      },
+      metrics: metricsResult.data,
       refreshedAt: new Date().toISOString(),
     },
     {

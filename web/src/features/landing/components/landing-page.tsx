@@ -386,16 +386,16 @@ function AboutSection() {
 
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
           <AvatarCard
-            name="Kurucu"
-            role="Ürün ve frontend"
-            initials="K"
-            body="Satıcı akışını, onboarding deneyimini ve panel tasarımını sade tutmaya odaklanır."
+            name="Ömer Mevlütoğlu"
+            role="Yazılım mühendisi"
+            initials="ÖM"
+            body="Ürün deneyimi, frontend mimarisi ve satıcı panelinin sade, hızlı ve anlaşılır ilerlemesine odaklanır."
           />
           <AvatarCard
-            name="AI Engineer"
-            role="Yapay zeka mühendisi"
-            initials="AI"
-            body="Analiz, ürün sinyalleri, optimizasyon çıktısı ve güvenli backend akışları üzerinde çalışır."
+            name="Muhammed Erbay"
+            role="AI mühendisi"
+            initials="ME"
+            body="AI analiz akışı, ürün sinyalleri, optimizasyon çıktıları ve güvenli yapay zeka entegrasyonları üzerinde çalışır."
           />
         </div>
       </div>
