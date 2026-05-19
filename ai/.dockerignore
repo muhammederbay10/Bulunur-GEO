@@ -1,0 +1,40 @@
+# 1. IGNORE GIT (Crucial for 33GB issues)
+.git/
+.gitignore
+
+# 2. IGNORE VIRTUAL ENVIRONMENTS (Crucial)
+.venv/
+venv/
+env/
+
+# 3. IGNORE COMPILED PYTHON TRASH
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 4. IGNORE DOCKER FILES (Don't copy Dockerfiles into the image)
+docker-compose.yml
+.dockerignore
+Dockerfile
+
+
+# 5. IGNORE LOCAL ENV FILES (Security)
+.env
+.env.local
+
+# 6. IGNORE DOCUMENTATION
+README.md
+Api_Contract.md
+AGENTS.md
+PROJECT_STATE.md
+
+# 7. IGNORE TESTING ARTIFACTS
+.tmp
+.pytest_tmp
+.coverage
+.pytest_cache/
+.mypy_cache/
+tests
+examples
+scripts
