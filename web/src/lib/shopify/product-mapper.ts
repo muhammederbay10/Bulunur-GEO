@@ -36,9 +36,10 @@ export function uniqueNonEmpty(values: Array<string | null | undefined>) {
 }
 
 function getImageUrls(product: ShopifyProduct) {
-  void product;
-
-  return [];
+  return uniqueNonEmpty([
+    product.featuredMedia?.image?.url,
+    ...(product.media?.nodes.map((media) => media.image?.url) ?? []),
+  ]).slice(0, 10);
 }
 
 function getPriceDisplay(product: ShopifyProduct) {

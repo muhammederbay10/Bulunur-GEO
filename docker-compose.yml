@@ -1,13 +1,48 @@
 services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Set NEXT_PUBLIC_SUPABASE_URL in web/.env.local or root .env}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in web/.env.local or root .env}
+    env_file:
+      - ./web/.env.local
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      AI_SERVICE_URL: http://ai:8001
+    ports:
+      - "3000:3000"
+    depends_on:
+      ai:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1));",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   ai:
     build:
       context: ./ai
       dockerfile: Dockerfile
-    container_name: bulunur-ai
     env_file:
       - ./ai/.env
     ports:
       - "8001:8001"
+    environment:
+      PORT: 8001
+      AI_CORS_ALLOW_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
     restart: unless-stopped
     healthcheck:
       test:

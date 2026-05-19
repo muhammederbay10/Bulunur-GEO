@@ -1,109 +1,262 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Web Uygulamasi
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+Bu klasor BTK 2026 Hackathon projesinin Next.js web uygulamasini icerir.
+Uygulama Turkiye odakli e-ticaret saticilari icin urun ice aktarma, AI/GEO
+analizi, iyilestirme taslagi ve onayli yayinlama akislarini sunar.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## Ana Ozellikler
 
-## Features
+- Supabase Auth ile kayit ve giris
+- Onboarding ve magaza profili
+- Shopify OAuth baglantisi
+- Shopify urun sync
+- Shopify urun gorsellerini `image_urls` alanina kaydetme
+- Native URL/category import
+- Tekil urun URL import
+- CSV/Excel/manual fallback import
+- Dashboard ve urun listesi
+- Tekil urun AI/GEO analizi
+- GEO skor katmanlari
+- Eksik bilgi akisi
+- Iyilestirme taslagi
+- Once/sonra karsilastirma
+- Kopyalama/export/review aksiyonlari
+- Shopify icin onayli guvenli alan yayinlama
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+## Teknoloji
 
-## Demo
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+- Supabase SSR/Auth
+- Supabase/PostgreSQL
+- Shopify Admin GraphQL API
+- Server-to-server AI service entegrasyonu
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Kurulum
 
-## Deploy to Vercel
+Bagimliliklari yukleyin:
 
-Vercel deployment will guide you through creating a Supabase account and project.
+```bash
+npm install
+```
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+Env dosyasini olusturun:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+```bash
+cp .env.example .env.local
+```
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+Windows PowerShell:
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+```powershell
+Copy-Item .env.example .env.local
+```
 
-## Clone and run locally
+`.env.local` dosyasini doldurun.
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+## Env Degiskenleri
 
-2. Create a Next.js app using the Supabase Starter template npx command
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+SUPABASE_SECRET_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+AI_SERVICE_URL=
+AI_SERVICE_SECRET=
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+SHOPIFY_CLIENT_ID=
+SHOPIFY_CLIENT_SECRET=
+SHOPIFY_SCOPES=read_products,write_products
+SHOPIFY_APP_URL=
+SHOPIFY_REDIRECT_URI=
+SHOPIFY_API_VERSION=2026-04
+SHOPIFY_TOKEN_ENCRYPTION_KEY=
+SHOPIFY_TEST_SHOP_DOMAIN=
+```
 
-3. Use `cd` to change into the app's directory
+Lokal gelistirme icin ornek:
 
-   ```bash
-   cd with-supabase-app
-   ```
+```env
+AI_SERVICE_URL=http://localhost:8001
+SHOPIFY_APP_URL=http://localhost:3000
+SHOPIFY_REDIRECT_URI=http://localhost:3000/api/shopify/callback
+```
 
-4. Rename `.env.example` to `.env.local` and update the following:
+Ngrok kullaniyorsaniz Shopify app URL ve redirect URI ngrok domainini
+gostermelidir.
 
-  ```env
-  NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
-  ```
-  > [!NOTE]
-  > This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-  > Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-  > See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+## Lokal Calistirma
 
-  Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+```bash
+npm run dev
+```
 
-5. You can now run the Next.js local development server:
+Uygulama:
 
-   ```bash
-   npm run dev
-   ```
+```text
+http://localhost:3000
+```
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+## Kontrol Komutlari
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+```bash
+npm run lint
+npm run build
+```
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+Production build sonrasi calistirma:
 
-## Feedback and issues
+```bash
+npm run start
+```
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+## Supabase Ayarlari
 
-## More Supabase examples
+Supabase Auth icin lokal ayarlar:
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+```text
+Site URL:
+http://localhost:3000
+
+Redirect URLs:
+http://localhost:3000/auth/update-password
+http://localhost:3000/auth/confirm
+http://localhost:3000/onboarding
+http://localhost:3000/dashboard
+http://localhost:3000/sources
+http://localhost:3000/sources?setup=1
+```
+
+Production'da ayni pathleri production domaininizle ekleyin.
+
+Veritabani SQL dosyalari `web/.codex/sql/` altindadir. Bu projede SQL
+degisiklikleri agent tarafindan otomatik uygulanmaz; Supabase SQL Editor
+uzerinden manuel uygulanir.
+
+## Shopify Ayarlari
+
+Lokal:
+
+```env
+SHOPIFY_APP_URL=http://localhost:3000
+SHOPIFY_REDIRECT_URI=http://localhost:3000/api/shopify/callback
+```
+
+Production:
+
+```env
+SHOPIFY_APP_URL=https://your-domain.com
+SHOPIFY_REDIRECT_URI=https://your-domain.com/api/shopify/callback
+```
+
+Shopify Partner Dashboard tarafinda Allowed redirection URL ayni olmalidir:
+
+```text
+https://your-domain.com/api/shopify/callback
+```
+
+Gerekli scope:
+
+```text
+read_products,write_products
+```
+
+## AI Servisi
+
+AI/GEO backend ayri bir servistir. Web uygulamasi bu servisi server tarafindan
+cagirir.
+
+Lokal:
+
+```env
+AI_SERVICE_URL=http://localhost:8001
+AI_SERVICE_SECRET=shared-secret
+```
+
+Production:
+
+```env
+AI_SERVICE_URL=https://your-ai-service-domain.com
+AI_SERVICE_SECRET=shared-secret
+```
+
+`AI_SERVICE_SECRET`, AI servisindeki `SERVICE_AUTH_SECRET_KEY` ile ayni
+olmalidir.
+
+## Vercel Deployment
+
+Vercel'e deploy etmek icin:
+
+1. GitHub reposunu Vercel'e baglayin.
+2. Root Directory olarak `web` secin.
+3. Framework olarak Next.js otomatik secilmelidir.
+4. Environment Variables bolumune production env degerlerini girin.
+5. Deploy edin.
+
+Production icin degismesi gerekenler:
+
+- `SHOPIFY_APP_URL`
+- `SHOPIFY_REDIRECT_URI`
+- `AI_SERVICE_URL`
+- Supabase Auth Site URL
+- Supabase Auth Redirect URLs
+
+## Docker Notu
+
+Web uygulamasi Vercel'e Docker olmadan deploy edilebilir. Lokal olarak Docker
+Compose ile AI servisiyle birlikte calistirmak isterseniz repo root dizinindeki
+`docker-compose.yml` dosyasini kullanin:
+
+```bash
+docker compose --env-file ./web/.env.local up --build
+```
+
+## Kod Organizasyonu
+
+Onemli klasorler:
+
+```text
+src/app                 # App Router route ve API route'lari
+src/features            # Feature bazli UI ve interaction katmani
+src/lib                 # Service, repository, integration ve validation kodlari
+src/types               # Paylasilan TypeScript tipleri
+```
+
+Shopify entegrasyonu:
+
+```text
+src/lib/shopify
+src/lib/db/shopify-repository.ts
+src/app/api/shopify
+```
+
+Native import:
+
+```text
+src/lib/native-url-import
+src/features/native-import
+src/app/api/native
+```
+
+AI entegrasyonu:
+
+```text
+src/lib/ai
+src/lib/validation/ai-contract.ts
+src/app/api/products/[productId]/analyze
+src/app/api/products/[productId]/improve
+```
+
+## Gelistirme Kurallari
+
+- Secretlar client componentlere tasinmaz.
+- Browser kodu AI servisini direkt cagirmaz.
+- Shopify publish islemleri kullanici onayi olmadan yapilmaz.
+- SQL degisiklikleri `web/.codex/sql/` altinda dosyalanir ve manuel uygulanir.
+- Varsayilan dogrulama `npm run lint` ve `npm run build` komutlaridir.
+- UI seller-friendly ve Turkish-first olmalidir.
+

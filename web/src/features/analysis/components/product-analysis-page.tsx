@@ -1112,8 +1112,8 @@ export function ShopifyReviewPublishPanel({
           SKU, varyant, kargo, vergi ve medya alanları değişmez.
         </p>
         <div className="mt-4">
-        <ShopifyPublishControls productId={product.id} fields={fields} />
-      </div>
+          <ShopifyPublishControls productId={product.id} fields={fields} />
+        </div>
       </div>
     </details>
   );
@@ -1204,13 +1204,15 @@ export function ProductAnalysisPage({
         <div className="grid gap-3">
           <AnalysisActionPanel product={product} />
           <AnalysisStatusPanel analysis={analysis} />
+        </div>
+        <div className="grid gap-4">
+          <ProductPreviewPanel product={product} />
           <OptimizationPanel
             product={product}
             analysis={analysis}
             optimization={optimization}
           />
         </div>
-        <ProductPreviewPanel product={product} />
       </section>
     </div>
   );

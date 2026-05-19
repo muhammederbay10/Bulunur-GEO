@@ -29,6 +29,24 @@ const SHOPIFY_PRODUCTS_QUERY = `
           title
           description
         }
+        featuredMedia {
+          ... on MediaImage {
+            image {
+              url
+              altText
+            }
+          }
+        }
+        media(first: 10, sortKey: POSITION) {
+          nodes {
+            ... on MediaImage {
+              image {
+                url
+                altText
+              }
+            }
+          }
+        }
         priceRangeV2 {
           minVariantPrice {
             amount

@@ -29,6 +29,15 @@ export type ShopifyMoney = {
   currencyCode: string;
 };
 
+export type ShopifyImage = {
+  url: string;
+  altText: string | null;
+};
+
+export type ShopifyMediaImage = {
+  image: ShopifyImage | null;
+};
+
 export type ShopifyProduct = {
   id: string;
   title: string;
@@ -44,6 +53,10 @@ export type ShopifyProduct = {
   seo: {
     title: string | null;
     description: string | null;
+  } | null;
+  featuredMedia: ShopifyMediaImage | null;
+  media: {
+    nodes: ShopifyMediaImage[];
   } | null;
   priceRangeV2: {
     minVariantPrice: ShopifyMoney;
