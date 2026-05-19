@@ -10,6 +10,7 @@ import {
 } from "@/lib/db/analysis-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
+import { canStartAnalysis } from "@/lib/usage-limits";
 import type {
   AnalyzeProductApiResponse,
   AnalyzeProductStatusApiResponse,
@@ -231,6 +232,16 @@ export async function POST(_request: Request, context: RouteContext) {
     profileId: user.id,
     productId: params.data.productId,
   });
+
+  const creditResult = await canStartAnalysis(user.id);
+
+  if (!creditResult.ok) {
+    return failureResponse(
+      creditResult.code,
+      creditResult.message,
+      creditResult.status,
+    );
+  }
 
   const productResult = await getProductAnalysisContextForProfile({
     profileId: user.id,

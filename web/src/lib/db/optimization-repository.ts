@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { usageWindow } from "@/lib/usage-limits";
 import type { GeoImprovementOutput } from "@/types/ai-contract";
 import type {
   OptimizationResultRecord,
@@ -240,31 +241,56 @@ export async function startProductOptimizationAttempt(params: {
   };
 }): Promise<OptimizationRepositoryResult<{ ok: true }>> {
   const supabase = createAdminClient();
-  const { error: snapshotError } = await supabase
+  const { today, tomorrow } = usageWindow();
+  const { data: existingSnapshot, error: snapshotLookupError } = await supabase
     .from("product_snapshots")
-    .insert({
-      profile_id: params.profileId,
-      store_id: params.storeId,
-      product_id: params.productId,
-      snapshot_type: "before_optimization",
-      title: params.snapshot.title,
-      description: params.snapshot.description ?? null,
-      description_html: params.snapshot.descriptionHtml ?? null,
-      seo_title: params.snapshot.seoTitle ?? null,
-      seo_description: params.snapshot.seoDescription ?? null,
-      tags: params.snapshot.tags,
-      raw_payload: params.snapshot.rawPayload,
-    });
+    .select("id")
+    .eq("profile_id", params.profileId)
+    .eq("product_id", params.productId)
+    .eq("snapshot_type", "before_optimization")
+    .gte("created_at", today.toISOString())
+    .lt("created_at", tomorrow.toISOString())
+    .limit(1)
+    .maybeSingle<{ id: string }>();
 
-  if (snapshotError) {
+  if (snapshotLookupError) {
     return {
       ok: false,
-      message: isMissingOptimizationTable(snapshotError)
+      message: isMissingOptimizationTable(snapshotLookupError)
         ? optimizationStorageSetupMessage()
         : "Optimizasyon öncesi ürün yedeği kaydedilemedi.",
-      code: snapshotError.code,
+      code: snapshotLookupError.code,
       status: 500,
     };
+  }
+
+  if (!existingSnapshot) {
+    const { error: snapshotError } = await supabase
+      .from("product_snapshots")
+      .insert({
+        profile_id: params.profileId,
+        store_id: params.storeId,
+        product_id: params.productId,
+        snapshot_type: "before_optimization",
+        title: params.snapshot.title,
+        description: params.snapshot.description ?? null,
+        description_html: params.snapshot.descriptionHtml ?? null,
+        seo_title: params.snapshot.seoTitle ?? null,
+        seo_description: params.snapshot.seoDescription ?? null,
+        tags: params.snapshot.tags,
+        raw_payload: params.snapshot.rawPayload,
+      });
+
+    if (snapshotError) {
+      return {
+        ok: false,
+        message: isMissingOptimizationTable(snapshotError)
+          ? optimizationStorageSetupMessage()
+          : "Optimizasyon Ã¶ncesi Ã¼rÃ¼n yedeÄŸi kaydedilemedi.",
+        code: snapshotError.code,
+        status: 500,
+      };
+    }
   }
 
   const { error: productError } = await supabase

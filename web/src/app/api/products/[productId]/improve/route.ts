@@ -13,6 +13,7 @@ import {
 } from "@/lib/db/optimization-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
+import { canStartOptimization } from "@/lib/usage-limits";
 import type {
   GeoAnalysisOutput,
   GeoImprovementOutput,
@@ -376,6 +377,19 @@ export async function POST(request: Request, context: RouteContext) {
   );
   const userFacts =
     Object.keys(mergedUserFacts).length > 0 ? mergedUserFacts : undefined;
+  const creditResult = await canStartOptimization({
+    profileId: user.id,
+    productId: product.id,
+  });
+
+  if (!creditResult.ok) {
+    return failureResponse(
+      creditResult.code,
+      creditResult.message,
+      creditResult.status,
+    );
+  }
+
   const startResult = await startProductOptimizationAttempt({
     profileId: user.id,
     storeId: product.storeId,
