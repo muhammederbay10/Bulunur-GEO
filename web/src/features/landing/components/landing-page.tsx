@@ -1,4 +1,5 @@
-import Link from "next/link";
+﻿import Link from "next/link";
+import Image, { type StaticImageData } from "next/image";
 import type { CSSProperties } from "react";
 
 import {
@@ -9,6 +10,8 @@ import {
   Code2,
   Cpu,
   FileCheck2,
+  Github,
+  Linkedin,
   Network,
   Search,
   ShieldCheck,
@@ -22,6 +25,8 @@ import { BulunurLogo } from "@/components/bulunur-logo";
 import { Button } from "@/components/ui/button";
 import { ShopifyMark } from "@/components/shopify-mark";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import aiEngineerImage from "@/app/AIENG.jpeg";
+import softwareEngineerImage from "@/app/softEng.jpeg";
 const capabilityCards = [
   {
     icon: Search,
@@ -35,7 +40,7 @@ const capabilityCards = [
   },
   {
     icon: FileCheck2,
-    title: "Önce / sonra review",
+    title: "Önce / Sonra incelemesi",
     body: "Optimize edilen içerik mevcut ürünle yan yana incelenir. Satıcı onaylamadan Shopify ürünü değişmez.",
   },
   {
@@ -44,6 +49,23 @@ const capabilityCards = [
     body: "Shopify mağazasından ürün çekme, analiz etme, taslak hazırlama ve uygun alanları yayınlama akışı tek panelde ilerler.",
   },
 ];
+const teamMembers = [
+  {
+    name: "Omer Mevlutoglu",
+    role: "Software Engineer",
+    image: softwareEngineerImage,
+    linkedinUrl:
+      "https://www.linkedin.com/search/results/all/?keywords=Omer%20Mevlutoglu",
+    githubUrl: "https://github.com/Omer-Mevlutoglu",
+  },
+  {
+    name: "Muhammed Erbay",
+    role: "AI Engineer",
+    image: aiEngineerImage,
+    linkedinUrl: "https://tr.linkedin.com/in/muhammed-erbay-00811422a",
+    githubUrl: "https://github.com/muhammederbay10",
+  },
+] as const;
 
 function ScoreRing() {
   return (
@@ -68,7 +90,7 @@ function SystemPreview() {
   const scores = [
     ["Bulunabilirlik", 74],
     ["Ürün bilgisi", 68],
-    ["Karsilastirma", 61],
+    ["Karşılaştırma", 61],
     ["Cevap hazırlığı", 87],
   ];
 
@@ -132,7 +154,7 @@ function SystemPreview() {
             </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              Shopify review adımina uygun
+              Shopify review adımına uygun
             </span>
           </div>
         </div>
@@ -249,7 +271,7 @@ function HeroSection() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-          Shopify ve web mağazalarınızdaki ürünleri LLM’lerin (Büyük Dil
+          Shopify ve web mağazalarınızdaki ürünleri LLM&apos;lerin (Büyük Dil
           Modelleri) ve arama motorlarının tam olarak anlayabileceği şekilde
           optimize edin. Satışlarınızı organik olarak artırın.
         </p>
@@ -343,6 +365,69 @@ function CapabilitiesSection() {
   );
 }
 
+function AvatarCard({
+  name,
+  role,
+  image,
+  linkedinUrl,
+  githubUrl,
+}: {
+  name: string;
+  role: string;
+  image: StaticImageData;
+  linkedinUrl: string;
+  githubUrl: string;
+}) {
+  return (
+    <article className="landing-hover landing-reveal seller-surface grid gap-5 p-5 sm:grid-cols-[120px_1fr]">
+      <div className="overflow-hidden rounded-lg border border-primary/20 bg-muted">
+        <Image
+          src={image}
+          alt={`${name} profile`}
+          className="aspect-square h-full w-full object-cover"
+          sizes="120px"
+        />
+      </div>
+      <div>
+        <p className="text-xl font-semibold">{name}</p>
+        <p className="mt-1 text-sm font-medium text-primary">{role}</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link href={linkedinUrl} target="_blank" rel="noreferrer">
+              <Linkedin className="h-4 w-4" />
+              LinkedIn
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="gap-2">
+            <Link href={githubUrl} target="_blank" rel="noreferrer">
+              <Github className="h-4 w-4" />
+              GitHub
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function AboutSection() {
+  return (
+    <section className="border-t border-border bg-muted/40">
+      <div className="mx-auto w-full max-w-6xl px-5 py-16">
+        <div className="max-w-2xl">
+          <p className="mono-label text-primary">Ekip</p>
+        </div>
+
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          {teamMembers.map((member) => (
+            <AvatarCard key={member.name} {...member} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function LandingPage() {
   return (
     <main className="min-h-screen bg-background">
@@ -370,7 +455,7 @@ export function LandingPage() {
       <HeroSection />
       <ProductSection />
       <CapabilitiesSection />
-
+      <AboutSection />
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-muted-foreground">
           <BulunurLogo href="/" className="h-10 w-32" />
