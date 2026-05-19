@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BulunurLogo } from "@/components/bulunur-logo";
 import { SidebarAccountCard } from "@/components/sidebar-account-card";
 import { SidebarNav } from "@/components/sidebar-nav";
 import type { ProductSourceSummary } from "@/types/product";
@@ -89,19 +90,17 @@ export function AppShell({
     <main className="h-screen overflow-hidden bg-background">
       <div className="flex h-full w-full">
         <aside className="hidden h-screen w-64 shrink-0 overflow-hidden border-r border-border/70 bg-muted/70 p-5 lg:flex lg:flex-col">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-              AI
-            </div>
-            <div>
-              <p className="text-xl font-semibold text-primary">
-                AI Görünürlük
-              </p>
-              <p className="mono-label mt-1 text-muted-foreground">
-                E-ticaret paneli
-              </p>
-            </div>
-          </Link>
+          <div>
+            <BulunurLogo
+              href="/dashboard"
+              ariaLabel="Bulunur panel"
+              className="h-14 w-44"
+              priority
+            />
+            <p className="mono-label mt-2 text-muted-foreground">
+              E-ticaret paneli
+            </p>
+          </div>
 
           <SidebarNav />
 

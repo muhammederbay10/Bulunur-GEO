@@ -1,20 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
+
 import {
-  ArrowRight,
   CheckCircle2,
+  CirclePlay,
   Code2,
   FileCheck2,
   Search,
   ShieldCheck,
   Store,
+  Zap,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { BulunurLogo } from "@/components/bulunur-logo";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import shopifyLogo from "@/app/shopify-logo.png";
-
 const capabilityCards = [
   {
     icon: Search,
@@ -37,46 +39,6 @@ const capabilityCards = [
     body: "Shopify mağazasından ürün çekme, analiz etme, taslak hazırlama ve uygun alanları yayınlama akışı tek panelde ilerler.",
   },
 ];
-
-function ShopifyMark() {
-  return (
-    <div className="landing-hover inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/15 bg-background/90">
-        <Image
-          src={shopifyLogo}
-          alt=""
-          width={22}
-          height={22}
-          className="h-8 w-8 object-contain"
-          aria-hidden="true"
-        />
-      </span>
-      Shopifya kolay integrasyon
-    </div>
-  );
-}
-
-function HeroSignalStrip() {
-  const signals = [
-    ["Ürün skoru", "87/100"],
-    ["Shopify", "bağlı"],
-    ["Review", "hazır"],
-  ];
-
-  return (
-    <div className="mx-auto mt-10 grid w-full max-w-3xl gap-3 sm:grid-cols-3">
-      {signals.map(([label, value]) => (
-        <div
-          key={label}
-          className="landing-hover rounded-xl border border-border bg-card/85 px-4 py-3 text-left shadow-sm"
-        >
-          <p className="mono-label text-muted-foreground">{label}</p>
-          <p className="mt-2 text-xl font-semibold text-primary">{value}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function ScoreRing() {
   return (
@@ -173,38 +135,64 @@ function SystemPreview() {
     </div>
   );
 }
+function ShopifyMark() {
+  return (
+    <div className="landing-hover inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/15 bg-background/90">
+        <Image
+          src={shopifyLogo}
+          alt=""
+          width={22}
+          height={22}
+          className="h-8 w-8 object-contain"
+          aria-hidden="true"
+        />
+      </span>
+      Shopifya kolay integrasyon
+    </div>
+  );
+}
 
 function HeroSection() {
   return (
-    <section className="relative mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-6xl items-center justify-center overflow-hidden px-5 py-16 text-center">
-      <div className="pointer-events-none absolute inset-x-6 top-16 h-64 rounded-full border border-primary/10 bg-primary/5 blur-3xl" />
-      <div className="landing-reveal relative z-10 mx-auto max-w-4xl">
-        <Badge variant="secondary">Türkçe e-ticaret ürün görünürlüğü</Badge>
-        <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-semibold leading-tight md:text-6xl">
-          Ürün sayfalarını arama ve cevap motorları için anlaşılır hale getirin.
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-          Bulunur; Shopify veya web sitenizden gelen ürünleri analiz eder, eksik
-          sinyalleri gösterir ve yayına hazır iyileştirme taslakları oluşturur.
-        </p>
-
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg" className="gap-2">
-            <Link href="/auth/sign-up">
-              Kuruluma başla
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/auth/login">Giriş yap</Link>
-          </Button>
+    <section className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-5xl items-center justify-center px-5 py-16 text-center">
+      <div className="landing-reveal mx-auto w-full max-w-3xl">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 font-mono text-[15px] font-semibold tracking-wider text-primary">
+          <Zap className="h-3.5 w-3.5" />
+          Yapay Zeka Destekli Görünürlük Motoru
         </div>
 
+        <h1 className="mx-auto mt-7 max-w-3xl text-4xl font-bold leading-[1.08] tracking-normal text-foreground md:text-5xl">
+          E-Ticaret Ürünlerinizi
+          <br />
+          <span className="text-primary">Yapay Zeka Çağına</span> Hazırlayın.
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
+          Shopify ve web mağazalarınızdaki ürünleri LLM’lerin (Büyük Dil
+          Modelleri) ve arama motorlarının tam olarak anlayabileceği şekilde
+          optimize edin. Satışlarınızı organik olarak artırın.
+        </p>
+
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Button asChild size="lg" className="h-11 min-w-36 rounded-sm px-6">
+            <Link href="/auth/sign-up">Şimdi Keşfedin</Link>
+          </Button>
+          <Button
+            asChild
+            size="lg"
+            variant="outline"
+            className="h-11 min-w-40 rounded-sm px-6"
+          >
+            <Link href="#nasil-calisir">
+              <CirclePlay className="h-4 w-4" />
+              Nasıl Çalışır?
+            </Link>
+          </Button>
+        </div>
         <div className="mt-8">
           <ShopifyMark />
         </div>
-
-        <HeroSignalStrip />
       </div>
     </section>
   );
@@ -212,7 +200,7 @@ function HeroSection() {
 
 function ProductSection() {
   return (
-    <section className="border-y border-border bg-muted/40">
+    <section id="nasil-calisir" className="border-y border-border bg-muted/40">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <div className="landing-reveal">
           <SystemPreview />
@@ -339,16 +327,20 @@ export function LandingPage() {
   return (
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center justify-between gap-4 px-5">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-              B
-            </span>
-            <span className="text-lg font-semibold text-primary">Bulunur</span>
-          </Link>
+        <div className="mx-auto flex min-h-24 w-full max-w-6xl items-center justify-between gap-4 px-5 ">
+          <BulunurLogo
+            href="/"
+            className="h-16 w-52 md:h-20 md:w-64 mt-2"
+            priority
+          />
           <nav className="flex items-center gap-2">
             <ThemeSwitcher />
-            <Button asChild variant="ghost" size="sm">
+            <Button
+              asChild
+              variant="default"
+              size="sm"
+              className="normal-case tracking-normal"
+            >
               <Link href="/auth/login">Giriş</Link>
             </Button>
           </nav>
@@ -362,7 +354,7 @@ export function LandingPage() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-muted-foreground">
-          <span>Bulunur</span>
+          <BulunurLogo href="/" className="h-10 w-32" />
           <span className="inline-flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
             Onay olmadan yayın yok

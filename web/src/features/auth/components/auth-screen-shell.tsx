@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { BulunurLogo } from "@/components/bulunur-logo";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 type AuthScreenShellProps = {
@@ -33,10 +34,18 @@ export function AuthScreenShell({ children, wide = false }: AuthScreenShellProps
       />
 
       <div className={wide ? "relative z-10 w-full max-w-6xl" : "relative z-10 w-full max-w-[440px]"}>
-        <div className={wide ? "mb-5 text-center" : "mb-8 text-center"}>
-          <h1 className={wide ? "text-3xl font-bold leading-none text-primary" : "text-5xl font-bold leading-none text-primary"}>
-            AI Görünürlük
-          </h1>
+        <div
+          className={
+            wide
+              ? "mb-5 flex flex-col items-center text-center"
+              : "mb-8 flex flex-col items-center text-center"
+          }
+        >
+          <BulunurLogo
+            href="/"
+            className={wide ? "h-14 w-48" : "h-16 w-56"}
+            priority
+          />
           <p className="mono-label mt-3 text-muted-foreground">
             E-ticaret görünürlük motoru
           </p>

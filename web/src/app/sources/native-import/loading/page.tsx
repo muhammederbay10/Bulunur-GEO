@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 
+import { BulunurLogo } from "@/components/bulunur-logo";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { NativeSetupImportRunner } from "@/features/native-import/components/native-setup-import-runner";
@@ -71,7 +72,7 @@ async function NativeImportLoadingContent({
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 flex min-h-16 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 py-3 backdrop-blur md:px-10">
         <div>
-          <p className="text-xl font-semibold text-primary">AI Görünürlük</p>
+          <BulunurLogo href="/" className="h-12 w-40" />
           <p className="mono-label text-muted-foreground">E-ticaret paneli</p>
         </div>
         <div className="flex items-center gap-2">
