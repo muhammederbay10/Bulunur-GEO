@@ -141,6 +141,32 @@
     @apply animate-in fade-in slide-in-from-bottom-3 duration-500;
   }
 
+  .accordion-details > summary {
+    list-style: none;
+  }
+
+  .accordion-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .accordion-details::details-content {
+    block-size: 0;
+    content-visibility: hidden;
+    overflow: clip;
+    transition:
+      block-size 220ms ease,
+      content-visibility 220ms allow-discrete;
+  }
+
+  .accordion-details[open]::details-content {
+    block-size: auto;
+    content-visibility: visible;
+  }
+
+  .accordion-details[open] .accordion-body {
+    animation: accordion-body-in 180ms ease both;
+  }
+
   .scanline {
     position: relative;
     overflow: hidden;
@@ -210,6 +236,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .accordion-details::details-content {
+      transition: none;
+    }
+
+    .accordion-details[open] .accordion-body {
+      animation: none;
+    }
+
     .landing-reveal {
       animation: none;
     }
@@ -219,6 +253,17 @@
       transform: none;
       transition: none;
     }
+  }
+}
+
+@keyframes accordion-body-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

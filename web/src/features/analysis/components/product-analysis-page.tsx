@@ -131,24 +131,24 @@ function ScoreLayerCard({
 }) {
   return (
     <div className="seller-surface p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Icon className="h-4 w-4" />
-            </div>
-            <p className="text-sm font-semibold">{label}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Icon className="h-4 w-4" />
           </div>
-          <span className="text-lg font-semibold text-primary">
-            {typeof value === "number" ? value : "--"}
-            <span className="text-sm text-muted-foreground">/100</span>
-          </span>
+          <p className="text-sm font-semibold">{label}</p>
         </div>
-        <div className="mt-3">
-          <ScoreBar value={value} />
-        </div>
-        <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
-          {note}
-        </p>
+        <span className="text-lg font-semibold text-primary">
+          {typeof value === "number" ? value : "--"}
+          <span className="text-sm text-muted-foreground">/100</span>
+        </span>
+      </div>
+      <div className="mt-3">
+        <ScoreBar value={value} />
+      </div>
+      <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
+        {note}
+      </p>
     </div>
   );
 }
@@ -197,23 +197,21 @@ function AnalysisStatusPanel({
           <p className="mono-label">Analiz tamamlanamadı</p>
         </div>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          {analysis.errorMessage ??
-            "Beklenen analiz sonucu alınamadı."}
+          {analysis.errorMessage ?? "Beklenen analiz sonucu alınamadı."}
         </p>
       </section>
     );
   }
 
-  const overallScore = analysis.overallScore ?? analysis.rawOutput?.overallScore;
+  const overallScore =
+    analysis.overallScore ?? analysis.rawOutput?.overallScore;
 
   return (
     <section className="grid gap-3">
       <div className="seller-surface p-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="mono-label text-primary">
-              Görünürlük skoru
-            </p>
+            <p className="mono-label text-primary">Görünürlük skoru</p>
             <h2 className="mt-2 text-5xl font-bold leading-none text-primary">
               {typeof overallScore === "number" ? overallScore : "--"}
               <span className="text-xl text-muted-foreground">/100</span>
@@ -321,11 +319,7 @@ function ProductPreviewPanel({ product }: { product: ProductAnalysisDetail }) {
   );
 }
 
-function AnalysisActionPanel({
-  product,
-}: {
-  product: ProductAnalysisDetail;
-}) {
+function AnalysisActionPanel({ product }: { product: ProductAnalysisDetail }) {
   return (
     <section className="seller-surface p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -374,7 +368,8 @@ function OptimizationPanel({
   analysis: ProductAnalysisRecord | null;
   optimization: OptimizationResultRecord | null;
 }) {
-  const canOptimize = analysis?.status === "succeeded" && Boolean(analysis.rawOutput);
+  const canOptimize =
+    analysis?.status === "succeeded" && Boolean(analysis.rawOutput);
   const reviewableOptimization =
     optimization &&
     ["ready_for_review", "approved", "exported", "published"].includes(
@@ -434,9 +429,13 @@ function OptimizationPanel({
         </div>
         <ImproveProductButton
           productId={product.id}
-          disabled={!canOptimize || product.workflowStatus === "optimization_running"}
+          disabled={
+            !canOptimize || product.workflowStatus === "optimization_running"
+          }
           hasOptimization={Boolean(reviewableOptimization)}
-          isOptimizationRunning={product.workflowStatus === "optimization_running"}
+          isOptimizationRunning={
+            product.workflowStatus === "optimization_running"
+          }
           reviewHref={`/products/${product.id}/optimization`}
         />
       </div>
@@ -449,7 +448,8 @@ export function StrategyRail({
 }: {
   optimization: OptimizationResultRecord | null;
 }) {
-  if (!optimization || optimization.selectedStrategies.length === 0) return null;
+  if (!optimization || optimization.selectedStrategies.length === 0)
+    return null;
 
   return (
     <section className="seller-surface p-5 md:p-6">
@@ -535,7 +535,10 @@ function getScoreLayerRecord(
   return isRecord(layer) ? layer : {};
 }
 
-function getAfterLayerScore(optimization: OptimizationResultRecord, key: string) {
+function getAfterLayerScore(
+  optimization: OptimizationResultRecord,
+  key: string,
+) {
   return asScore(getScoreLayerRecord(optimization, key).score);
 }
 
@@ -638,7 +641,9 @@ function ScoreMiniMeter({
     <div>
       <div className="flex items-center justify-between gap-2 text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className={highlight ? "font-semibold text-primary" : "font-semibold"}>
+        <span
+          className={highlight ? "font-semibold text-primary" : "font-semibold"}
+        >
           {formatScoreValue(value)}
         </span>
       </div>
@@ -673,25 +678,25 @@ function ScoreComparisonAccordion({
   const afterScore = asScore(scoreEstimate.after);
 
   return (
-    <details className="group border-b border-border bg-muted/35">
-      <summary className="grid cursor-pointer list-none gap-4 p-4 md:grid-cols-[1fr_auto] md:items-center">
+    <details className="accordion-details group border-b border-border bg-muted/35">
+      <summary className="grid cursor-pointer list-none gap-3 p-3 md:grid-cols-[1fr_auto] md:items-center">
         <div>
           <p className="mono-label text-primary">Skor</p>
-          <h2 className="mt-1 text-base font-semibold">
+          <h2 className="mt-1 text-sm font-semibold">
             Eski ve yeni GEO skorları
           </h2>
         </div>
         <div className="flex items-center justify-between gap-3 md:justify-end">
-          <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border text-center text-sm">
-            <div className="min-w-20 border-r border-border px-3 py-2">
+          <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-card text-center text-sm">
+            <div className="min-w-16 border-r border-border px-3 py-1.5">
               <p className="text-xs text-muted-foreground">Önce</p>
-              <p className="text-lg font-semibold">
+              <p className="text-base font-semibold">
                 {formatScoreValue(beforeScore)}
               </p>
             </div>
-            <div className="min-w-20 px-3 py-2">
+            <div className="min-w-16 px-3 py-1.5">
               <p className="text-xs text-muted-foreground">Sonra</p>
-              <p className="text-lg font-semibold text-primary">
+              <p className="text-base font-semibold text-primary">
                 {formatScoreValue(afterScore)}
               </p>
             </div>
@@ -699,13 +704,11 @@ function ScoreComparisonAccordion({
           <ChevronDown className="h-5 w-5 text-primary transition-transform group-open:rotate-180" />
         </div>
       </summary>
-      <div className="border-t border-border p-4">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+      <div className="accordion-body border-t border-border p-3">
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
           {scoreComparisonRows.map((row) => {
             const beforeValue =
-              row.layerKey === null
-                ? beforeScore
-                : analysis?.[row.beforeKey];
+              row.layerKey === null ? beforeScore : analysis?.[row.beforeKey];
             const afterValue =
               row.layerKey === null
                 ? afterScore
@@ -714,12 +717,12 @@ function ScoreComparisonAccordion({
             return (
               <div
                 key={row.label}
-                className="rounded-lg border border-border bg-background/70 p-3"
+                className="rounded-lg border border-border bg-background/70 p-2.5"
               >
                 <p className="text-xs font-medium text-muted-foreground">
                   {row.label}
                 </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="mt-2 grid grid-cols-2 gap-2">
                   <ScoreMiniMeter label="Önce" value={beforeValue} />
                   <ScoreMiniMeter label="Sonra" value={afterValue} highlight />
                 </div>
@@ -740,13 +743,11 @@ function StorefrontInfo({
   value?: string | null;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-background/75 p-3">
+    <div className="rounded-lg border border-border bg-background/75 p-2.5">
       <p className="text-[11px] font-medium uppercase tracking-normal text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 line-clamp-2 text-sm leading-5">
-        {value || "Yok"}
-      </p>
+      <p className="mt-1 line-clamp-1 text-xs leading-5">{value || "Yok"}</p>
     </div>
   );
 }
@@ -766,16 +767,16 @@ function StorefrontNoteList({
     <div
       className={
         tone === "primary"
-          ? "rounded-lg border border-primary/25 bg-primary/10 p-3"
-          : "rounded-lg border border-border bg-background/75 p-3"
+          ? "rounded-lg border border-primary/25 bg-primary/10 p-2.5"
+          : "rounded-lg border border-border bg-background/75 p-2.5"
       }
     >
       <p className="text-xs font-semibold">{title}</p>
-      <ul className="mt-2 grid gap-1 text-sm leading-5 text-muted-foreground">
-        {items.slice(0, 3).map((item) => (
+      <ul className="mt-2 grid gap-1 text-xs leading-5 text-muted-foreground">
+        {items.slice(0, 2).map((item) => (
           <li key={item} className="flex gap-2">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <span className="line-clamp-2">{item}</span>
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <span className="line-clamp-1">{item}</span>
           </li>
         ))}
       </ul>
@@ -818,7 +819,7 @@ function StorefrontProductCard({
           : "overflow-hidden rounded-xl border border-border bg-card shadow-sm"
       }
     >
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
         <Badge variant={isAfter ? "secondary" : "outline"}>
           {isAfter ? "Yeni ürün kartı" : "Mevcut ürün kartı"}
         </Badge>
@@ -827,36 +828,36 @@ function StorefrontProductCard({
         </Badge>
       </div>
 
-      <div className="grid gap-4 p-4 md:grid-cols-[190px_1fr]">
+      <div className="grid gap-3 p-3 md:grid-cols-[132px_1fr]">
         <ProductImage product={product} />
         <div className="min-w-0">
-          <h3 className="line-clamp-2 text-2xl font-semibold leading-tight">
+          <h3 className="line-clamp-2 text-lg font-semibold leading-tight">
             {title}
           </h3>
           {product.priceDisplay ? (
-            <p className="mt-2 text-xl font-semibold text-primary">
+            <p className="mt-1 text-base font-semibold text-primary">
               {product.priceDisplay}
             </p>
           ) : null}
           {shortDescription ? (
-            <p className="mt-3 rounded-lg bg-muted/60 p-3 text-sm leading-6">
+            <p className="mt-2 line-clamp-2 rounded-lg bg-muted/60 p-2 text-xs leading-5">
               {shortDescription}
             </p>
           ) : null}
-          <p className="mt-3 line-clamp-6 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-xs leading-5 text-muted-foreground">
             {description || "Açıklama kaydı yok."}
           </p>
         </div>
       </div>
 
-      <div className="grid gap-3 px-4 pb-4 md:grid-cols-2">
+      <div className="grid gap-2 px-3 pb-3 md:grid-cols-2">
         <StorefrontInfo label="SEO başlığı" value={seoTitle} />
         <StorefrontInfo label="Meta açıklama" value={metaDescription} />
         <StorefrontInfo label="FAQ" value={faqSummary} />
         <StorefrontInfo label="Schema" value={schemaSummary} />
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-3 pb-3">
         <StorefrontNoteList
           title={isAfter ? "Satıcı için anlamı" : "Geliştirilecek noktalar"}
           items={notes}
@@ -904,10 +905,15 @@ export function BeforeAfterPanel({
     product.latestScore;
   const afterScore = asScore(scoreEstimate.after);
   const beforeTitle =
-    getBeforeAfterText(optimization.beforeAfter, "title", "before") ?? product.title;
+    getBeforeAfterText(optimization.beforeAfter, "title", "before") ??
+    product.title;
   const afterTitle =
     getBeforeAfterText(optimization.beforeAfter, "title", "after") ??
-    pickGeneratedText(optimization.generated, ["title", "seoTitle"], product.title);
+    pickGeneratedText(
+      optimization.generated,
+      ["title", "seoTitle"],
+      product.title,
+    );
   const beforeShortDescription =
     getBeforeAfterTextFromFields(
       optimization.beforeAfter,
@@ -961,7 +967,11 @@ export function BeforeAfterPanel({
       ["seoTitle", "seo_title"],
       "after",
     ) ??
-    getGeneratedValue(optimization.generated, ["seoTitle", "seo_title"], beforeSeoTitle);
+    getGeneratedValue(
+      optimization.generated,
+      ["seoTitle", "seo_title"],
+      beforeSeoTitle,
+    );
   const beforeMetaDescription =
     getBeforeAfterTextFromFields(
       optimization.beforeAfter,
@@ -982,13 +992,24 @@ export function BeforeAfterPanel({
       beforeMetaDescription,
     );
   const beforeSchema =
-    getBeforeAfterStructuredText(optimization.beforeAfter, "schemaJsonLd", "before") ??
-    null;
+    getBeforeAfterStructuredText(
+      optimization.beforeAfter,
+      "schemaJsonLd",
+      "before",
+    ) ?? null;
   const afterSchema =
-    getBeforeAfterStructuredText(optimization.beforeAfter, "schemaJsonLd", "after") ??
-    getGeneratedValue(optimization.generated, ["schemaJsonLd", "schema_json_ld"]);
+    getBeforeAfterStructuredText(
+      optimization.beforeAfter,
+      "schemaJsonLd",
+      "after",
+    ) ??
+    getGeneratedValue(optimization.generated, [
+      "schemaJsonLd",
+      "schema_json_ld",
+    ]);
   const beforeFaq =
-    getBeforeAfterStructuredText(optimization.beforeAfter, "faq", "before") ?? null;
+    getBeforeAfterStructuredText(optimization.beforeAfter, "faq", "before") ??
+    null;
   const afterFaq =
     getBeforeAfterStructuredText(optimization.beforeAfter, "faq", "after") ??
     getGeneratedValue(optimization.generated, ["faq"]);
@@ -1008,7 +1029,7 @@ export function BeforeAfterPanel({
         optimization={optimization}
       />
 
-      <div className="grid gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center">
+      <div className="grid gap-3 p-3 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-start">
         <StorefrontProductCard
           product={product}
           mode="before"
@@ -1023,7 +1044,7 @@ export function BeforeAfterPanel({
           notes={beforeNotes}
         />
 
-        <div className="hidden items-center justify-center xl:flex">
+        <div className="hidden items-start justify-center pt-20 xl:flex">
           <div className="rounded-full border border-primary/30 bg-primary/10 p-2 text-primary shadow-primary-soft">
             <ArrowRightLeft className="h-6 w-6" />
           </div>
@@ -1067,22 +1088,30 @@ export function ShopifyReviewPublishPanel({
   const fields = getShopifyPublishableFieldCandidates(optimization);
 
   return (
-    <section className="seller-surface p-4">
-      <div className="flex items-center gap-2">
-        <CheckCircle2 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Shopify yayin onayi</h2>
+    <details className="accordion-details group seller-surface overflow-hidden">
+      <summary className="grid cursor-pointer list-none gap-3 p-4 md:grid-cols-[1fr_auto] md:items-center">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <div>
+            <p className="mono-label text-primary">Shopify</p>
+            <h2 className="mt-1 text-base font-semibold">Yayın onayı</h2>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 md:justify-end">
+          <Badge variant="outline">{fields.length} alan</Badge>
+          <ChevronDown className="h-5 w-5 text-primary transition-transform group-open:rotate-180" />
+        </div>
+      </summary>
+      <div className="accordion-body border-t border-border p-4">
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          Sadece güvenli içerik alanları Shopify&apos;a gönderilir. Fiyat, stok,
+          SKU, varyant, kargo, vergi ve medya alanları değişmez.
+        </p>
+        <div className="mt-4">
+        <ShopifyPublishControls productId={product.id} fields={fields} />
       </div>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-        Tek onayla guvenli alanlar Shopify&apos;a gonderilir. Fiyat, stok,
-        SKU, varyant, kargo, vergi ve medya alanlari degistirilmez.
-      </p>
-      <div className="mt-4">
-        <ShopifyPublishControls
-          productId={product.id}
-          fields={fields}
-        />
       </div>
-    </section>
+    </details>
   );
 }
 
@@ -1151,7 +1180,9 @@ export function ProductAnalysisPage({
             Ürünlere dön
           </Link>
         </Button>
-        <Badge variant="outline">{workflowLabels[product.workflowStatus]}</Badge>
+        <Badge variant="outline">
+          {workflowLabels[product.workflowStatus]}
+        </Badge>
       </div>
 
       {errorMessage ? (
@@ -1180,4 +1211,3 @@ export function ProductAnalysisPage({
     </div>
   );
 }
-
