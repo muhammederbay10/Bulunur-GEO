@@ -339,6 +339,7 @@ def _workflow_metadata(
         "semanticJudgments": _semantic_judgments_from_analysis(analysis, boost=12.0),
         "beforeSemanticJudgments": _semantic_judgments_from_analysis(analysis, boost=0.0),
         "useSemanticValidation": live_gemini,
+        "useSemanticContentJudgment": live_gemini,
         "forceGenerationWithMissingFacts": force_generation,
     }
     if not live_gemini:
