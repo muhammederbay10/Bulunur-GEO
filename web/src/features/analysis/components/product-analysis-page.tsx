@@ -769,10 +769,17 @@ export function ShopifyReviewPublishPanel({
     <section className="seller-surface p-4">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold">Onayla, aktar veya yayınla</h2>
+        <h2 className="text-lg font-semibold">Shopify yayin onayi</h2>
       </div>
-      <div className="mt-3">
-        <ShopifyPublishControls productId={product.id} fields={fields} />
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+        Tek onayla guvenli alanlar Shopify&apos;a gonderilir. Fiyat, stok,
+        SKU, varyant, kargo, vergi ve medya alanlari degistirilmez.
+      </p>
+      <div className="mt-4">
+        <ShopifyPublishControls
+          productId={product.id}
+          fields={fields}
+        />
       </div>
     </section>
   );

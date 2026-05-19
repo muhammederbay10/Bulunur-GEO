@@ -79,8 +79,8 @@ function getProductActionHref(product: ProductSummary) {
 
 export function ProductList({ products }: { products: ProductSummary[] }) {
   if (!products.length) {
-  return (
-    <section className="seller-surface p-8">
+    return (
+      <section className="seller-surface p-8">
         <div className="mx-auto max-w-xl text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted text-primary">
             <Package className="h-6 w-6" />
@@ -124,28 +124,30 @@ export function ProductList({ products }: { products: ProductSummary[] }) {
           >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-center">
               <div className="flex min-w-0 items-center gap-4 md:col-span-5">
-              <ProductImage product={product} />
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 md:block">
-                  <h2 className="break-words text-base font-semibold transition group-hover:text-primary">
-                    {product.title}
-                  </h2>
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Store className="h-4 w-4" />
-                    {product.priceDisplay ?? "Fiyat bilgisi yok"}
-                  </span>
-                  <span>Güncellendi: {formatDate(product.updatedAt)}</span>
-                  {product.availability === "source_disconnected" ? (
-                    <span>Shopify API işlemleri kapali</span>
-                  ) : null}
+                <ProductImage product={product} />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 md:block">
+                    <h2 className="break-words text-base font-semibold transition group-hover:text-primary">
+                      {product.title}
+                    </h2>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Store className="h-4 w-4" />
+                      {product.priceDisplay ?? "Fiyat bilgisi yok"}
+                    </span>
+                    <span>Güncellendi: {formatDate(product.updatedAt)}</span>
+                    {product.availability === "source_disconnected" ? (
+                      <span>Shopify API işlemleri kapali</span>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
 
               <div className="flex flex-wrap gap-2 md:col-span-2">
-                <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
+                <Badge variant="secondary">
+                  {sourceLabels[product.source]}
+                </Badge>
                 {product.availability ? (
                   <Badge
                     variant={
