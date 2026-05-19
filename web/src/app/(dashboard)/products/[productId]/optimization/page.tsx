@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { ProductOptimizationReviewPage } from "@/features/optimization/components/product-optimization-review-page";
+import { getLatestProductAnalysis } from "@/lib/db/analysis-repository";
 import { getLatestOptimizationResult } from "@/lib/db/optimization-repository";
 import { getCurrentUser } from "@/lib/db/profile-repository";
 import { getProductAnalysisContextForProfile } from "@/lib/db/product-repository";
@@ -21,8 +22,12 @@ export default async function ProductOptimizationPage({
   }
 
   const { productId } = await params;
-  const [productResult, optimizationResult] = await Promise.all([
+  const [productResult, analysisResult, optimizationResult] = await Promise.all([
     getProductAnalysisContextForProfile({
+      profileId: user.id,
+      productId,
+    }),
+    getLatestProductAnalysis({
       profileId: user.id,
       productId,
     }),
@@ -43,6 +48,7 @@ export default async function ProductOptimizationPage({
   return (
     <ProductOptimizationReviewPage
       product={productResult.data.product}
+      analysis={analysisResult.ok ? analysisResult.data : null}
       optimization={optimizationResult.ok ? optimizationResult.data : null}
       errorMessage={optimizationResult.ok ? undefined : optimizationResult.message}
     />

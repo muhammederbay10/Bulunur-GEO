@@ -10,6 +10,7 @@ import {
 import type {
   OptimizationResultRecord,
   ProductAnalysisDetail,
+  ProductAnalysisRecord,
 } from "@/types/analysis";
 
 const reviewStatusLabels = {
@@ -35,10 +36,12 @@ function isReviewableOptimization(
 
 export function ProductOptimizationReviewPage({
   product,
+  analysis,
   optimization,
   errorMessage,
 }: {
   product: ProductAnalysisDetail;
+  analysis: ProductAnalysisRecord | null;
   optimization: OptimizationResultRecord | null;
   errorMessage?: string;
 }) {
@@ -81,7 +84,11 @@ export function ProductOptimizationReviewPage({
         </section>
       ) : (
         <>
-          <BeforeAfterPanel product={product} optimization={optimization} />
+          <BeforeAfterPanel
+            product={product}
+            analysis={analysis}
+            optimization={optimization}
+          />
           <ShopifyReviewPublishPanel
             product={product}
             optimization={optimization}
