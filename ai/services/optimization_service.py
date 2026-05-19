@@ -25,5 +25,6 @@ class OptimizationService:
             product_input,
             analysis_output,
             user_facts=user_facts,
+            metadata={"useSemanticContentJudgment": True},
         )
 

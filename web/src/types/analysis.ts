@@ -62,7 +62,8 @@ export type ProductAnalysisDetail = {
 
 export type ProductAnalysisContext = {
   product: ProductAnalysisDetail;
-  productInput: ProductInput;
+  productInput?: ProductInput;
+  analysisUnavailableMessage?: string;
 };
 
 export type AnalyzeProductApiResponse =
@@ -70,7 +71,27 @@ export type AnalyzeProductApiResponse =
       ok: true;
       productId: string;
       analysisId: string;
+      status: "running";
+      message: string;
+    }
+  | {
+      ok: true;
+      productId: string;
+      analysisId: string;
+      status: "succeeded";
       analysis: GeoAnalysisOutput;
+    }
+  | {
+      ok: false;
+      error: string;
+      message: string;
+    };
+
+export type AnalyzeProductStatusApiResponse =
+  | {
+      ok: true;
+      productId: string;
+      analysis: ProductAnalysisRecord | null;
     }
   | {
       ok: false;
@@ -109,9 +130,28 @@ export type ImproveProductApiResponse =
   | {
       ok: true;
       productId: string;
+      status: "optimization_running";
+      message: string;
+    }
+  | {
+      ok: true;
+      productId: string;
       optimizationResultId: string;
       status: OptimizationResultStatus;
       improvement: GeoImprovementOutput;
+    }
+  | {
+      ok: false;
+      error: string;
+      message: string;
+    };
+
+export type ImproveProductStatusApiResponse =
+  | {
+      ok: true;
+      productId: string;
+      workflowStatus: ProductWorkflowStatus;
+      optimization: OptimizationResultRecord | null;
     }
   | {
       ok: false;

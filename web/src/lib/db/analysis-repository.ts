@@ -20,7 +20,7 @@ type ProductAnalysisRow = {
   reranking_strength_score: number | null;
   ai_answer_readiness_score: number | null;
   detected_category: string | null;
-  buyer_intent_variants: string[] | null;
+  buyer_intent_variants: unknown;
   known_facts: Record<string, unknown> | null;
   missing_facts: unknown;
   main_problems: unknown;
@@ -56,6 +56,19 @@ function toStringArray(value: unknown): string[] {
   return value.filter((item): item is string => typeof item === "string");
 }
 
+function toScoreInteger(value: number) {
+  if (!Number.isFinite(value)) return null;
+
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
+function analysisDbDebug(label: string, details: Record<string, unknown>) {
+  console.log(`[analysis-db-debug] ${label}`, {
+    at: new Date().toISOString(),
+    ...details,
+  });
+}
+
 function mapAnalysisRow(row: ProductAnalysisRow): ProductAnalysisRecord {
   return {
     id: row.id,
@@ -66,7 +79,7 @@ function mapAnalysisRow(row: ProductAnalysisRow): ProductAnalysisRecord {
     rerankingStrengthScore: row.reranking_strength_score ?? undefined,
     aiAnswerReadinessScore: row.ai_answer_readiness_score ?? undefined,
     detectedCategory: row.detected_category ?? undefined,
-    buyerIntentVariants: row.buyer_intent_variants ?? [],
+    buyerIntentVariants: toStringArray(row.buyer_intent_variants),
     knownFacts: row.known_facts ?? {},
     missingFacts: toStringArray(row.missing_facts),
     mainProblems: toStringArray(row.main_problems),
@@ -127,6 +140,14 @@ export async function startProductAnalysisRun(params: {
 }): Promise<AnalysisRepositoryResult<{ analysisId: string }>> {
   const supabase = createAdminClient();
   const now = new Date().toISOString();
+  const startedAt = Date.now();
+
+  analysisDbDebug("start-run:snapshot-insert:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+  });
+
   const { error: snapshotError } = await supabase
     .from("product_snapshots")
     .insert({
@@ -144,6 +165,16 @@ export async function startProductAnalysisRun(params: {
     });
 
   if (snapshotError) {
+    analysisDbDebug("start-run:snapshot-insert:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      code: snapshotError.code,
+      message: snapshotError.message,
+      details: snapshotError.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: isMissingAnalysisTable(snapshotError)
@@ -153,6 +184,19 @@ export async function startProductAnalysisRun(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("start-run:snapshot-insert:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    elapsedMs: Date.now() - startedAt,
+  });
+
+  analysisDbDebug("start-run:analysis-insert:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+  });
 
   const { data, error } = await supabase
     .from("product_analyses")
@@ -167,6 +211,16 @@ export async function startProductAnalysisRun(params: {
     .single<{ id: string }>();
 
   if (error || !data?.id) {
+    analysisDbDebug("start-run:analysis-insert:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: error && isMissingAnalysisTable(error)
@@ -177,6 +231,21 @@ export async function startProductAnalysisRun(params: {
     };
   }
 
+  analysisDbDebug("start-run:analysis-insert:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+    elapsedMs: Date.now() - startedAt,
+  });
+
+  analysisDbDebug("start-run:product-status:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+  });
+
   const { error: productError } = await supabase
     .from("products")
     .update({ workflow_status: "analysis_running" })
@@ -185,6 +254,17 @@ export async function startProductAnalysisRun(params: {
     .eq("store_id", params.storeId);
 
   if (productError) {
+    analysisDbDebug("start-run:product-status:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: data.id,
+      code: productError.code,
+      message: productError.message,
+      details: productError.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: "Ürün analiz durumu güncellenemedi.",
@@ -192,6 +272,14 @@ export async function startProductAnalysisRun(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("start-run:product-status:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: data.id,
+    elapsedMs: Date.now() - startedAt,
+  });
 
   return {
     ok: true,
@@ -208,15 +296,27 @@ export async function saveProductAnalysisSuccess(params: {
 }): Promise<AnalysisRepositoryResult<ProductAnalysisRecord>> {
   const supabase = createAdminClient();
   const completedAt = new Date().toISOString();
+  const startedAt = Date.now();
+
+  analysisDbDebug("save-success:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    overallScore: params.analysis.overallScore,
+  });
+
   const analysisPayload = {
     status: "succeeded",
-    overall_score: params.analysis.overallScore,
-    retrieval_score: params.analysis.scores.retrieval.score,
+    overall_score: toScoreInteger(params.analysis.overallScore),
+    retrieval_score: toScoreInteger(params.analysis.scores.retrieval.score),
     machine_understanding_score:
-      params.analysis.scores.machineUnderstanding.score,
-    reranking_strength_score: params.analysis.scores.rerankingStrength.score,
+      toScoreInteger(params.analysis.scores.machineUnderstanding.score),
+    reranking_strength_score: toScoreInteger(
+      params.analysis.scores.rerankingStrength.score,
+    ),
     ai_answer_readiness_score:
-      params.analysis.scores.aiAnswerReadiness.score,
+      toScoreInteger(params.analysis.scores.aiAnswerReadiness.score),
     detected_category: params.analysis.detectedCategory ?? null,
     buyer_intent_variants: params.analysis.buyerIntentVariants,
     known_facts: params.analysis.knownFacts,
@@ -243,7 +343,7 @@ export async function saveProductAnalysisSuccess(params: {
       .update({
         workflow_status: "analyzed",
         latest_analysis_id: params.analysisId,
-        latest_score: params.analysis.overallScore,
+        latest_score: toScoreInteger(params.analysis.overallScore),
         last_analyzed_at: completedAt,
       })
       .eq("id", params.productId)
@@ -252,15 +352,57 @@ export async function saveProductAnalysisSuccess(params: {
   ]);
 
   if (analysisResult.error || !analysisResult.data) {
+    if (analysisResult.error) {
+      console.error("[analysis] save result failed", {
+        code: analysisResult.error.code,
+        message: analysisResult.error.message,
+        details: analysisResult.error.details,
+        hint: analysisResult.error.hint,
+        analysisId: params.analysisId,
+        productId: params.productId,
+      });
+    }
+
+    analysisDbDebug("save-success:analysis-update:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: analysisResult.error?.code,
+      message: analysisResult.error?.message,
+      details: analysisResult.error?.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
-      message: "Analiz sonucu kaydedilemedi.",
+      message: analysisResult.error?.message ?? "Analiz sonucu kaydedilemedi.",
       code: analysisResult.error?.code,
       status: 500,
     };
   }
 
   if (productResult.error) {
+    console.error("[analysis] product summary update failed", {
+      code: productResult.error.code,
+      message: productResult.error.message,
+      details: productResult.error.details,
+      hint: productResult.error.hint,
+      analysisId: params.analysisId,
+      productId: params.productId,
+    });
+
+    analysisDbDebug("save-success:product-update:failed", {
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      code: productResult.error.code,
+      message: productResult.error.message,
+      details: productResult.error.details,
+      elapsedMs: Date.now() - startedAt,
+    });
+
     return {
       ok: false,
       message: "Ürün analiz ozeti güncellenemedi.",
@@ -268,6 +410,14 @@ export async function saveProductAnalysisSuccess(params: {
       status: 500,
     };
   }
+
+  analysisDbDebug("save-success:complete", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    elapsedMs: Date.now() - startedAt,
+  });
 
   return {
     ok: true,
@@ -285,8 +435,18 @@ export async function saveProductAnalysisFailure(params: {
 }): Promise<void> {
   const supabase = createAdminClient();
   const completedAt = new Date().toISOString();
+  const startedAt = Date.now();
 
-  await Promise.all([
+  analysisDbDebug("save-failure:start", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    errorCode: params.errorCode,
+    errorMessage: params.errorMessage,
+  });
+
+  const [analysisResult, productResult] = await Promise.all([
     supabase
       .from("product_analyses")
       .update({
@@ -306,4 +466,38 @@ export async function saveProductAnalysisFailure(params: {
       .eq("profile_id", params.profileId)
       .eq("store_id", params.storeId),
   ]);
+
+  if (analysisResult.error || productResult.error) {
+    console.error("[analysis-db-debug] save-failure:failed", {
+      at: new Date().toISOString(),
+      profileId: params.profileId,
+      storeId: params.storeId,
+      productId: params.productId,
+      analysisId: params.analysisId,
+      analysisError: analysisResult.error
+        ? {
+            code: analysisResult.error.code,
+            message: analysisResult.error.message,
+            details: analysisResult.error.details,
+          }
+        : null,
+      productError: productResult.error
+        ? {
+            code: productResult.error.code,
+            message: productResult.error.message,
+            details: productResult.error.details,
+          }
+        : null,
+      elapsedMs: Date.now() - startedAt,
+    });
+    return;
+  }
+
+  analysisDbDebug("save-failure:success", {
+    profileId: params.profileId,
+    storeId: params.storeId,
+    productId: params.productId,
+    analysisId: params.analysisId,
+    elapsedMs: Date.now() - startedAt,
+  });
 }

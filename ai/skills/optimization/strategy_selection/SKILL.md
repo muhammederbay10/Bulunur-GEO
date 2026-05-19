@@ -72,6 +72,34 @@ Sadece geçerli JSON döndür. Markdown, açıklama yazısı veya code fence kul
 `requiredUserQuestions` en fazla 5 öğe olmalı.
 `priority` 1 ile 6 arasında tam sayı olmalı.
 
+Eğer `task` alanı `semantic_content_thinness_judgment` ise strateji listesi döndürme.
+Bunun yerine ürün içeriğinin Türkçe alıcı sorularını cevaplamak için semantik olarak yeterli olup olmadığını değerlendir.
+
+Bu değerlendirmede karakter sayısına göre karar verme. Şuna bak:
+
+- Başlık ürün tipini ve ayırt edici bilgiyi açıkça anlatıyor mu?
+- Açıklama yalnızca ürün adını tekrar mı ediyor?
+- Ürün kime uygun, hangi kullanım amacı için uygun ve hangi somut özelliklere sahip anlaşılabiliyor mu?
+- Türkçe alıcı soruları güvenli şekilde cevaplanabilir mi?
+- Karşılaştırma, öneri ve "alınır mı" tarzı sorgular için yeterli kanıt var mı?
+
+Eğer içerik semantik olarak zayıfsa `isThin: true` döndür ve `recommendedStrategy` olarak `turkish_buyer_intent_rewrite` kullan.
+Eksik ürün gerçeği uydurma; sadece mevcut içeriğin cevaplanabilirlik açısından zayıf olup olmadığını değerlendir.
+
+```json
+{
+  "isThin": true,
+  "confidence": 0.91,
+  "reasons": [
+    "Açıklama ürün adını tekrar ediyor ve alıcı kullanım amacını açıklamıyor.",
+    "İçerik Türkçe karşılaştırma ve öneri sorularını güvenli cevaplamak için yeterli somut özellik sunmuyor."
+  ],
+  "recommendedStrategy": "turkish_buyer_intent_rewrite"
+}
+```
+
+Normal strateji seçimi görevi için aşağıdaki formatı kullan.
+
 ```json
 {
   "selectedStrategies": [

@@ -1,11 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
-import { CheckCircle2, Copy, Download, Loader2, Send } from "lucide-react";
+import { useState, useTransition } from "react";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import type { PublishProductApiResponse } from "@/types/analysis";
 import type { ShopifyPublishableField } from "@/types/shopify";
 
@@ -22,16 +21,6 @@ function formatValue(value: string | string[] | null | undefined) {
   return value ?? "Bos";
 }
 
-function buildExportPayload(fields: PublishableFieldCandidate[]) {
-  return fields.reduce<Record<string, string | string[] | null>>(
-    (payload, field) => {
-      payload[field.field] = field.value;
-      return payload;
-    },
-    {},
-  );
-}
-
 export function ShopifyPublishControls({
   productId,
   fields,
@@ -42,49 +31,13 @@ export function ShopifyPublishControls({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFields, setSelectedFields] = useState<ShopifyPublishableField[]>(
-    () => fields.map((field) => field.field),
-  );
+  const [hasPublished, setHasPublished] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const selectedFieldSet = useMemo(
-    () => new Set(selectedFields),
-    [selectedFields],
-  );
-  const selectedCandidates = fields.filter((field) =>
-    selectedFieldSet.has(field.field),
-  );
   const isBusy = isSubmitting || isPending;
-
-  function toggleField(field: ShopifyPublishableField) {
-    setSelectedFields((current) =>
-      current.includes(field)
-        ? current.filter((item) => item !== field)
-        : [...current, field],
-    );
-  }
-
-  async function copyApprovedJson() {
-    const payload = JSON.stringify(buildExportPayload(selectedCandidates), null, 2);
-
-    await navigator.clipboard.writeText(payload);
-    setMessage("Onaylanan alanlar kopyalandi.");
-  }
-
-  function exportApprovedJson() {
-    const payload = JSON.stringify(buildExportPayload(selectedCandidates), null, 2);
-    const blob = new Blob([payload], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = url;
-    anchor.download = `shopify-approved-fields-${productId}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setMessage("Onaylanan alanlar JSON olarak hazırlandı.");
-  }
 
   async function publishToShopify() {
     setMessage(null);
+    setHasPublished(false);
     setIsSubmitting(true);
 
     try {
@@ -93,21 +46,24 @@ export function ShopifyPublishControls({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ approvedFields: selectedFields }),
+        body: JSON.stringify({
+          approvedFields: fields.map((field) => field.field),
+        }),
       });
       const payload = (await response.json()) as PublishProductApiResponse;
 
       if (!response.ok || !payload.ok) {
-        setMessage(payload.ok ? "Yayınlama başarısız." : payload.message);
+        setMessage(payload.ok ? "Yayinlama basarisiz." : payload.message);
         return;
       }
 
-      setMessage("Onaylanan alanlar Shopify'a yayınlandı.");
+      setHasPublished(true);
+      setMessage("Shopify'a basariyla yayinlandi.");
       startTransition(() => {
         router.refresh();
       });
     } catch {
-      setMessage("Yayınlama isteği gönderilemedi. Bağlantıyı kontrol edin.");
+      setMessage("Yayinlama istegi gonderilemedi. Baglantiyi kontrol edin.");
     } finally {
       setIsSubmitting(false);
     }
@@ -116,41 +72,38 @@ export function ShopifyPublishControls({
   if (fields.length === 0) {
     return (
       <p className="rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
-        Shopify için yayınlanabilir güvenli alan bulunamadı.
+        Shopify icin yayinlanabilir guvenli alan bulunamadi.
       </p>
     );
   }
 
   return (
     <div className="grid gap-5">
+      <div className="rounded-md border border-border bg-background/70 p-3">
+        <p className="text-sm font-semibold">Yayinlanacak guvenli alanlar</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {fields.length} alan onayla birlikte Shopify&apos;a gonderilecek.
+        </p>
+      </div>
+
       <div className="grid gap-3">
         {fields.map((field) => (
-          <label
+          <div
             key={field.field}
-            className="grid gap-3 rounded-lg border border-border bg-background/70 p-4 transition hover:bg-muted/70"
+            className="grid gap-3 rounded-lg border border-border bg-background/70 p-4"
           >
             <div className="flex items-start gap-3">
-              <Checkbox
-                checked={selectedFieldSet.has(field.field)}
-                onCheckedChange={() => toggleField(field.field)}
-                disabled={isBusy}
-                aria-label={`${field.label} onayi`}
-              />
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold">{field.label}</p>
-                  {selectedFieldSet.has(field.field) ? (
-                    <span className="inline-flex items-center gap-1 text-xs text-primary">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Onayli
-                    </span>
-                  ) : null}
+                  <span className="inline-flex items-center gap-1 text-xs text-primary">
+                    Onay kapsaminda
+                  </span>
                 </div>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   <div>
-                    <p className="mono-label text-muted-foreground">
-                      Önce
-                    </p>
+                    <p className="mono-label text-muted-foreground">Once</p>
                     <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
                       {formatValue(field.before)}
                     </p>
@@ -164,50 +117,48 @@ export function ShopifyPublishControls({
                 </div>
               </div>
             </div>
-          </label>
+          </div>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="gap-2"
-          onClick={copyApprovedJson}
-          disabled={selectedCandidates.length === 0 || isBusy}
-        >
-          <Copy className="h-4 w-4" />
-          JSON Kopyala
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="gap-2"
-          onClick={exportApprovedJson}
-          disabled={selectedCandidates.length === 0 || isBusy}
-        >
-          <Download className="h-4 w-4" />
-          JSON Dışarı Aktar
-        </Button>
+      <div className="grid gap-3 rounded-md border border-primary/30 bg-primary/10 p-4">
+        {isBusy ? (
+          <div className="flex items-center gap-3 text-primary">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <div>
+              <p className="text-sm font-semibold">Shopify&apos;a yayinlaniyor</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Onaylanan guvenli alanlar Shopify&apos;a gonderiliyor.
+              </p>
+            </div>
+          </div>
+        ) : hasPublished ? (
+          <div className="flex items-center gap-3 text-primary">
+            <CheckCircle2 className="h-5 w-5" />
+            <div>
+              <p className="text-sm font-semibold">Basariyla yayinlandi</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Shopify guncellemesi dogru sekilde tamamlandi.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         <Button
           type="button"
           className="gap-2"
           onClick={publishToShopify}
-          disabled={selectedCandidates.length === 0 || isBusy}
+          disabled={isBusy}
         >
-          {isBusy ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-          Shopify&apos;a Yayınla
+          <Send className="h-4 w-4" />
+          Onayla ve Shopify&apos;a Yayinla
         </Button>
       </div>
 
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       <p className="text-sm leading-6 text-muted-foreground">
-        Yalnızca işaretli alanlar gönderilir. Fiyat, stok, SKU, varyant,
-        kargo, vergi, koleksiyon ve medya alanları bu MVP&apos;de değiştirilmez.
+        Fiyat, stok, SKU, varyant, kargo, vergi, koleksiyon ve medya alanlari
+        bu MVP&apos;de degistirilmez.
       </p>
     </div>
   );

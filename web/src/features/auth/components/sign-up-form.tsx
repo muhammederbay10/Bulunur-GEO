@@ -17,6 +17,7 @@ import {
 } from "@/features/sources/actions";
 import { CompactSourceSetupForm } from "@/features/sources/components/compact-source-setup-form";
 import type { SourceChoice } from "@/features/sources/components/source-choice-selector";
+import { useInlineSourceSetupRedirect } from "@/features/sources/use-inline-source-setup-redirect";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -82,23 +83,7 @@ export function SignUpForm({
     }
   }, [onboardingState.status]);
 
-  useEffect(() => {
-    if (shopifyState.status === "success" && shopifyState.connectUrl) {
-      const timeoutId = window.setTimeout(() => {
-        window.location.assign(shopifyState.connectUrl as string);
-      }, 500);
-
-      return () => window.clearTimeout(timeoutId);
-    }
-
-    if (nativeState.status === "success") {
-      const timeoutId = window.setTimeout(() => {
-        router.replace("/dashboard");
-      }, 900);
-
-      return () => window.clearTimeout(timeoutId);
-    }
-  }, [nativeState.status, router, shopifyState.connectUrl, shopifyState.status]);
+  useInlineSourceSetupRedirect({ nativeState, shopifyState });
 
   async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

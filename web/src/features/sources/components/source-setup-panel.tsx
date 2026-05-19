@@ -11,6 +11,7 @@ import {
   type NativeSourceFormState,
   type ShopifySourceFormState,
 } from "@/features/sources/actions";
+import { buildNativeImportLoadingPath } from "@/features/sources/native-import-redirect";
 import type { UserProfile } from "@/types/profile";
 import type { SourceStore } from "@/types/source";
 
@@ -81,11 +82,9 @@ export function SourceSetupPanel({
 
     if (nativeState.status === "success" && nativeState.importUrl) {
       const timeoutId = window.setTimeout(() => {
-        const params = new URLSearchParams({
-          url: nativeState.importUrl as string,
-        });
+        const redirectPath = buildNativeImportLoadingPath(nativeState.importUrl);
 
-        router.replace(`/sources/native-import/loading?${params.toString()}`);
+        router.replace(redirectPath ?? "/dashboard");
       }, 500);
 
       return () => window.clearTimeout(timeoutId);

@@ -90,9 +90,30 @@ function toQuestionArray(value: unknown) {
             (entry): entry is string => typeof entry === "string",
           )
         : [];
+      const inputType =
+        item.inputType === "select" || item.inputType === "text"
+          ? item.inputType
+          : "text";
+      const options = Array.isArray(item.options)
+        ? item.options
+            .map((option) => {
+              if (!isRecord(option)) return null;
+
+              const value =
+                typeof option.value === "string" ? option.value : null;
+              const label =
+                typeof option.label === "string" ? option.label : null;
+
+              return value && label ? { value, label } : null;
+            })
+            .filter(
+              (option): option is { value: string; label: string } =>
+                Boolean(option),
+            )
+        : [];
 
       return field && question && reason
-        ? { field, question, reason, requiredFor }
+        ? { field, question, reason, requiredFor, inputType, options }
         : null;
     })
     .filter(
@@ -103,6 +124,8 @@ function toQuestionArray(value: unknown) {
         question: string;
         reason: string;
         requiredFor: string[];
+        inputType: "text" | "select";
+        options: Array<{ value: string; label: string }>;
       } => Boolean(item),
     );
 }
@@ -125,6 +148,10 @@ function mapOptimizationRow(row: OptimizationResultRow): OptimizationResultRecor
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
 }
 
 function resolveOptimizationStatus(
@@ -282,8 +309,8 @@ export async function saveOptimizationResult(params: {
       selected_strategies: params.improvement.selectedStrategies,
       needs_user_input: params.improvement.needsUserInput,
       user_confirmed_facts: params.improvement.userConfirmedFacts,
-      generated: params.improvement.generated,
-      validation: params.improvement.validation ?? {},
+      generated: asRecord(params.improvement.generated),
+      validation: asRecord(params.improvement.validation),
       score_estimate: params.improvement.scoreEstimate ?? {},
       before_after: params.improvement.beforeAfter ?? {},
       raw_output: params.improvement,
@@ -292,11 +319,22 @@ export async function saveOptimizationResult(params: {
     .single<OptimizationResultRow>();
 
   if (error || !data?.id) {
+    if (error) {
+      console.error("[optimization] save result failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        analysisId: params.analysisId,
+        productId: params.productId,
+      });
+    }
+
     return {
       ok: false,
       message: error && isMissingOptimizationTable(error)
         ? optimizationStorageSetupMessage()
-        : "Optimizasyon sonucu kaydedilemedi.",
+        : error?.message ?? "Optimizasyon sonucu kaydedilemedi.",
       code: error?.code,
       status: 500,
     };
@@ -366,14 +404,19 @@ export async function saveOptimizationFailure(params: {
 
 export function normalizeUserFacts(
   value: unknown,
-): Record<string, string | null> {
+): Record<string, unknown> {
   if (!isRecord(value)) return {};
 
-  const normalized: Record<string, string | null> = {};
+  const normalized: Record<string, unknown> = {};
 
   for (const [key, entry] of Object.entries(value)) {
     if (entry === null) {
       normalized[key] = null;
+      continue;
+    }
+
+    if (isRecord(entry)) {
+      normalized[key] = normalizeUserFactRecord(entry);
       continue;
     }
 
@@ -382,11 +425,71 @@ export function normalizeUserFacts(
     const trimmedValue = entry.trim();
 
     if (trimmedValue) {
-      normalized[key] = trimmedValue;
+      normalized[key] =
+        key === "attributes" ? { userProvided: trimmedValue } : trimmedValue;
     }
   }
 
   return normalized;
+}
+
+function normalizeUserFactRecord(
+  value: Record<string, unknown>,
+): Record<string, unknown> {
+  const normalized: Record<string, unknown> = {};
+
+  for (const [key, entry] of Object.entries(value)) {
+    if (entry === null) {
+      normalized[key] = null;
+      continue;
+    }
+
+    if (isRecord(entry)) {
+      normalized[key] = normalizeUserFactRecord(entry);
+      continue;
+    }
+
+    if (typeof entry === "string") {
+      const trimmedValue = entry.trim();
+      if (trimmedValue) {
+        normalized[key] = trimmedValue;
+      }
+      continue;
+    }
+
+    if (typeof entry === "number" || typeof entry === "boolean") {
+      normalized[key] = entry;
+    }
+  }
+
+  return normalized;
+}
+
+export function mergeUserFacts(
+  previous: unknown,
+  next: unknown,
+): Record<string, unknown> {
+  return deepMergeUserFacts(normalizeUserFacts(previous), normalizeUserFacts(next));
+}
+
+function deepMergeUserFacts(
+  previous: Record<string, unknown>,
+  next: Record<string, unknown>,
+): Record<string, unknown> {
+  const merged = { ...previous };
+
+  for (const [key, value] of Object.entries(next)) {
+    const previousValue = merged[key];
+
+    if (isRecord(previousValue) && isRecord(value)) {
+      merged[key] = deepMergeUserFacts(previousValue, value);
+      continue;
+    }
+
+    merged[key] = value;
+  }
+
+  return merged;
 }
 
 export async function saveReviewActions(params: {
