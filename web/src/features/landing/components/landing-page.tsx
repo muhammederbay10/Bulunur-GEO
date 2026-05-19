@@ -343,66 +343,6 @@ function CapabilitiesSection() {
   );
 }
 
-function AvatarCard({
-  name,
-  role,
-  initials,
-  body,
-}: {
-  name: string;
-  role: string;
-  initials: string;
-  body: string;
-}) {
-  return (
-    <article className="landing-hover landing-reveal seller-surface grid gap-5 p-5 sm:grid-cols-[120px_1fr]">
-      <div className="flex aspect-square items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-3xl font-semibold text-primary">
-        {initials}
-      </div>
-      <div>
-        <p className="text-xl font-semibold">{name}</p>
-        <p className="mt-1 text-sm font-medium text-primary">{role}</p>
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">{body}</p>
-      </div>
-    </article>
-  );
-}
-
-function AboutSection() {
-  return (
-    <section className="border-t border-border bg-muted/40">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16">
-        <div className="max-w-2xl">
-          <p className="mono-label text-primary">Ekip</p>
-          <h2 className="mt-3 text-3xl font-semibold leading-tight md:text-4xl">
-            Satıcı deneyimi ve yapay zeka mühendisliği aynı masada.
-          </h2>
-          <p className="mt-4 text-base leading-7 text-muted-foreground">
-            Proje, e-ticaret satıcılarının ürün içeriğini daha güvenli ve
-            anlaşılır şekilde iyileştirmesine odaklanan iki kişilik bir ekip
-            tarafından geliştiriliyor.
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 lg:grid-cols-2">
-          <AvatarCard
-            name="Ömer Mevlütoğlu"
-            role="Yazılım mühendisi"
-            initials="ÖM"
-            body="Ürün deneyimi, frontend mimarisi ve satıcı panelinin sade, hızlı ve anlaşılır ilerlemesine odaklanır."
-          />
-          <AvatarCard
-            name="Muhammed Erbay"
-            role="AI mühendisi"
-            initials="ME"
-            body="AI analiz akışı, ürün sinyalleri, optimizasyon çıktıları ve güvenli yapay zeka entegrasyonları üzerinde çalışır."
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function LandingPage() {
   return (
     <main className="min-h-screen bg-background">
@@ -430,7 +370,6 @@ export function LandingPage() {
       <HeroSection />
       <ProductSection />
       <CapabilitiesSection />
-      <AboutSection />
 
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-muted-foreground">
