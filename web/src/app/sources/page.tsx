@@ -8,7 +8,7 @@ import { LogoutButton } from "@/features/auth/components/logout-button";
 import { SourceSetupPanel } from "@/features/sources/components/source-setup-panel";
 import { getCurrentUser, getProfileForUser } from "@/lib/db/profile-repository";
 import { getSourceSetupForUser } from "@/lib/db/source-repository";
-import { hasSupabaseElevatedKey } from "@/lib/env/server";
+import { hasSupabaseElevatedKey } from "@/lib/app-env/server";
 
 type SourcesSearchParams = {
   setup?: string;

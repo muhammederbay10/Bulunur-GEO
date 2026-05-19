@@ -2,8 +2,8 @@ import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-import { getSupabaseElevatedKey } from "@/lib/env/server";
-import { getSupabasePublicEnv } from "@/lib/env/public";
+import { getSupabaseElevatedKey } from "@/lib/app-env/server";
+import { getSupabasePublicEnv } from "@/lib/app-env/public";
 
 export class MissingSupabaseElevatedKeyError extends Error {
   constructor() {

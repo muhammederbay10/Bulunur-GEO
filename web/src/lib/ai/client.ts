@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getServerEnv } from "@/lib/env/server";
+import { getServerEnv } from "@/lib/app-env/server";
 import {
   geoAnalysisOutputSchema,
   geoImprovementOutputSchema,

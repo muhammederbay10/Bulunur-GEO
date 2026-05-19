@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { getSupabasePublicEnv } from "@/lib/env/public";
+import { getSupabasePublicEnv } from "@/lib/app-env/public";
 
 /**
  * Fluid compute kullanırken özellikle önemli: bu istemciyi global

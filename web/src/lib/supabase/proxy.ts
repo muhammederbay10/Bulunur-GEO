@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { hasRequiredPublicEnv } from "@/lib/env/public";
+import { hasRequiredPublicEnv } from "@/lib/app-env/public";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

@@ -7,7 +7,7 @@ import { SidebarUsageCounters } from "@/components/sidebar-usage-counters";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/features/auth/components/logout-button";
-import { hasRequiredPublicEnv } from "@/lib/env/public";
+import { hasRequiredPublicEnv } from "@/lib/app-env/public";
 import { createClient } from "@/lib/supabase/server";
 
 async function AccountSummary() {
