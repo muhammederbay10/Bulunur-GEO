@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -33,8 +33,17 @@ type Notice = {
   message: string;
 };
 
+type ScanMode = "listing" | "direct";
+
+type ScanProgress = {
+  mode: ScanMode;
+  title: string;
+  message: string;
+  target: string;
+};
+
 const statusLabels = {
-  ready: "Hazır",
+  ready: "Hazir",
   partial: "Eksik bilgi var",
   needs_review: "Kontrol gerekli",
   failed: "Basarisiz",
@@ -68,15 +77,17 @@ function itemImageUrls(item: ScrapePreviewItem) {
 }
 
 export function NativeImportPanel({ store }: NativeImportPanelProps) {
+  const scanInFlightRef = useRef(false);
   const [listingUrl, setListingUrl] = useState(store.websiteUrl ?? "");
   const [directUrls, setDirectUrls] = useState("");
   const [scanResponse, setScanResponse] = useState<ScanResponse | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const [isScanning, startScanTransition] = useTransition();
+  const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
   const [isImporting, startImportTransition] = useTransition();
   const [isFallbackImporting, startFallbackTransition] = useTransition();
 
+  const isScanning = scanProgress !== null;
   const selectedCount = selectedIds.length;
   const allPreviewIds = useMemo(
     () => scanResponse?.previewItems.map((item) => item.id) ?? [],
@@ -97,45 +108,79 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
     });
   }
 
-  async function scan(payload: { url?: string; urls?: string[] }) {
-    resetNotice();
-    setScanResponse(null);
-    setSelectedIds([]);
-
-    const response = await fetch("/api/native/url-import/scan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as ScanResponse;
-
-    setScanResponse(body);
-
-    if (!response.ok || !body.success) {
+  async function scan(payload: { url?: string; urls?: string[] }, mode: ScanMode) {
+    if (scanInFlightRef.current) {
       setNotice({
-        kind: "error",
+        kind: "warning",
         message:
-          body.error ??
-          "URL taraması tamamlanamadı. Dosya veya manuel aktarımı kullanabilirsiniz.",
+          "Tarama zaten devam ediyor. Sonuc hazir olana kadar yeni tarama baslatilamaz.",
       });
       return;
     }
 
-    setSelectedIds(body.previewItems.map((item) => item.id));
-    setNotice({
-      kind: body.failedItems?.length ? "warning" : "success",
-      message: body.failedItems?.length
-        ? `${body.previewItems.length} ürün hazır, ${body.failedItems.length} sayfa alınamadı.`
-        : `${body.previewItems.length} ürün önizlemeye hazır.`,
+    scanInFlightRef.current = true;
+    resetNotice();
+    setScanResponse(null);
+    setSelectedIds([]);
+    setScanProgress({
+      mode,
+      title:
+        mode === "listing"
+          ? "Urun listesi taraniyor"
+          : "Tekil urunler taraniyor",
+      message:
+        mode === "listing"
+          ? "Sayfadaki urun baglantilari bulunuyor ve guvenli onizleme kayitlari hazirlaniyor."
+          : "Girdiginiz urun sayfalari guvenli sekilde kontrol ediliyor.",
+      target:
+        mode === "listing"
+          ? (payload.url ?? "")
+          : `${payload.urls?.length ?? 0} urun URLsi`,
     });
+
+    try {
+      const response = await fetch("/api/native/url-import/scan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const body = (await response.json()) as ScanResponse;
+
+      setScanResponse(body);
+
+      if (!response.ok || !body.success) {
+        setNotice({
+          kind: "error",
+          message:
+            body.error ??
+            "URL taramasi tamamlanamadi. Dosya veya manuel aktarimi kullanabilirsiniz.",
+        });
+        return;
+      }
+
+      setSelectedIds(body.previewItems.map((item) => item.id));
+      setNotice({
+        kind: body.failedItems?.length ? "warning" : "success",
+        message: body.failedItems?.length
+          ? `${body.previewItems.length} urun hazir, ${body.failedItems.length} sayfa alinamadi.`
+          : `${body.previewItems.length} urun onizlemeye hazir.`,
+      });
+    } catch {
+      setNotice({
+        kind: "error",
+        message:
+          "Tarama sirasinda baglanti hatasi olustu. Biraz sonra tekrar deneyebilirsiniz.",
+      });
+    } finally {
+      scanInFlightRef.current = false;
+      setScanProgress(null);
+    }
   }
 
   function handleListingScan() {
-    startScanTransition(() => {
-      void scan({ url: listingUrl });
-    });
+    void scan({ url: listingUrl }, "listing");
   }
 
   function handleDirectScan() {
@@ -145,16 +190,13 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
       .filter(Boolean)
       .slice(0, 20);
 
-    startScanTransition(() => {
-      void scan({ urls });
-    });
+    void scan({ urls }, "direct");
   }
-
   function handleImportSelected() {
     if (!scanResponse?.scrapeJobId || selectedIds.length === 0) {
       setNotice({
         kind: "error",
-        message: "Aktarilacak önizleme secilmedi.",
+        message: "Aktarilacak onizleme secilmedi.",
       });
       return;
     }
@@ -177,14 +219,14 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
       if (!response.ok || !body.success) {
         setNotice({
           kind: "error",
-          message: getErrorMessage(body, "Seçilen ürünler aktarılamadı."),
+          message: getErrorMessage(body, "Secilen urunler aktarilamadi."),
         });
         return;
       }
 
       setNotice({
         kind: "success",
-        message: `${body.importedCount} ürün katalog listesine aktarıldı.`,
+        message: `${body.importedCount} urun katalog listesine aktarildi.`,
       });
       setSelectedIds([]);
     });
@@ -203,14 +245,14 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
       if (!response.ok || !body.success) {
         setNotice({
           kind: "error",
-          message: getErrorMessage(body, "Ürün aktarımı tamamlanamadı."),
+          message: getErrorMessage(body, "Urun aktarimi tamamlanamadi."),
         });
         return;
       }
 
       setNotice({
         kind: "success",
-        message: `${body.importedCount} ürün katalog listesine aktarıldı.`,
+        message: `${body.importedCount} urun katalog listesine aktarildi.`,
       });
     });
   }
@@ -225,11 +267,11 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
           <div>
             <p className="mono-label text-primary">Native import</p>
             <h2 className="mt-1 text-xl font-semibold">
-              Web sitesi ürünlerini içe aktar
+              Web sitesi urunlerini ice aktar
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              {store.name} için URL taramasi, tekil ürün ekleme ve dosya
-              aktarımı ayni native katalog kaynağına yazilir.
+              {store.name} icin URL taramasi, tekil urun ekleme ve dosya
+              aktarimi ayni native katalog kaynagina yazilir.
             </p>
           </div>
         </div>
@@ -252,15 +294,51 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-xl border border-border bg-background/70 p-4">
+          {scanProgress ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="mb-5 overflow-hidden rounded-xl border border-primary/30 bg-primary/10"
+            >
+              <div className="flex items-start gap-3 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold text-foreground">
+                      {scanProgress.title}
+                    </h3>
+                    <Badge variant="outline">
+                      {scanProgress.mode === "listing"
+                        ? "Liste taramasi"
+                        : "Tekil tarama"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {scanProgress.message}
+                  </p>
+                  <p className="mt-2 break-all text-xs text-muted-foreground">
+                    {scanProgress.target}
+                  </p>
+                </div>
+              </div>
+              <div className="h-1.5 overflow-hidden bg-primary/15">
+                <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
+              </div>
+            </div>
+          ) : null}
+
           <div className="grid gap-3">
-            <Label htmlFor="native-listing-url">Ürün liste URL</Label>
+            <Label htmlFor="native-listing-url">Urun liste URL</Label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 id="native-listing-url"
                 type="url"
                 value={listingUrl}
                 onChange={(event) => setListingUrl(event.target.value)}
-                placeholder="https://mağazam.com/collections/all"
+                placeholder="https://magazam.com/collections/all"
+                disabled={isScanning}
               />
               <Button
                 type="button"
@@ -273,19 +351,20 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                 ) : (
                   <Search className="h-4 w-4" />
                 )}
-                Tara
+                {scanProgress?.mode === "listing" ? "Taraniyor" : "Tara"}
               </Button>
             </div>
           </div>
 
           <div className="mt-4 grid gap-3">
-            <Label htmlFor="native-direct-urls">Tekil ürün URLleri</Label>
+            <Label htmlFor="native-direct-urls">Tekil urun URLleri</Label>
             <textarea
               id="native-direct-urls"
               className="min-h-24 rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/20"
               value={directUrls}
               onChange={(event) => setDirectUrls(event.target.value)}
-              placeholder="Her satıra bir ürün URLsi"
+              placeholder="Her satira bir urun URLsi"
+              disabled={isScanning}
             />
             <Button
               type="button"
@@ -299,7 +378,9 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              Tekil ürünleri tara
+              {scanProgress?.mode === "direct"
+                ? "Tekil urunler taraniyor"
+                : "Tekil urunleri tara"}
             </Button>
           </div>
 
@@ -307,9 +388,9 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
             <div className="mt-5 border-t border-border pt-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="font-semibold">Önizleme</h3>
+                  <h3 className="font-semibold">Onizleme</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {scanResponse.previewItems.length} seçilebilir ürün bulundu.
+                    {scanResponse.previewItems.length} secilebilir urun bulundu.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -320,7 +401,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                     onClick={() => setSelectedIds(allPreviewIds)}
                     disabled={allPreviewIds.length === 0}
                   >
-                    Tümünü seç
+                    Tumunu sec
                   </Button>
                   <Button
                     type="button"
@@ -338,7 +419,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                     ) : (
                       <CheckCircle2 className="h-4 w-4" />
                     )}
-                    Seçilenleri aktar
+                    Secilenleri aktar
                   </Button>
                 </div>
               </div>
@@ -359,12 +440,12 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                           onCheckedChange={(value) =>
                             updateSelection(item.id, value === true)
                           }
-                          aria-label={`${item.title ?? "Ürün"} seç`}
+                          aria-label={`${item.title ?? "Urun"} sec`}
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <h4 className="truncate font-medium">
-                              {item.title ?? "Başlık bulunamadı"}
+                              {item.title ?? "Baslik bulunamadi"}
                             </h4>
                             <Badge variant="secondary">
                               {statusLabels[item.status]}
@@ -377,9 +458,9 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                             {item.productUrl}
                           </p>
                           <p className="mt-2 text-sm text-muted-foreground">
-                            {item.priceDisplay ?? "Fiyat bulunamadı"}
-                            {item.brand ? ` · ${item.brand}` : ""}
-                            {images.length > 0 ? ` · ${images.length} görsel` : ""}
+                            {item.priceDisplay ?? "Fiyat bulunamadi"}
+                            {item.brand ? ` - ${item.brand}` : ""}
+                            {images.length > 0 ? ` - ${images.length} gorsel` : ""}
                           </p>
                         </div>
                       </div>
@@ -391,7 +472,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
               {scanResponse.failedItems?.length ? (
                 <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
                   <AlertTriangle className="h-4 w-4 text-primary" />
-                  {scanResponse.failedItems.length} sayfa aktarilabilir önizleme
+                  {scanResponse.failedItems.length} sayfa aktarilabilir onizleme
                   uretmedi.
                 </p>
               ) : null}
@@ -438,18 +519,18 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
             className="rounded-xl border border-border bg-background/70 p-4"
           >
             <input type="hidden" name="mode" value="manual" />
-            <h3 className="font-semibold">Manuel ürün ekle</h3>
+            <h3 className="font-semibold">Manuel urun ekle</h3>
             <div className="mt-4 grid gap-3">
               <div className="grid gap-2">
-                <Label htmlFor="manual-title">Ürün adi</Label>
+                <Label htmlFor="manual-title">Urun adi</Label>
                 <Input id="manual-title" name="title" required />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="manual-url">Ürün URL</Label>
+                <Label htmlFor="manual-url">Urun URL</Label>
                 <Input id="manual-url" name="productUrl" type="url" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="manual-description">Açıklama</Label>
+                <Label htmlFor="manual-description">Aciklama</Label>
                 <textarea
                   id="manual-description"
                   name="description"
@@ -476,7 +557,7 @@ export function NativeImportPanel({ store }: NativeImportPanelProps) {
                 ) : (
                   <Plus className="h-4 w-4" />
                 )}
-                Manuel ürünü aktar
+                Manuel urunu aktar
               </Button>
             </div>
           </form>
