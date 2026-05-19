@@ -73,12 +73,35 @@ class ImprovementValidation(BaseModel):
         return self
 
 
+class EstimatedLayerScore(BaseModel):
+    """Compact after-improvement score for one GEO layer."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    score: float = Field(ge=0, le=100)
+    max_score: float = Field(default=100.0, ge=0, alias="maxScore")
+    weighted_points: float = Field(ge=0, alias="weightedPoints")
+    max_weighted_points: float = Field(gt=0, alias="maxWeightedPoints")
+
+
+class ScoreEstimateLayers(BaseModel):
+    """Estimated after-improvement scores for the four GEO layers."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    retrieval: EstimatedLayerScore
+    machine_understanding: EstimatedLayerScore = Field(alias="machineUnderstanding")
+    reranking_strength: EstimatedLayerScore = Field(alias="rerankingStrength")
+    ai_answer_readiness: EstimatedLayerScore = Field(alias="aiAnswerReadiness")
+
+
 class ScoreEstimate(BaseModel):
     """Estimated GEO score after applying approved improvements."""
 
     model_config = ConfigDict(populate_by_name=True)
 
     after: float = Field(ge=0, le=100)
+    layers: ScoreEstimateLayers
     expected_gain_reasons: list[str] = Field(
         default_factory=list,
         alias="expectedGainReasons",

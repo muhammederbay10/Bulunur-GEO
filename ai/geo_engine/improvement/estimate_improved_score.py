@@ -8,7 +8,13 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
-from ai.api_contracts.geo_improvement_output import GeneratedFaqItem, GeneratedProductContent, ScoreEstimate
+from ai.api_contracts.geo_improvement_output import (
+    EstimatedLayerScore,
+    GeneratedFaqItem,
+    GeneratedProductContent,
+    ScoreEstimate,
+    ScoreEstimateLayers,
+)
 from ai.api_contracts.product_input import ProductInput, RawExtractedData
 from ai.geo_engine.constants import EXPECTED_LAYER_ORDER, LAYER_DISPLAY_NAMES
 from ai.geo_engine.scoring.score_product import SemanticJudgmentMap, score_product
@@ -52,6 +58,7 @@ class ImprovedScoreEstimateResult(BaseModel):
         """Convert to the public score-estimate contract."""
         return ScoreEstimate(
             after=self.after,
+            layers=_api_estimate_layers(self.after_score),
             expectedGainReasons=self.expected_gain_reasons,
         )
 
@@ -110,6 +117,26 @@ def estimate_improved_score(
             "generatedFieldsApplied": _generated_fields_applied(generated_content),
             "actualGain": round(after_score.overall_score - before_score.overall_score, 2),
         },
+    )
+
+
+def _api_estimate_layers(score: FourLayerGeoScore) -> ScoreEstimateLayers:
+    """Convert the after-score layers into the public estimate contract."""
+    return ScoreEstimateLayers(
+        retrieval=_api_estimate_layer(score.retrieval),
+        machineUnderstanding=_api_estimate_layer(score.machine_understanding),
+        rerankingStrength=_api_estimate_layer(score.reranking_strength),
+        aiAnswerReadiness=_api_estimate_layer(score.ai_answer_readiness),
+    )
+
+
+def _api_estimate_layer(layer: LayerScoreResult) -> EstimatedLayerScore:
+    """Return compact score data for one estimated after layer."""
+    return EstimatedLayerScore(
+        score=layer.score,
+        maxScore=layer.max_score,
+        weightedPoints=layer.weighted_points,
+        maxWeightedPoints=layer.max_weighted_points,
     )
 
 
