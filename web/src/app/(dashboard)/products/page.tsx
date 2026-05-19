@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { Package } from "lucide-react";
 
 import { ProductList } from "@/features/products/components/product-list";
 import { ProductFilters } from "@/features/products/components/product-filters";
@@ -112,7 +111,7 @@ async function ProductsContent({
   const nativeImportNotice = getNativeImportNotice(params);
 
   return (
-    <div className="page-enter grid gap-6">
+    <div className="page-enter grid gap-4">
       {shopifyNotice ? (
         <div
           className={
@@ -130,24 +129,6 @@ async function ProductsContent({
           {nativeImportNotice.message}
         </div>
       ) : null}
-
-      <section className="flex flex-col gap-4 border-b border-border pb-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="mono-label text-primary">Ürünler</p>
-          <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">
-            Senkronize katalog
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Shopify veya web sitesi kaynaklarından içeri alınan ürünler burada
-            listelenir. Analiz bekleyen, optimize edilen veya dusuk skorlu
-            Ürünleri seçerek sıradaki çalışma adımını belirleyin.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-muted-foreground shadow-sm">
-          <Package className="h-4 w-4" />
-          {products.length} ürün
-        </div>
-      </section>
 
       <ProductFilters
         activeStatus={activeStatus}

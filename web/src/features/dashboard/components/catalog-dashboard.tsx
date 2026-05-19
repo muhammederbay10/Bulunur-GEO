@@ -47,7 +47,7 @@ function ProductCardGroup({
         </Button>
       </div>
       {products.length > 0 ? (
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {products.slice(0, 4).map((product, index) => (
             <ProductCard
               key={product.id}
