@@ -28,6 +28,7 @@ function SourcesFallback() {
     <main className="min-h-screen bg-background p-5">
       <div className="mx-auto w-full max-w-5xl py-10">
         <div className="seller-surface p-6">
+          <BulunurLogo href="/" className="mb-5 h-12 w-40" />
           <p className="text-sm font-medium text-primary">Ürün kaynağı</p>
           <h1 className="mt-3 text-2xl font-semibold">
             Kaynak durumu hazırlanıyor

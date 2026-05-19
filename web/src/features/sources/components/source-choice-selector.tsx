@@ -1,7 +1,8 @@
 "use client";
 
-import { CheckCircle2, Globe2, Store } from "lucide-react";
+import { CheckCircle2, Globe2 } from "lucide-react";
 
+import { ShopifyLogo } from "@/components/shopify-logo";
 import { cn } from "@/lib/utils";
 
 export type SourceChoice = "shopify" | "native";
@@ -15,17 +16,14 @@ type SourceChoiceSelectorProps = {
 const options: Array<{
   value: SourceChoice;
   title: string;
-  icon: typeof Store;
 }> = [
   {
     value: "shopify",
     title: "Shopify",
-    icon: Store,
   },
   {
     value: "native",
     title: "Native web sitesi",
-    icon: Globe2,
   },
 ];
 
@@ -37,7 +35,6 @@ export function SourceChoiceSelector({
   return (
     <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Ürün kaynağı">
       {options.map((option) => {
-        const Icon = option.icon;
         const isSelected = value === option.value;
 
         return (
@@ -65,7 +62,11 @@ export function SourceChoiceSelector({
                   : "border-border bg-muted text-primary",
               )}
             >
-              <Icon className="h-4 w-4" />
+              {option.value === "shopify" ? (
+                <ShopifyLogo decorative className="h-5 w-5" />
+              ) : (
+                <Globe2 className="h-4 w-4" />
+              )}
             </span>
             <span className="min-w-0 flex-1 text-sm font-semibold text-foreground">
               {option.title}

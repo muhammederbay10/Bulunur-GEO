@@ -1,13 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import {
+  Bot,
+  BrainCircuit,
   CheckCircle2,
   CirclePlay,
   Code2,
+  Cpu,
   FileCheck2,
+  Network,
   Search,
   ShieldCheck,
+  Sparkles,
   Store,
   Zap,
 } from "lucide-react";
@@ -15,8 +20,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { BulunurLogo } from "@/components/bulunur-logo";
 import { Button } from "@/components/ui/button";
+import { ShopifyMark } from "@/components/shopify-mark";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import shopifyLogo from "@/app/shopify-logo.png";
 const capabilityCards = [
   {
     icon: Search,
@@ -135,28 +140,103 @@ function SystemPreview() {
     </div>
   );
 }
-function ShopifyMark() {
+const heroNodes = [
+  {
+    icon: BrainCircuit,
+    className: "left-[6%] top-[18%] hidden md:flex",
+    style: {
+      "--hero-float-x": "22px",
+      "--hero-float-y": "-18px",
+      "--hero-duration": "10s",
+      "--hero-delay": "-2s",
+    },
+  },
+  {
+    icon: Bot,
+    className: "right-[9%] top-[20%]",
+    style: {
+      "--hero-float-x": "-18px",
+      "--hero-float-y": "20px",
+      "--hero-duration": "11s",
+      "--hero-delay": "-5s",
+    },
+  },
+  {
+    icon: Search,
+    className: "left-[13%] bottom-[20%]",
+    style: {
+      "--hero-float-x": "18px",
+      "--hero-float-y": "22px",
+      "--hero-duration": "12s",
+      "--hero-delay": "-4s",
+    },
+  },
+  {
+    icon: Cpu,
+    className: "right-[15%] bottom-[18%] hidden sm:flex",
+    style: {
+      "--hero-float-x": "-24px",
+      "--hero-float-y": "-16px",
+      "--hero-duration": "9s",
+      "--hero-delay": "-1s",
+    },
+  },
+  {
+    icon: Network,
+    className: "left-[28%] top-[10%] hidden lg:flex",
+    style: {
+      "--hero-float-x": "-16px",
+      "--hero-float-y": "18px",
+      "--hero-duration": "13s",
+      "--hero-delay": "-7s",
+    },
+  },
+  {
+    icon: Sparkles,
+    className: "right-[27%] bottom-[10%] hidden lg:flex",
+    style: {
+      "--hero-float-x": "20px",
+      "--hero-float-y": "-20px",
+      "--hero-duration": "10.5s",
+      "--hero-delay": "-3s",
+    },
+  },
+] as const;
+
+function HeroAmbientNetwork() {
   return (
-    <div className="landing-hover inline-flex items-center gap-3 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/15 bg-background/90">
-        <Image
-          src={shopifyLogo}
-          alt=""
-          width={22}
-          height={22}
-          className="h-8 w-8 object-contain"
+    <div className="hero-ai-background pointer-events-none absolute inset-0 overflow-hidden">
+      <svg
+        className="hero-network-lines absolute inset-0 h-full w-full"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path d="M7 25 C 24 10, 41 13, 53 30 S 78 51, 92 24" />
+        <path d="M12 77 C 27 57, 40 60, 50 43 S 73 26, 88 44" />
+        <path d="M20 18 C 25 40, 30 63, 44 74 S 68 84, 82 70" />
+        <path d="M6 50 C 21 39, 37 42, 48 54 S 69 71, 94 59" />
+      </svg>
+      <div className="hero-grid-layer absolute inset-0" />
+      {heroNodes.map(({ icon: Icon, className, style }, index) => (
+        <span
+          key={index}
+          className={`hero-ai-node absolute ${className}`}
+          style={style as CSSProperties}
           aria-hidden="true"
-        />
-      </span>
-      Shopifya kolay integrasyon
+        >
+          <Icon className="h-5 w-5 md:h-6 md:w-6" />
+        </span>
+      ))}
     </div>
   );
 }
 
 function HeroSection() {
   return (
-    <section className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-5xl items-center justify-center px-5 py-16 text-center">
-      <div className="landing-reveal mx-auto w-full max-w-3xl">
+    <section className="relative isolate flex min-h-[calc(100vh-76px)] w-full items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_12%,hsl(var(--primary)/0.12),transparent_34%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted)/0.28)_48%,hsl(var(--background)))] px-5 py-16 text-center">
+      <HeroAmbientNetwork />
+      <div className="landing-reveal relative z-10 mx-auto w-full max-w-3xl">
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 font-mono text-[15px] font-semibold tracking-wider text-primary">
           <Zap className="h-3.5 w-3.5" />
           Yapay Zeka Destekli Görünürlük Motoru

@@ -1,5 +1,6 @@
-import { CheckCircle2, ExternalLink, Loader2, Store } from "lucide-react";
+import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
 
+import { ShopifyLogo } from "@/components/shopify-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +40,7 @@ export function ShopifySourceForm({
       <fieldset className="flex flex-col gap-5" disabled={disabled || pending}>
         <div className="relative flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-primary transition group-hover:scale-105">
-            <Store className="h-6 w-6" />
+            <ShopifyLogo decorative className="h-7 w-7" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Shopify Mağazamı Bağla</h2>

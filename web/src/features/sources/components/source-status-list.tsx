@@ -12,6 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ShopifyLogo } from "@/components/shopify-logo";
 import type { SourceStore } from "@/types/source";
 
 const sourceLabels = {
@@ -164,6 +165,12 @@ export function SourceStatusList({ stores }: { stores: SourceStore[] }) {
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
+                  {store.sourceType === "shopify" ? (
+                    <ShopifyLogo
+                      decorative
+                      className="h-6 w-6 rounded-full border border-border bg-background p-0.5"
+                    />
+                  ) : null}
                   <h3 className="font-semibold">{store.name}</h3>
                   <Badge variant="secondary">{sourceLabels[store.sourceType]}</Badge>
                   <Badge variant={store.status === "error" ? "destructive" : "outline"}>
