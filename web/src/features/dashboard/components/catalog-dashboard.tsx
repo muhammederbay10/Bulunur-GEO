@@ -9,28 +9,12 @@ import {
   Store,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/features/products/components/product-card";
 import type {
   CatalogDashboardSummary,
   ProductSummary,
 } from "@/types/product";
-
-const sourceLabels = {
-  shopify: "Shopify",
-  native: "Web sitesi",
-  woocommerce: "WooCommerce",
-};
-
-const workflowLabels = {
-  not_analyzed: "Analiz bekliyor",
-  analysis_running: "Analiz ediliyor",
-  analyzed: "Analiz edildi",
-  optimization_running: "İyileştiriliyor",
-  optimized: "Optimize edildi",
-  published: "Yayında",
-  failed: "Hata var",
-};
 
 function formatDate(value?: string) {
   if (!value) return "Henüz yok";
@@ -39,81 +23,6 @@ function formatDate(value?: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function scoreTone(score?: number) {
-  if (typeof score !== "number") return "bg-muted text-muted-foreground";
-  if (score >= 75) return "bg-primary/10 text-primary";
-  if (score >= 50) return "bg-yellow-500/10 text-yellow-600";
-
-  return "bg-destructive/10 text-destructive";
-}
-
-function ProductThumb({ product }: { product: ProductSummary }) {
-  if (!product.imageUrl) {
-    return (
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground">
-        <Package className="h-5 w-5" />
-      </div>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={product.imageUrl}
-      alt=""
-      className="h-14 w-14 shrink-0 rounded-md border border-border object-cover"
-      loading="lazy"
-    />
-  );
-}
-
-function DashboardProductCard({ product }: { product: ProductSummary }) {
-  const score = product.latestScore;
-  const scoreWidth = typeof score === "number" ? Math.min(Math.max(score, 0), 100) : 0;
-
-  return (
-    <Link
-      href={`/products/${product.id}`}
-      className="group grid gap-3 rounded-lg border border-border bg-background/70 p-3 transition hover:border-primary/50 hover:bg-muted/60"
-    >
-      <div className="flex min-w-0 items-start gap-3">
-        <ProductThumb product={product} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="line-clamp-2 text-sm font-semibold leading-5 group-hover:text-primary">
-              {product.title}
-            </h3>
-            <span
-              className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${scoreTone(score)}`}
-            >
-              {typeof score === "number" ? score : "-"}
-            </span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <Badge variant="secondary">{sourceLabels[product.source]}</Badge>
-            <Badge variant="outline">{workflowLabels[product.workflowStatus]}</Badge>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-2">
-        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${scoreWidth}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span className="truncate">
-            {product.priceDisplay ?? product.availability ?? "Detay bekliyor"}
-          </span>
-          <span className="shrink-0">{formatDate(product.updatedAt)}</span>
-        </div>
-      </div>
-    </Link>
-  );
 }
 
 function ProductCardGroup({
@@ -138,9 +47,15 @@ function ProductCardGroup({
         </Button>
       </div>
       {products.length > 0 ? (
-        <div className="mt-3 grid gap-2">
-          {products.slice(0, 4).map((product) => (
-            <DashboardProductCard key={product.id} product={product} />
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+          {products.slice(0, 4).map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              variant="compact"
+              href={`/products/${product.id}`}
+              animationIndex={index}
+            />
           ))}
         </div>
       ) : (
@@ -168,21 +83,21 @@ export function CatalogDashboard({
     {
       label: "Analiz edilen",
       value: summary.metrics.analyzedProducts,
-      note: "Skoru olusan ürünler.",
+      note: "Skoru oluşan ürünler.",
       icon: Activity,
       href: "/products?status=analyzed",
     },
     {
       label: "Optimize edilen",
       value: summary.metrics.optimizedProducts,
-      note: "Taslagi hazır ürünler.",
+      note: "Taslağı hazır ürünler.",
       icon: Sparkles,
       href: "/products?status=optimized",
     },
     {
       label: "Dikkat isteyen",
       value: summary.metrics.waitingProducts + summary.metrics.lowScoreProducts,
-      note: "Bekleyen veya dusuk skor.",
+      note: "Bekleyen veya düşük skor.",
       icon: CircleAlert,
       href: "/products?status=waiting",
     },
@@ -203,10 +118,12 @@ export function CatalogDashboard({
             href={metric.href}
             className="seller-surface group relative overflow-hidden p-4 transition hover:border-primary/50 hover:shadow-primary-soft"
           >
-            <div className="absolute right-0 top-0 h-24 w-24 translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 blur-2xl opacity-0 transition group-hover:opacity-100" />
+            <div className="absolute right-0 top-0 h-24 w-24 translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="mono-label text-muted-foreground">{metric.label}</p>
+                <p className="mono-label text-muted-foreground">
+                  {metric.label}
+                </p>
                 <p className="mt-3 text-4xl font-bold leading-none">
                   {metric.value}
                 </p>
@@ -242,7 +159,7 @@ export function CatalogDashboard({
       <section className="grid gap-4 xl:grid-cols-2">
         <ProductCardGroup
           title="Analiz bekleyenler"
-          actionLabel="Tümünü gor"
+          actionLabel="Tümünü gör"
           actionHref="/products?status=waiting"
           products={summary.attentionProducts}
           emptyText="Analiz bekleyen ürün yok."
