@@ -1,15 +1,18 @@
 <div align="center">
-  <img src="assets/bulunur_white.png" alt="Bulunur Logo" width="220" />
+  <img src="assets/bulunur_x_starq_logo.png" alt="Bulunur x Starq Logo" width="460" />
 
-  <h1>Bulunur: Türk E-Ticaret İçin GEO Optimizasyon Platformu</h1>
+  <h1>Bulunur: A GEO Optimization Platform for Turkish E-Commerce</h1>
 
   <p>
-    Bulunur, ürün sayfalarını yapay zeka arama motorları ve LLM cevapları için analiz eden,
-    puanlayan ve güvenli şekilde iyileştiren bir GEO platformudur.
+    Bulunur is a GEO platform that analyzes, scores, and safely improves product pages
+    for AI search engines and LLM-generated answers.
   </p>
   <p>
-    Sistem; Gemini destekli semantik değerlendirme, LangGraph tabanlı ajan akışları,
-    Schema.org Product JSON-LD iyileştirmeleri ve Türkçe alıcı niyeti odaklı içerik üretimini birleştirir.
+    The system combines Gemini-powered semantic evaluation, LangGraph-based agent workflows,
+    Schema.org Product JSON-LD improvements, and Turkish buyer-intent-focused content generation.
+  </p>
+  <p>
+    <a href="https://bulunur.shop"><strong>bulunur.shop</strong></a>
   </p>
 
   <p>
@@ -26,162 +29,161 @@
   </p>
 
   <p>
-    <a href="#demo"><strong>Demo</strong></a> ·
-    <a href="#hızlı-başlangıç"><strong>Hızlı Başlangıç</strong></a> ·
-    <a href="#sistem-mimarisi"><strong>Mimari</strong></a> ·
-    <a href="#api"><strong>API</strong></a> ·
-    <a href="#ekip"><strong>Ekip</strong></a>
+    <a href="#what-is-bulunur"><strong>What Is Bulunur?</strong></a> ·
+    <a href="#features"><strong>Features</strong></a> ·
+    <a href="#how-the-system-works"><strong>How The System Works</strong></a> ·
+    <a href="#docker-compose-quickstart"><strong>Quickstart</strong></a> ·
+    <a href="#contributors"><strong>Contributors</strong></a>
   </p>
 </div>
 
-## Bulunur nedir?
+## What Is Bulunur?
 
-Bulunur, Türk e-ticaret işletmelerinin ürünlerini yalnızca klasik SEO için değil, yapay zeka destekli arama ve cevap motorları için de daha anlaşılır hale getirmesine yardımcı olur.
+Bulunur helps Turkish e-commerce businesses make their products easier to understand not only for traditional SEO, but also for AI-powered search and answer engines.
 
-Platform; bir ürün sayfasını analiz ederek ürünün ne kadar erişilebilir, makine tarafından anlaşılabilir, karşılaştırılabilir ve AI cevaplarına hazır olduğunu ölçer. Ardından eksik schema alanları, zayıf ürün açıklamaları, yetersiz özellikler, FAQ eksikleri ve Türkçe alıcı niyeti uyumsuzlukları gibi problemleri belirler.
+The platform analyzes a product page and measures how accessible, machine-understandable, comparable, and ready for AI answers the product is. It then identifies problems such as missing schema fields, weak product descriptions, insufficient attributes, missing FAQ content, and gaps in Turkish buyer-intent coverage.
 
-İyileştirme aşamasında Bulunur, ürün gerçeklerini uydurmadan çalışır. Sadece mevcut ürün verisi, crawler çıktısı ve kullanıcı tarafından doğrulanan bilgilerle güvenli öneriler üretir. Böylece satıcılar ürünlerini Schema.org Product JSON-LD, Türkçe alıcı soruları, karşılaştırma sinyalleri ve AI cevaplanabilirliği açısından daha güçlü hale getirebilir.
+During the improvement phase, Bulunur does not invent product facts. It generates safe recommendations using only existing product data, crawler output, and user-confirmed facts. This helps merchants strengthen their products for Schema.org Product JSON-LD, Turkish buyer questions, comparison signals, and AI answer readiness.
 
 <p align="center">
-  <img src="assets/analysis_example.jpeg" alt="Bulunur GEO analiz örneği" width="860" />
+  <img src="assets/analysis_example.jpeg" alt="Bulunur GEO analysis example" width="860" />
 </p>
 
 <p align="center">
-  <img src="assets/optimization_example.jpeg" alt="Bulunur GEO optimizasyon örneği" width="860" />
+  <img src="assets/optimization_example.jpeg" alt="Bulunur GEO optimization example" width="860" />
 </p>
 
-## Neden Bulunur?
+## Why Bulunur?
 
-Kullanıcıların ürün keşfetme alışkanlığı değişiyor. İnsanlar artık yalnızca klasik arama motorlarında sonuç listesi gezmiyor; ChatGPT, Gemini, Perplexity ve Google AI Overviews gibi yapay zeka destekli cevap sistemlerine doğrudan soru soruyor.
+Product discovery behavior is changing. People no longer rely only on browsing ranked link lists in traditional search engines; they now ask direct questions to AI-powered answer systems such as ChatGPT, Gemini, Perplexity, and Google AI Overviews.
 
-Bu değişim e-ticaret için kritik bir anlam taşıyor: Bir ürünün görünür olması artık sadece SEO sıralamasına bağlı değil. LLM'lerin ürünü anlayabilmesi, güvenilir kaynaklardan doğrulayabilmesi, karşılaştırabilmesi ve kullanıcıya net bir cevap içinde önerebilmesi gerekiyor.
+This shift matters deeply for e-commerce: product visibility is no longer only about SEO ranking. LLMs need to understand the product, verify it from reliable sources, compare it with alternatives, and recommend it clearly inside an answer.
 
-Gartner, geleneksel arama motoru hacminin 2026'ya kadar yapay zeka chatbotları ve sanal ajanlar nedeniyle %25 düşebileceğini öngörüyor. Google tarafında ise AI Overviews özelliğinin aylık milyarlarca kullanıcıya ulaştığı açıklandı. Bu sinyaller, arama davranışının klasik link listesinden AI cevaplarına doğru kaydığını gösteriyor.
+Gartner predicts that traditional search engine volume may drop by 25% by 2026 because of AI chatbots and virtual agents. Google has also stated that AI Overviews reaches billions of users monthly. These signals show that search behavior is moving from classic link lists toward AI-generated answers.
 
-SEO döneminde web siteleri arama motorlarına daha anlaşılır olmak için başlık, meta açıklama, içerik, link yapısı ve teknik optimizasyonlara yatırım yaptı. Yeni dönemde aynı ihtiyaç GEO için ortaya çıkıyor:
+In the SEO era, websites invested in titles, meta descriptions, content structure, internal links, and technical optimization to become easier for search engines to understand. In the new era, the same need is emerging for GEO:
 
-- Ürün verisi LLM'ler tarafından kolay anlaşılmalı.
-- Schema.org Product verisi eksiksiz ve tutarlı olmalı.
-- Ürün açıklamaları Türkçe alıcı niyetlerini karşılamalı.
-- FAQ, özellikler, güven sinyalleri ve karşılaştırma bilgileri doğrulanabilir olmalı.
-- AI sistemleri ürünü yanlış anlamadan, uydurma bilgi üretmeden cevap verebilmeli.
+- Product data should be easy for LLMs to understand.
+- Schema.org Product data should be complete and consistent.
+- Product descriptions should match Turkish buyer intents.
+- FAQ, attributes, trust signals, and comparison information should be verifiable.
+- AI systems should be able to answer about the product without misunderstanding it or hallucinating facts.
 
-Bulunur'un algoritması özellikle Türkçe e-ticaret için optimize edilmiştir. Sistem; Türkçe ürün açıklamalarını, yerel alıcı soru kalıplarını, "alınır mı", "öneri", "karşılaştırma", "kargo", "iade" gibi satın alma niyetlerini ve Türkiye pazarındaki ürün sayfası alışkanlıklarını dikkate alır.
+Bulunur's algorithm is optimized specifically for Turkish e-commerce. The system considers Turkish product descriptions, local buyer question patterns, purchase-intent phrases such as "is it worth buying?", "recommendation", "comparison", "shipping", and "return", and the product-page habits of the Turkish market.
 
-Bulunur bu yüzden geliştirildi: Türk e-ticaret işletmelerinin ürünlerini AI çağında daha bulunabilir, anlaşılabilir ve cevaplanabilir hale getirmek.
+Bulunur was built for this reason: to help Turkish e-commerce businesses make their products more discoverable, understandable, and answer-ready in the AI era.
 
-## Özellikler
+## Features
 
-Bulunur'un GEO algoritması mock bir puanlama sistemi değildir. Algoritma; Google Product structured data ve merchant listing dokümantasyonu, Schema.org Product modeli ve GEO alanındaki araştırma fikirleri üzerine tasarlanmıştır.
+Bulunur's GEO algorithm is not a mock scoring system. It is designed around Google Product structured data and merchant listing documentation, the Schema.org Product model, and research ideas from the GEO field.
 
-[SAGEO Arena](docs/research_papers/SAGEO%20Arena.pdf) yaklaşımından aldığımız ana fikir, GEO'yu tek bir "içerik kalitesi" skoru gibi değil, AI cevap sistemlerinin çalışma hattına benzer katmanlar halinde değerlendirmektir. Bu yüzden Bulunur ürünü dört aşamada inceler: ürünün AI/crawler tarafından alınabilir olması, makine tarafından yapısal olarak anlaşılması, benzer ürünler arasında karşılaştırma ve reranking sinyallerine sahip olması, son olarak da AI cevabı içinde güvenli ve net şekilde kullanılabilmesi.
+The main idea we take from [SAGEO Arena](docs/research_papers/SAGEO%20Arena.pdf) is that GEO should not be evaluated as a single generic "content quality" score. Instead, it should be evaluated through layers that resemble the pipeline of AI answer systems. For this reason, Bulunur evaluates each product in four stages: whether it can be retrieved by an AI/crawler, whether it can be structurally understood by machines, whether it has comparison and reranking signals among similar products, and whether it can be safely and clearly used inside an AI answer.
 
-[AgenticGEO](docs/research_papers/AgenticGEO.pdf) yaklaşımından aldığımız fikir ise optimizasyonun sabit bir checklist olmaması gerektiğidir. Bulunur önce ürünün en zayıf GEO katmanlarını bulur, sonra optimizasyon ajanı bu zayıflıklara göre strateji seçer. Örneğin schema eksikse `Schema Repair`, ürün özellikleri zayıfsa `Attribute Completion`, AI cevapları için soru-cevap eksikse `Turkish FAQ Enrichment`, ürün metni semantik olarak zayıfsa `Turkish Buyer Intent Rewrite` devreye girer.
+The idea we take from [AgenticGEO](docs/research_papers/AgenticGEO.pdf) is that optimization should not be a fixed checklist. Bulunur first finds the weakest GEO layers of a product, then the optimization agent selects strategies based on those weaknesses. For example, if schema is missing, `Schema Repair` is used; if product attributes are weak, `Attribute Completion` is selected; if the product lacks answer-ready question and answer content, `Turkish FAQ Enrichment` runs; and if the text is semantically weak, `Turkish Buyer Intent Rewrite` is applied.
 
-Skor üretimi iki parçadan oluşur: deterministik kontroller ve Gemini semantik yargısı. Deterministik taraf; URL/crawler erişilebilirliği, temel ürün alanları, JSON-LD schema yapısı, fiyat-stok bilgisi, attribute kapsamı ve FAQ varlığı gibi ölçülebilir sinyalleri değerlendirir. Gemini tarafı ise ürün içeriğinin Türkçe alıcı niyetlerini ne kadar karşıladığını, AI cevaplarında güvenli şekilde kullanılıp kullanılamayacağını ve ürünün karşılaştırma/öneri sorgularında ne kadar anlaşılır olduğunu değerlendirir.
+Scoring has two parts: deterministic checks and Gemini semantic judgment. The deterministic side evaluates measurable signals such as URL/crawler accessibility, core product fields, JSON-LD schema structure, price and availability data, attribute coverage, and FAQ presence. The Gemini side evaluates how well the product content satisfies Turkish buyer intent, whether it can be safely used in AI answers, and how understandable it is for comparison and recommendation queries.
 
-Bu nedenle Bulunur, yalnızca "alan var mı?" kontrolü yapmaz. Ürünün AI sistemleri tarafından bulunabilir, anlaşılabilir, sıralanabilir ve cevap içinde güvenle önerilebilir olup olmadığını araştırma tabanlı dört katmanlı bir GEO skoru ile ölçer; ardından AgenticGEO mantığıyla iyileştirme stratejisini seçer.
+For this reason, Bulunur does not only ask "does this field exist?" It measures whether a product can be found, understood, ranked, and safely recommended by AI systems using a research-inspired four-layer GEO score, then selects an improvement strategy with the AgenticGEO logic.
 
-- **GEO Analiz Skoru:** Ürünleri 100 puan üzerinden değerlendirir ve skoru dört ana katmana böler: retrieval, makine anlayışı, reranking gücü ve AI cevap hazırlığı.
-- **Dört Katmanlı Değerlendirme:** Ürünün crawler tarafından erişilebilirliğini, Schema.org uyumluluğunu, karşılaştırma sinyallerini ve AI cevaplarında kullanılabilirliğini ayrı ayrı ölçer.
-- **Gemini Destekli Semantik Yargı:** Sadece alanların varlığına bakmaz; ürün metninin Türkçe alıcı sorularını gerçekten cevaplayıp cevaplayamadığını semantik olarak değerlendirir.
-- **Agentic GEO Optimizasyonu:** LangGraph tabanlı optimizasyon ajanı, ürünün zayıf katmanlarına göre uygun stratejileri seçer ve uygulanabilir iyileştirme çıktıları üretir.
-- **Schema.org Product JSON-LD İyileştirmesi:** Ürün, marka, fiyat, stok, görsel ve attribute verilerini kullanarak AI ve arama motorları için daha anlaşılır structured data üretir.
-- **Türkçe Alıcı Niyeti Odaklı İçerik:** Ürün başlığı, açıklama, FAQ ve önerileri Türkçe e-ticaret arama davranışlarına göre güçlendirmeyi hedefler.
-- **Güvenli FAQ Üretimi:** Kullanıcıların sorabileceği ürün sorularını üretir, ancak cevapları yalnızca doğrulanmış ürün bilgilerine dayandırır.
-- **Eksik Bilgi Toplama Akışı:** Kritik ürün bilgisi eksikse uydurmak yerine kullanıcıya hedefli sorular sorar.
-- **Anti-Hallucination Kontrolü:** Garanti, sertifika, kargo, stok, organik içerik veya performans gibi doğrulanmamış iddiaları engellemeye çalışır.
-- **Before/After Optimizasyon Çıktısı:** Kullanıcıya hangi alanların iyileştirildiğini ve tahmini yeni GEO skorunu gösterir.
-- **FastAPI AI Servisi:** Web uygulamasının analiz ve optimizasyon akışlarını çağırabilmesi için ayrı bir AI servisi olarak çalışır.
-- **Docker ve Railway Hazırlığı:** AI servisi Dockerfile ile containerize edilmiştir ve Railway üzerinde ayrı servis olarak deploy edilebilir.
+- **GEO Analysis Score:** Scores products out of 100 and splits the result across four layers: retrieval, machine understanding, reranking strength, and AI answer readiness.
+- **Four-Layer Evaluation:** Separately measures crawler accessibility, Schema.org compatibility, comparison signals, and AI answer usability.
+- **Gemini-Powered Semantic Judgment:** Goes beyond checking field presence and semantically evaluates whether the product text really answers Turkish buyer questions.
+- **Agentic GEO Optimization:** A LangGraph-based optimization agent selects the right strategies based on the product's weakest layers and produces actionable improvement outputs.
+- **Schema.org Product JSON-LD Improvement:** Uses product, brand, price, availability, image, and attribute data to generate structured data that is easier for AI and search systems to understand.
+- **Turkish Buyer-Intent Content:** Strengthens titles, descriptions, FAQ, and recommendations according to Turkish e-commerce search behavior.
+- **Safe FAQ Generation:** Generates product questions that buyers may ask, but grounds the answers only in verified product information.
+- **Missing-Fact Collection Flow:** If critical product information is missing, the system asks targeted questions instead of inventing facts.
+- **Anti-Hallucination Checks:** Tries to prevent unsupported claims about warranty, certification, shipping, availability, organic content, or performance.
+- **Before/After Optimization Output:** Shows which fields were improved and the estimated new GEO score.
+- **FastAPI AI Service:** Runs as a separate AI service that the web application calls for analysis and optimization flows.
+- **Docker and Railway Ready:** The AI service is containerized with Docker and can be deployed as a separate Railway service.
 
-## Sistem Nasıl Çalışır?
+## How The System Works
 
-Bulunur, web dashboard'u ile AI/GEO servisini ayrı çalışan iki katman olarak tasarlar. Web tarafı ürünleri mağazadan veya URL tabanlı kaynaklardan alır, AI servisi ise bu ürünleri analiz edip iyileştirme çıktıları üretir.
+Bulunur is designed as two separate layers: the web dashboard and the AI/GEO service. The web side collects products from a store or URL-based import flow, while the AI service analyzes the product and generates improvement outputs.
 
-### 1. Ürün Verisi Alınır
+### 1. Product Data Is Collected
 
-Satıcı ürünlerini Shopify bağlantısı veya native URL/import akışı üzerinden dashboard'a getirir. Web katmanı ürün başlığı, açıklama, fiyat, stok, görseller, attribute bilgileri, crawler metadata ve varsa mevcut structured data sinyallerini hazırlar.
+Merchants bring their products into the dashboard through a Shopify connection or a native URL/import flow. The web layer prepares the product title, description, price, availability, images, attributes, crawler metadata, and existing structured data signals when available.
 
-### 2. GEO Analizi Çalışır
+### 2. GEO Analysis Runs
 
-Kullanıcı analiz başlattığında web uygulaması ürünü AI servisine gönderir. GEO Analysis Agent ürünü dört katmanda puanlar:
+When the user starts analysis, the web application sends the product to the AI service. The GEO Analysis Agent scores the product across four layers:
 
-- **Retrieval:** Ürün sayfası AI/crawler tarafından erişilebilir ve alınabilir mi?
-- **Machine Understanding:** Ürün Schema.org Product ve temel alanlarla makine tarafından anlaşılabilir mi?
-- **Reranking Strength:** Ürün benzer ürünler arasında karşılaştırılabilir somut sinyallere sahip mi?
-- **AI Answer Readiness:** Ürün, AI cevabı içinde güvenli ve net şekilde açıklanabilir mi?
+- **Retrieval:** Can the product page be accessed and retrieved by an AI/crawler?
+- **Machine Understanding:** Can the product be understood by machines through Schema.org Product and core fields?
+- **Reranking Strength:** Does the product have concrete signals that allow it to be compared with similar products?
+- **AI Answer Readiness:** Can the product be explained safely and clearly inside an AI answer?
 
-### 3. Zayıf Katmanlar Belirlenir
+### 3. Weak Layers Are Identified
 
-Analiz sonucu yalnızca toplam skor döndürmez. Her katman için nedenler, eksik sinyaller ve önerilen sonraki adım üretilir. Böylece sistem hangi problemin skoru düşürdüğünü açık şekilde bilir.
+The analysis result does not return only an overall score. It also returns reasons, missing signals, and a recommended next action for each layer. This allows the system to know exactly which problems are lowering the product's score.
 
-### 4. Optimizasyon Ajanı Strateji Seçer
+### 4. The Optimization Agent Selects Strategies
 
-Kullanıcı iyileştirme başlattığında GEO Optimization Agent analiz sonucunu okur ve zayıf katmanlara göre strateji seçer. Örneğin schema eksikse schema repair, ürün özellikleri eksikse attribute completion, içerik AI cevapları için zayıfsa Turkish buyer intent rewrite, FAQ eksikse Turkish FAQ enrichment çalışır.
+When the user starts improvement, the GEO Optimization Agent reads the analysis result and selects strategies based on the weak layers. For example, schema repair runs when schema is missing, attribute completion runs when product attributes are weak, Turkish buyer intent rewrite runs when content is weak for AI answers, and Turkish FAQ enrichment runs when FAQ content is missing.
 
-### 5. Eksik Gerçekler Kullanıcıya Sorulur
+### 5. Missing Facts Are Asked From The User
 
-Sistem kritik bir bilgiyi bilmiyorsa uydurmaz. Stok, marka, kullanım alanı, garanti, iade veya kargo gibi doğrulanması gereken bilgiler için kullanıcıdan hedefli cevap ister. Bu sayede üretilen iyileştirmeler gerçek ürün bilgilerine dayanır.
+If the system does not know a critical fact, it does not invent it. It asks the user targeted questions for facts such as availability, brand, use case, warranty, return policy, or shipping. This keeps generated improvements grounded in real product information.
 
-### 6. Güvenli İyileştirme Çıktısı Üretilir
+### 6. Safe Improvement Output Is Generated
 
-Seçilen stratejilere göre ürün için JSON-LD schema, FAQ, önerilen attribute alanları, Türkçe içerik iyileştirmeleri ve AI cevaplanabilirliğini artıran çıktı üretilir. Validation katmanı doğrulanmamış iddiaları warning olarak işaretler.
+Based on the selected strategies, the system generates JSON-LD schema, FAQ, suggested attributes, Turkish content improvements, and outputs that improve AI answer readiness. The validation layer marks unsupported claims as warnings.
 
-### 7. Tahmini Yeni GEO Skoru Hesaplanır
+### 7. The Estimated New GEO Score Is Calculated
 
-İyileştirme çıktısı uygulandığında ürünün tahmini yeni GEO skoru hesaplanır. Sistem yalnızca toplam skoru değil, dört katmanın yeni skorlarını da döndürür. Web dashboard'u bu veriyi kullanıcıya before/after olarak gösterir.
+After the improvement output is applied, the product's estimated new GEO score is calculated. The system returns not only the total score, but also the new scores for the four layers. The web dashboard can show this data as a before/after comparison.
 
-### 8. Kullanıcı Onaylar ve Yayınlar
+### 8. The User Reviews And Publishes
 
-Satıcı üretilen iyileştirmeleri dashboard üzerinden inceler. Eğer kullanıcı Shopify mağazasıyla giriş yapmış ve mağazasını Bulunur'a bağlamışsa, onaylanan değişiklikler Shopify entegrasyonu üzerinden güvenli şekilde mağazaya geri gönderilebilir.
+The merchant reviews the generated improvements in the dashboard. If the user signed in with a Shopify store and connected it to Bulunur, approved changes can be safely pushed back to the store through the Shopify integration.
 
-Daha detaylı ürün ve mimari açıklaması için [PRD dokümanını](docs/PRD.md) okuyabilirsiniz.
+For a deeper product and architecture explanation, read the [PRD document](docs/PRD.md).
 
 ## Tech Stack
 
-Bulunur monorepo yapısında iki ana parçadan oluşur: web uygulaması ve AI/GEO servisi.
+Bulunur is a monorepo with two main parts: the web application and the AI/GEO service.
 
 ### Web
 
-- **Next.js:** Dashboard, ürün akışları ve backend route katmanı
-- **TypeScript:** Tip güvenli frontend ve server-side kod
-- **Supabase:** Veritabanı, kimlik doğrulama ve server-side workflow kayıtları
-- **Shopify API:** Bağlı mağazalardan ürün çekme ve iyileştirilmiş çıktıları geri yayınlama
+- **Next.js:** Dashboard, product flows, and backend route layer
+- **TypeScript:** Type-safe frontend and server-side code
+- **Supabase:** Database, authentication, and server-side workflow records
+- **Shopify API:** Product import from connected stores and publishing improved outputs back to the store
 
-### AI / GEO Servisi
+### AI / GEO Service
 
-- **Python:** GEO scoring, schema engine ve agent workflow kodu
-- **FastAPI:** Web uygulamasının çağırdığı AI servis endpoint'leri
-- **LangChain:** Gemini çağrıları, prompt/skill kullanımı ve structured output akışı
-- **LangGraph:** GEO Analysis Agent ve GEO Optimization Agent için stateful workflow orchestration
-- **Google Gemini:** Semantik değerlendirme, Türkçe alıcı niyeti analizi ve güvenli içerik üretimi
-- **Pydantic:** API contract modelleri ve veri doğrulama
-- **Schema.org Product JSON-LD:** Ürünleri AI ve arama sistemleri için daha anlaşılır hale getiren structured data katmanı
+- **Python:** GEO scoring, schema engine, and agent workflow code
+- **FastAPI:** AI service endpoints called by the web application
+- **LangChain:** Gemini calls, prompt/skill usage, and structured output flow
+- **LangGraph:** Stateful workflow orchestration for the GEO Analysis Agent and GEO Optimization Agent
+- **Google Gemini:** Semantic evaluation, Turkish buyer-intent analysis, and safe content generation
+- **Pydantic:** API contract models and data validation
+- **Schema.org Product JSON-LD:** Structured data layer that makes products easier for AI and search systems to understand
 
 ### Deployment
 
-- **Docker Compose:** Local full-stack çalışma ortamı
-- **Docker:** AI ve web servislerini container olarak paketleme
-- **Vercel:** Web uygulamasının production deployment ortamı
-- **Railway:** AI/GEO servisinin production deployment ortamı
+- **Docker Compose:** Local full-stack runtime
+- **Docker:** Container packaging for the AI and web services
+- **Vercel:** Production deployment target for the web application
+- **Railway:** Production deployment target for the AI/GEO service
 
-## Docker Compose ile Çalıştırma
+## Docker Compose Quickstart
 
-Projeyi local ortamda tam sistem olarak çalıştırmak için Docker ve Docker Compose kurulu olmalıdır. Compose iki servisi birlikte ayağa kaldırır:
+To run the full system locally, Docker and Docker Compose must be installed. Compose starts two services together:
 
-- `ai`: FastAPI tabanlı GEO analiz ve optimizasyon servisi
-- `web`: Next.js tabanlı dashboard ve backend route katmanı
+- `ai`: FastAPI-based GEO analysis and optimization service
+- `web`: Next.js-based dashboard and backend route layer
 
-
-Önce AI servisi için gerekli ortam değişkenlerini hazırlayın. `ai/.env` dosyasında en az şu değerler bulunmalıdır:
+First, prepare the required environment variables for the AI service. The `ai/.env` file should include at least:
 
 ```env
 GOOGLE_API_KEY=your_gemini_api_key
 SERVICE_AUTH_SECRET_KEY=your_internal_service_secret
 ```
 
-Web servisi için `web/.env.local` dosyasında Supabase, Shopify ve AI servis değişkenleri bulunmalıdır:
+For the web service, `web/.env.local` should include the Supabase, Shopify, and AI service variables:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
@@ -200,46 +202,46 @@ SHOPIFY_API_VERSION=2026-04
 SHOPIFY_TOKEN_ENCRYPTION_KEY=your-stable-token-encryption-key
 ```
 
-`NEXT_PUBLIC_SUPABASE_URL` ve `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` build sırasında da gerektiği için root `.env` dosyasına veya terminal environment değişkenlerine de eklenmelidir:
+Because `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are also needed during build time, add them to the root `.env` file or to your terminal environment variables:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
 ```
 
-Ardından repo kök dizininde tam sistemi çalıştırın:
+Then run the full system from the repository root:
 
 ```bash
 docker compose up --build
 ```
 
-Arka planda çalıştırmak için:
+To run it in the background:
 
 ```bash
 docker compose up --build -d
 ```
 
-Servisler varsayılan olarak şu adreslerde çalışır:
+By default, the services run at:
 
 ```text
 Web: http://localhost:3000
 AI:  http://localhost:8001
 ```
 
-AI servisini tek başına çalıştırmak isterseniz:
+To run only the AI service:
 
 ```bash
 docker compose up --build ai
 ```
 
-Health check endpoint'i:
+Health check endpoints:
 
 ```text
 AI:  http://localhost:8001/health
 Web: http://localhost:3000
 ```
 
-Tüm sistemi durdurmak için:
+To stop the full system:
 
 ```bash
 docker compose down
@@ -247,7 +249,7 @@ docker compose down
 
 ## License
 
-Licensed under the MIT License. See [LICENSE](LICENSE).
+Licensed under the MIT License. See [LICENCE](LICENCE).
 
 ## Contributors
 

@@ -1,29 +1,28 @@
-# Web Uygulamasi
+# Web Application
 
-Bu klasor BTK 2026 Hackathon projesinin Next.js web uygulamasini icerir.
-Uygulama Turkiye odakli e-ticaret saticilari icin urun ice aktarma, AI/GEO
-analizi, iyilestirme taslagi ve onayli yayinlama akislarini sunar.
+This folder contains the Next.js web application for the BTK 2026 Hackathon project.
+The app provides product import, AI/GEO analysis, improvement drafts, and approved publishing flows for Turkey-focused e-commerce merchants.
 
-## Ana Ozellikler
+## Main Features
 
-- Supabase Auth ile kayit ve giris
-- Onboarding ve magaza profili
-- Shopify OAuth baglantisi
-- Shopify urun sync
-- Shopify urun gorsellerini `image_urls` alanina kaydetme
+- Sign up and sign in with Supabase Auth
+- Onboarding and store profile setup
+- Shopify OAuth connection
+- Shopify product sync
+- Shopify product image persistence in the `image_urls` field
 - Native URL/category import
-- Tekil urun URL import
+- Single product URL import
 - CSV/Excel/manual fallback import
-- Dashboard ve urun listesi
-- Tekil urun AI/GEO analizi
-- GEO skor katmanlari
-- Eksik bilgi akisi
-- Iyilestirme taslagi
-- Once/sonra karsilastirma
-- Kopyalama/export/review aksiyonlari
-- Shopify icin onayli guvenli alan yayinlama
+- Dashboard and product list
+- Single product AI/GEO analysis
+- GEO score layers
+- Missing-fact flow
+- Improvement draft generation
+- Before/after comparison
+- Copy/export/review actions
+- Approved safe field publishing for Shopify
 
-## Teknoloji
+## Stack
 
 - Next.js App Router
 - React
@@ -32,17 +31,17 @@ analizi, iyilestirme taslagi ve onayli yayinlama akislarini sunar.
 - Supabase SSR/Auth
 - Supabase/PostgreSQL
 - Shopify Admin GraphQL API
-- Server-to-server AI service entegrasyonu
+- Server-to-server AI service integration
 
-## Kurulum
+## Setup
 
-Bagimliliklari yukleyin:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Env dosyasini olusturun:
+Create the environment file:
 
 ```bash
 cp .env.example .env.local
@@ -54,9 +53,9 @@ Windows PowerShell:
 Copy-Item .env.example .env.local
 ```
 
-`.env.local` dosyasini doldurun.
+Then fill in `.env.local`.
 
-## Env Degiskenleri
+## Environment Variables
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
@@ -78,7 +77,7 @@ SHOPIFY_TOKEN_ENCRYPTION_KEY=
 SHOPIFY_TEST_SHOP_DOMAIN=
 ```
 
-Lokal gelistirme icin ornek:
+Example values for local development:
 
 ```env
 AI_SERVICE_URL=http://localhost:8001
@@ -86,37 +85,36 @@ SHOPIFY_APP_URL=http://localhost:3000
 SHOPIFY_REDIRECT_URI=http://localhost:3000/api/shopify/callback
 ```
 
-Ngrok kullaniyorsaniz Shopify app URL ve redirect URI ngrok domainini
-gostermelidir.
+If you use ngrok, the Shopify app URL and redirect URI should point to your ngrok domain.
 
-## Lokal Calistirma
+## Run Locally
 
 ```bash
 npm run dev
 ```
 
-Uygulama:
+The app will be available at:
 
 ```text
 http://localhost:3000
 ```
 
-## Kontrol Komutlari
+## Validation Commands
 
 ```bash
 npm run lint
 npm run build
 ```
 
-Production build sonrasi calistirma:
+Run the production build locally:
 
 ```bash
 npm run start
 ```
 
-## Supabase Ayarlari
+## Supabase Settings
 
-Supabase Auth icin lokal ayarlar:
+Recommended local Supabase Auth settings:
 
 ```text
 Site URL:
@@ -131,15 +129,13 @@ http://localhost:3000/sources
 http://localhost:3000/sources?setup=1
 ```
 
-Production'da ayni pathleri production domaininizle ekleyin.
+For production, add the same paths with your production domain.
 
-Veritabani SQL dosyalari `web/.codex/sql/` altindadir. Bu projede SQL
-degisiklikleri agent tarafindan otomatik uygulanmaz; Supabase SQL Editor
-uzerinden manuel uygulanir.
+Database SQL files are stored under `web/.codex/sql/`. SQL changes are not applied automatically by agents in this project; apply them manually through the Supabase SQL Editor.
 
-## Shopify Ayarlari
+## Shopify Settings
 
-Lokal:
+Local:
 
 ```env
 SHOPIFY_APP_URL=http://localhost:3000
@@ -153,24 +149,23 @@ SHOPIFY_APP_URL=https://your-domain.com
 SHOPIFY_REDIRECT_URI=https://your-domain.com/api/shopify/callback
 ```
 
-Shopify Partner Dashboard tarafinda Allowed redirection URL ayni olmalidir:
+The Allowed redirection URL in the Shopify Partner Dashboard must match:
 
 ```text
 https://your-domain.com/api/shopify/callback
 ```
 
-Gerekli scope:
+Required scopes:
 
 ```text
 read_products,write_products
 ```
 
-## AI Servisi
+## AI Service
 
-AI/GEO backend ayri bir servistir. Web uygulamasi bu servisi server tarafindan
-cagirir.
+The AI/GEO backend is a separate service. The web application calls it from the server side.
 
-Lokal:
+Local:
 
 ```env
 AI_SERVICE_URL=http://localhost:8001
@@ -184,20 +179,19 @@ AI_SERVICE_URL=https://your-ai-service-domain.com
 AI_SERVICE_SECRET=shared-secret
 ```
 
-`AI_SERVICE_SECRET`, AI servisindeki `SERVICE_AUTH_SECRET_KEY` ile ayni
-olmalidir.
+`AI_SERVICE_SECRET` must match `SERVICE_AUTH_SECRET_KEY` in the AI service.
 
 ## Vercel Deployment
 
-Vercel'e deploy etmek icin:
+To deploy on Vercel:
 
-1. GitHub reposunu Vercel'e baglayin.
-2. Root Directory olarak `web` secin.
-3. Framework olarak Next.js otomatik secilmelidir.
-4. Environment Variables bolumune production env degerlerini girin.
-5. Deploy edin.
+1. Connect the GitHub repository to Vercel.
+2. Select `web` as the Root Directory.
+3. Vercel should automatically detect Next.js as the framework.
+4. Add the production environment variables in the Environment Variables section.
+5. Deploy.
 
-Production icin degismesi gerekenler:
+Values that must be changed for production:
 
 - `SHOPIFY_APP_URL`
 - `SHOPIFY_REDIRECT_URI`
@@ -205,28 +199,26 @@ Production icin degismesi gerekenler:
 - Supabase Auth Site URL
 - Supabase Auth Redirect URLs
 
-## Docker Notu
+## Docker Note
 
-Web uygulamasi Vercel'e Docker olmadan deploy edilebilir. Lokal olarak Docker
-Compose ile AI servisiyle birlikte calistirmak isterseniz repo root dizinindeki
-`docker-compose.yml` dosyasini kullanin:
+The web application can be deployed to Vercel without Docker. If you want to run it locally with the AI service through Docker Compose, use the `docker-compose.yml` file in the repository root:
 
 ```bash
 docker compose --env-file ./web/.env.local up --build
 ```
 
-## Kod Organizasyonu
+## Code Organization
 
-Onemli klasorler:
+Important folders:
 
 ```text
-src/app                 # App Router route ve API route'lari
-src/features            # Feature bazli UI ve interaction katmani
-src/lib                 # Service, repository, integration ve validation kodlari
-src/types               # Paylasilan TypeScript tipleri
+src/app                 # App Router routes and API routes
+src/features            # Feature-based UI and interaction layer
+src/lib                 # Services, repositories, integrations, and validation code
+src/types               # Shared TypeScript types
 ```
 
-Shopify entegrasyonu:
+Shopify integration:
 
 ```text
 src/lib/shopify
@@ -242,7 +234,7 @@ src/features/native-import
 src/app/api/native
 ```
 
-AI entegrasyonu:
+AI integration:
 
 ```text
 src/lib/ai
@@ -251,12 +243,11 @@ src/app/api/products/[productId]/analyze
 src/app/api/products/[productId]/improve
 ```
 
-## Gelistirme Kurallari
+## Development Rules
 
-- Secretlar client componentlere tasinmaz.
-- Browser kodu AI servisini direkt cagirmaz.
-- Shopify publish islemleri kullanici onayi olmadan yapilmaz.
-- SQL degisiklikleri `web/.codex/sql/` altinda dosyalanir ve manuel uygulanir.
-- Varsayilan dogrulama `npm run lint` ve `npm run build` komutlaridir.
-- UI seller-friendly ve Turkish-first olmalidir.
-
+- Do not move secrets into client components.
+- Browser code must not call the AI service directly.
+- Shopify publish actions must not run without user approval.
+- SQL changes should be saved under `web/.codex/sql/` and applied manually.
+- Default validation commands are `npm run lint` and `npm run build`.
+- The UI should be seller-friendly and Turkish-first.
