@@ -12,7 +12,7 @@ import type {
   ProductInput,
 } from "@/types/ai-contract";
 
-const AI_REQUEST_TIMEOUT_MS = 60_000;
+const AI_REQUEST_TIMEOUT_MS = 90_000;
 
 export class AiServiceError extends Error {
   code: string;
